@@ -1,0 +1,891 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SSM 深层复习与进阶 | 适配JDK24+Tomcat11</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: "Microsoft YaHei", sans-serif;
+            line-height: 1.8;
+            color: #333;
+            padding: 20px;
+            background-color: #f9f9f9;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: #fff;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #1e40af;
+            border-bottom: 3px solid #3b82f6;
+            padding-bottom: 10px;
+            margin-bottom: 30px;
+            font-size: 28px;
+        }
+        h2 {
+            color: #1e40af;
+            margin: 30px 0 15px;
+            font-size: 22px;
+            border-left: 4px solid #3b82f6;
+            padding-left: 10px;
+        }
+        h3 {
+            color: #0f172a;
+            margin: 20px 0 10px;
+            font-size: 18px;
+        }
+        h4 {
+            color: #1e40af;
+            margin: 15px 0 8px;
+            font-size: 16px;
+        }
+        .section {
+            margin: 40px 0;
+            padding-bottom: 20px;
+            border-bottom: 1px solid #eee;
+        }
+        .section:last-child {
+            border-bottom: none;
+        }
+        code {
+            background: #f1f5f9;
+            padding: 2px 6px;
+            border-radius: 3px;
+            color: #dc2626;
+            font-weight: 600;
+            font-family: Consolas, monospace;
+        }
+        pre {
+            background: #f8fafc;
+            padding: 16px;
+            border-radius: 6px;
+            overflow-x: auto;
+            border: 1px solid #e2e8f0;
+            font-size: 14px;
+            line-height: 1.6;
+            margin: 10px 0;
+            font-family: Consolas, monospace;
+        }
+        .tip {
+            background: #fffbeb;
+            padding: 14px;
+            border-left: 4px solid #f59e0b;
+            margin: 15px 0;
+            font-size: 14px;
+        }
+        .warning {
+            background: #fef2f2;
+            padding: 14px;
+            border-left: 4px solid #ef4444;
+            margin: 15px 0;
+            font-size: 14px;
+        }
+        .table-box {
+            overflow-x: auto;
+            margin: 15px 0;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            border: 1px solid #e2e8f0;
+        }
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border: 1px solid #e2e8f0;
+        }
+        th {
+            background-color: #eff6ff;
+            color: #1e40af;
+        }
+        .idea-op {
+            color: #0284c7;
+            font-weight: 600;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>SSM 深层复习与进阶（Spring+SpringMVC+MyBatis）</h1>
+        
+        <!-- 核心知识点复盘 -->
+        <div class="section">
+            <h2>一、SSM 核心知识点深层复盘</h2>
+            <p>SSM是企业级JavaWeb开发的基础框架组合，先巩固核心本质，再攻克进阶难点：</p>
+            
+            <div class="table-box">
+                <table>
+                    <tr>
+                        <th>技术栈</th>
+                        <th>核心本质</th>
+                        <th>核心注解/配置</th>
+                        <th>企业级痛点（进阶解决）</th>
+                    </tr>
+                    <tr>
+                        <td>Spring</td>
+                        <td>IOC容器 + DI依赖注入 + AOP面向切面</td>
+                        <td>@Component/@Service/@Autowired、@Aspect、@Transactional</td>
+                        <td>事务管理、Bean生命周期管控、多环境适配</td>
+                    </tr>
+                    <tr>
+                        <td>SpringMVC</td>
+                        <td>前端控制器 + 请求映射 + 视图解析</td>
+                        <td>@Controller/@RequestMapping/@ResponseBody</td>
+                        <td>全局异常处理、参数校验、拦截器链、文件上传优化</td>
+                    </tr>
+                    <tr>
+                        <td>MyBatis</td>
+                        <td>SQL映射 + 结果集自动封装</td>
+                        <td>@Mapper、#{}/${}、动态SQL、ResultMap</td>
+                        <td>分页、缓存、多数据源、SQL性能优化</td>
+                    </tr>
+                    <tr>
+                        <td>SSM整合</td>
+                        <td>三层架构 + 配置整合</td>
+                        <td>多XML配置、Spring整合MyBatis</td>
+                        <td>配置繁琐、事务一致性、扩展性差</td>
+                    </tr>
+                </table>
+            </div>
+            
+            <div class="tip">
+                ✅ 核心认知：SSM的本质是<strong>解耦</strong> - 控制层/业务层/数据层分离，Spring作为容器统一管理所有组件。
+            </div>
+        </div>
+
+        <!-- Spring进阶 -->
+        <div class="section">
+            <h2>二、Spring 进阶（企业级核心）</h2>
+            
+            <h3>2.1 Bean 进阶管控（解决「怎么造、怎么管」）</h3>
+            
+            <h4>2.1.1 Bean 作用域（实战必懂）</h4>
+            <div class="table-box">
+                <table>
+                    <tr>
+                        <th>作用域</th>
+                        <th>核心说明</th>
+                        <th>企业使用场景</th>
+                        <th>代码示例</th>
+                    </tr>
+                    <tr>
+                        <td>singleton（默认）</td>
+                        <td>整个应用只有一个实例</td>
+                        <td>无状态组件（Service/Mapper/工具类）</td>
+                        <td>@Service（默认单例）</td>
+                    </tr>
+                    <tr>
+                        <td>prototype</td>
+                        <td>每次获取都是新实例</td>
+                        <td>有状态组件（购物车、线程不安全对象）</td>
+                        <td>@Service + @Scope("prototype")</td>
+                    </tr>
+                    <tr>
+                        <td>request</td>
+                        <td>一次HTTP请求一个实例</td>
+                        <td>请求级数据封装</td>
+                        <td>@Scope("request")</td>
+                    </tr>
+                    <tr>
+                        <td>session</td>
+                        <td>一次会话一个实例</td>
+                        <td>用户登录信息存储</td>
+                        <td>@Scope("session")</td>
+                    </tr>
+                </table>
+            </div>
+            
+            <pre>
+// 多例Bean实战示例（购物车）
+package com.ssm.service;
+
+import org.springframework.context.annotation.Scope;
+import org.springframework.stereotype.Service;
+
+@Service
+@Scope("prototype") // 关键：设置为多例
+public class CartService {
+    // 购物车有状态（存储用户商品），每次获取新实例避免线程安全问题
+    private Integer userId;
+    private List<Integer> productIds = new ArrayList<>();
+    
+    // 添加商品
+    public void addProduct(Integer productId) {
+        productIds.add(productId);
+    }
+}
+            </pre>
+            
+            <h4>2.1.2 Bean 生命周期（进阶调试/优化）</h4>
+            <p>完整生命周期：实例化 → 属性注入 → 初始化 → 业务使用 → 销毁</p>
+            <pre>
+package com.ssm.service;
+
+import jakarta.annotation.PostConstruct;
+import jakarta.annotation.PreDestroy;
+import org.springframework.beans.factory.InitializingBean;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+@Service
+public class UserService implements InitializingBean {
+    
+    // 1. 实例化（构造方法）
+    public UserService() {
+        System.out.println("步骤1：Bean构造（实例化）");
+    }
+
+    // 2. 属性注入（DI依赖注入）
+    @Autowired
+    private UserMapper userMapper;
+
+    // 3. 初始化（两种方式：推荐@PostConstruct）
+    @PostConstruct // 替代InitializingBean的afterPropertiesSet()
+    public void init() {
+        System.out.println("步骤3：Bean初始化（可做资源加载、参数校验）");
+    }
+    
+    // InitializingBean接口实现（备选方案）
+    @Override
+    public void afterPropertiesSet() throws Exception {
+        System.out.println("步骤3-备选：InitializingBean初始化");
+    }
+
+    // 4. 业务方法（核心功能）
+    public void queryUser() {
+        System.out.println("步骤4：Bean业务使用");
+    }
+
+    // 5. 销毁（推荐@PreDestroy）
+    @PreDestroy
+    public void destroy() {
+        System.out.println("步骤5：Bean销毁（释放资源）");
+    }
+}
+            </pre>
+            
+            <div class="warning">
+                ❗ 注意：JDK24中已完全移除javax包，全部替换为jakarta包（如jakarta.annotation.PostConstruct），代码已适配！
+            </div>
+            
+            <h3>2.2 Spring 事务管理（企业级必备）</h3>
+            <p>核心解决：数据库操作的原子性（要么全成，要么全败），如转账、批量新增。</p>
+            
+            <h4>2.2.1 事务配置（适配JDK24+Jakarta）</h4>
+            <pre>
+// 1. 事务管理器配置类（替代XML）
+package com.ssm.config;
+
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.jdbc.datasource.DataSourceTransactionManager;
+import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.annotation.EnableTransactionManagement;
+
+import jakarta.annotation.Resource;
+import javax.sql.DataSource;
+
+@Configuration
+@EnableTransactionManagement // 开启注解式事务
+public class SpringTxConfig {
+
+    @Resource
+    private DataSource dataSource;
+
+    // 事务管理器（核心Bean）
+    @Bean
+    public PlatformTransactionManager transactionManager() {
+        // 适配JDK24的DataSourceTransactionManager
+        return new DataSourceTransactionManager(dataSource);
+    }
+}
+            </pre>
+            
+            <h4>2.2.2 事务使用（业务层注解）</h4>
+            <pre>
+// 2. 业务层使用事务
+package com.ssm.service.impl;
+
+import com.ssm.mapper.UserMapper;
+import com.ssm.pojo.User;
+import com.ssm.service.UserService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Isolation;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
+
+@Service
+public class UserServiceImpl implements UserService {
+
+    @Autowired
+    private UserMapper userMapper;
+
+    /**
+     * 批量新增用户 - 事务控制
+     * propagation：传播行为（REQUIRED=有事务就加入，无则新建）
+     * isolation：隔离级别（READ_COMMITTED=避免脏读，企业标配）
+     * rollbackFor：指定异常回滚（默认只回滚RuntimeException）
+     */
+    @Transactional(
+        propagation = Propagation.REQUIRED,
+        isolation = Isolation.READ_COMMITTED,
+        rollbackFor = Exception.class // 所有异常都回滚
+    )
+    @Override
+    public void batchAddUser(List<User> userList) {
+        for (User user : userList) {
+            userMapper.addUser(user);
+            // 模拟异常：第二个用户插入失败，全部回滚
+            if (user.getId() == 2) {
+                throw new RuntimeException("插入失败，事务回滚");
+            }
+        }
+    }
+}
+            </pre>
+            
+            <div class="tip">
+                ✅ 事务核心参数：<br>
+                1. propagation：REQUIRED（默认）/REQUIRES_NEW（新建事务）/NESTED（嵌套事务）<br>
+                2. isolation：READ_COMMITTED（企业标配）/REPEATABLE_READ（MySQL默认）<br>
+                3. rollbackFor：必须指定Exception.class，否则检查型异常不回滚
+            </div>
+            
+            <h3>2.3 Spring AOP 进阶（切面编程）</h3>
+            <p>核心场景：日志记录、权限校验、性能监控（无侵入式增强）。</p>
+            <pre>
+// 1. AOP切面类
+package com.ssm.aspect;
+
+import org.aspectj.lang.ProceedingJoinPoint;
+import org.aspectj.lang.annotation.Around;
+import org.aspectj.lang.annotation.Aspect;
+import org.springframework.stereotype.Component;
+
+@Aspect // 标记为切面
+@Component // 交给Spring管理
+public class LogAspect {
+
+    /**
+     * 环绕通知：性能监控
+     * 切点表达式：execution(* com.ssm.service.*.*(..)) 匹配service包下所有方法
+     */
+    @Around("execution(* com.ssm.service.*.*(..))")
+    public Object monitorPerformance(ProceedingJoinPoint joinPoint) throws Throwable {
+        // 前置：记录开始时间
+        long startTime = System.currentTimeMillis();
+        
+        // 执行原方法
+        Object result = joinPoint.proceed();
+        
+        // 后置：计算耗时
+        long costTime = System.currentTimeMillis() - startTime;
+        String methodName = joinPoint.getSignature().getName();
+        System.out.println("方法[" + methodName + "]执行耗时：" + costTime + "ms");
+        
+        return result;
+    }
+}
+            </pre>
+        </div>
+
+        <!-- SpringMVC进阶 -->
+        <div class="section">
+            <h2>三、SpringMVC 进阶（接口开发提效）</h2>
+            
+            <h3>3.1 全局异常处理（替代try-catch，企业标配）</h3>
+            <p>核心优势：统一异常返回格式，避免代码中大量try-catch，提升可维护性。</p>
+            <pre>
+// 1. 自定义业务异常
+package com.ssm.exception;
+
+public class BusinessException extends RuntimeException {
+    public BusinessException(String message) {
+        super(message);
+    }
+}
+
+// 2. 全局异常处理器
+package com.ssm.exception;
+
+import com.ssm.util.Result;
+import org.springframework.validation.BindException;
+import org.springframework.web.bind.MethodArgumentNotValidException;
+import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.RestControllerAdvice;
+
+// @RestControllerAdvice = @ControllerAdvice + @ResponseBody
+@RestControllerAdvice
+public class GlobalExceptionHandler {
+
+    // 处理业务异常
+    @ExceptionHandler(BusinessException.class)
+    public Result handleBusinessException(BusinessException e) {
+        return Result.fail(e.getMessage());
+    }
+
+    // 处理参数校验异常
+    @ExceptionHandler({MethodArgumentNotValidException.class, BindException.class})
+    public Result handleValidException(MethodArgumentNotValidException e) {
+        String msg = e.getBindingResult().getFieldError().getDefaultMessage();
+        return Result.fail("参数校验失败：" + msg);
+    }
+
+    // 处理所有运行时异常
+    @ExceptionHandler(RuntimeException.class)
+    public Result handleRuntimeException(RuntimeException e) {
+        e.printStackTrace(); // 日志记录
+        return Result.fail("服务器异常：" + e.getMessage());
+    }
+
+    // 处理所有异常（兜底）
+    @ExceptionHandler(Exception.class)
+    public Result handleException(Exception e) {
+        e.printStackTrace();
+        return Result.fail("系统异常，请联系管理员");
+    }
+}
+
+// 3. 统一返回结果工具类
+package com.ssm.util;
+
+import lombok.Data;
+
+@Data
+public class Result<T> {
+    private int code; // 200成功，500失败
+    private String msg;
+    private T data;
+
+    // 成功响应
+    public static <T> Result<T> success(T data) {
+        Result<T> result = new Result<>();
+        result.setCode(200);
+        result.setMsg("操作成功");
+        result.setData(data);
+        return result;
+    }
+
+    // 失败响应
+    public static <T> Result<T> fail(String msg) {
+        Result<T> result = new Result<>();
+        result.setCode(500);
+        result.setMsg(msg);
+        result.setData(null);
+        return result;
+    }
+}
+            </pre>
+            
+            <h3>3.2 参数校验进阶（替代手动if判断）</h3>
+            <pre>
+// 1. 实体类加校验注解
+package com.ssm.pojo;
+
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Pattern;
+import lombok.Data;
+
+@Data
+public class User {
+    @NotNull(message = "用户ID不能为空")
+    private Integer id;
+
+    @NotBlank(message = "用户名不能为空")
+    @Pattern(regexp = "^[a-zA-Z0-9]{2,10}$", message = "用户名必须是2-10位字母/数字")
+    private String username;
+
+    @Pattern(regexp = "^[0-9a-zA-Z]{6,16}$", message = "密码必须是6-16位字母/数字")
+    private String password;
+}
+
+// 2. Controller中使用@Validated
+package com.ssm.controller;
+
+import com.ssm.pojo.User;
+import com.ssm.service.UserService;
+import com.ssm.util.Result;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+@RestController
+@RequestMapping("/user")
+public class UserController {
+
+    @Autowired
+    private UserService userService;
+
+    @PostMapping("/add")
+    public Result addUser(@Validated @RequestBody User user) {
+        userService.addUser(user);
+        return Result.success(null);
+    }
+}
+            </pre>
+            
+            <h3>3.3 拦截器链（多拦截器执行顺序）</h3>
+            <pre>
+// 1. 第一个拦截器：登录校验
+package com.ssm.interceptor;
+
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import org.springframework.web.servlet.HandlerInterceptor;
+
+public class LoginInterceptor implements HandlerInterceptor {
+    @Override
+    public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
+        // 登录校验逻辑
+        Object user = request.getSession().getAttribute("loginUser");
+        if (user == null) {
+            response.getWriter().write("请先登录");
+            return false; // 拦截
+        }
+        return true; // 放行
+    }
+}
+
+// 2. 第二个拦截器：权限校验
+package com.ssm.interceptor;
+
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import org.springframework.web.servlet.HandlerInterceptor;
+
+public class PermissionInterceptor implements HandlerInterceptor {
+    @Override
+    public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
+        // 权限校验逻辑
+        String role = (String) request.getSession().getAttribute("role");
+        if (!"admin".equals(role)) {
+            response.getWriter().write("无操作权限");
+            return false;
+        }
+        return true;
+    }
+}
+
+// 3. 配置拦截器链（指定执行顺序）
+package com.ssm.config;
+
+import com.ssm.interceptor.LoginInterceptor;
+import com.ssm.interceptor.PermissionInterceptor;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
+import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
+
+@Configuration
+public class WebConfig implements WebMvcConfigurer {
+
+    @Override
+    public void addInterceptors(InterceptorRegistry registry) {
+        // 拦截器执行顺序：先添加的先执行
+        registry.addInterceptor(new LoginInterceptor())
+                .addPathPatterns("/**")
+                .excludePathPatterns("/user/login");
+        
+        registry.addInterceptor(new PermissionInterceptor())
+                .addPathPatterns("/user/**")
+                .excludePathPatterns("/user/login", "/user/query");
+    }
+}
+            </pre>
+        </div>
+
+        <!-- MyBatis进阶 -->
+        <div class="section">
+            <h2>四、MyBatis 进阶（性能+功能双提升）</h2>
+            
+            <h3>4.1 分页插件（PageHelper，企业必用）</h3>
+            <p>解决MyBatis原生分页繁琐问题，一行代码实现分页。</p>
+            <pre>
+// 1. 导入依赖（pom.xml）
+<!-- PageHelper适配MyBatis3.5+ -->
+<dependency>
+    <groupId>com.github.pagehelper</groupId>
+    <artifactId>pagehelper</artifactId>
+    <version>5.3.2</version>
+</dependency>
+
+// 2. 配置PageHelper（MyBatis配置类）
+package com.ssm.config;
+
+import com.github.pagehelper.PageHelper;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+
+import java.util.Properties;
+
+@Configuration
+public class MyBatisConfig {
+    @Bean
+    public PageHelper pageHelper() {
+        PageHelper pageHelper = new PageHelper();
+        Properties props = new Properties();
+        props.setProperty("helperDialect", "mysql"); // 数据库方言
+        props.setProperty("reasonable", "true"); // 页码越界自动处理
+        props.setProperty("supportMethodsArguments", "true");
+        pageHelper.setProperties(props);
+        return pageHelper;
+    }
+}
+
+// 3. 业务层使用分页
+package com.ssm.service.impl;
+
+import com.github.pagehelper.PageHelper;
+import com.github.pagehelper.PageInfo;
+import com.ssm.mapper.UserMapper;
+import com.ssm.pojo.User;
+import com.ssm.service.UserService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import java.util.List;
+
+@Service
+public class UserServiceImpl implements UserService {
+
+    @Autowired
+    private UserMapper userMapper;
+
+    @Override
+    public PageInfo<User> queryUserByPage(Integer pageNum, Integer pageSize) {
+        // 开启分页（核心代码）
+        PageHelper.startPage(pageNum, pageSize);
+        // 查询数据（MyBatis自动拼接limit）
+        List<User> userList = userMapper.findAll();
+        // 封装分页结果（总条数、总页数、当前页数据）
+        return new PageInfo<>(userList);
+    }
+}
+            </pre>
+            
+            <h3>4.2 MyBatis 二级缓存（性能优化）</h3>
+            <p>核心：Mapper级别缓存，跨SqlSession共享查询结果，减少数据库访问。</p>
+            <pre>
+// 1. 实体类实现序列化（必须）
+package com.ssm.pojo;
+
+import lombok.Data;
+import java.io.Serializable;
+
+@Data
+public class User implements Serializable { // 实现Serializable接口
+    private Integer id;
+    private String username;
+    private String password;
+}
+
+// 2. 开启二级缓存（两种方式）
+// 方式1：Mapper接口加注解
+package com.ssm.mapper;
+
+import com.ssm.pojo.User;
+import org.apache.ibatis.annotations.CacheNamespace;
+import org.apache.ibatis.annotations.Select;
+
+@CacheNamespace // 开启二级缓存
+public interface UserMapper {
+    @Select("select * from user where id=#{id}")
+    User findById(Integer id);
+}
+
+// 方式2：Mapper XML配置
+<!-- UserMapper.xml -->
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ssm.mapper.UserMapper">
+    <!-- 开启二级缓存 -->
+    <cache eviction="LRU" flushInterval="60000" size="1024" readOnly="true"/>
+    
+    <select id="findById" resultType="com.ssm.pojo.User">
+        select * from user where id=#{id}
+    </select>
+</mapper>
+            </pre>
+            
+            <div class="warning">
+                ❗ 注意：二级缓存慎用场景：<br>
+                1. 频繁修改的表（缓存会频繁失效，反而降低性能）<br>
+                2. 多表关联查询（缓存一致性难保证）
+            </div>
+            
+            <h3>4.3 自定义TypeHandler（类型转换）</h3>
+            <p>解决：数据库字段类型与Java类型不匹配（如数据库VARCHAR存JSON，Java转对象）。</p>
+            <pre>
+// 1. 自定义TypeHandler
+package com.ssm.typehandler;
+
+import com.alibaba.fastjson2.JSONObject;
+import org.apache.ibatis.type.BaseTypeHandler;
+import org.apache.ibatis.type.JdbcType;
+
+import java.sql.CallableStatement;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+
+// 处理JSON字符串 ↔ JSONObject
+public class JsonTypeHandler extends BaseTypeHandler<JSONObject> {
+
+    // 设置参数（Java → 数据库）
+    @Override
+    public void setNonNullParameter(PreparedStatement ps, int i, JSONObject parameter, JdbcType jdbcType) throws SQLException {
+        ps.setString(i, parameter.toJSONString());
+    }
+
+    // 获取结果（数据库 → Java）
+    @Override
+    public JSONObject getNullableResult(ResultSet rs, String columnName) throws SQLException {
+        return JSONObject.parseObject(rs.getString(columnName));
+    }
+
+    @Override
+    public JSONObject getNullableResult(ResultSet rs, int columnIndex) throws SQLException {
+        return JSONObject.parseObject(rs.getString(columnIndex));
+    }
+
+    @Override
+    public JSONObject getNullableResult(CallableStatement cs, int columnIndex) throws SQLException {
+        return JSONObject.parseObject(cs.getString(columnIndex));
+    }
+}
+
+// 2. 配置TypeHandler（MyBatis XML）
+<resultMap id="userMap" type="com.ssm.pojo.User">
+    <id column="id" property="id"/>
+    <result column="ext_info" property="extInfo" typeHandler="com.ssm.typehandler.JsonTypeHandler"/>
+</resultMap>
+            </pre>
+        </div>
+
+        <!-- SSM纯注解整合 -->
+        <div class="section">
+            <h2>五、SSM 纯注解整合（替代XML，解决配置繁琐）</h2>
+            <p>传统SSM需要3个核心XML，进阶方案：纯注解整合，零XML配置。</p>
+            
+            <h3>5.1 核心配置类（替代所有XML）</h3>
+            <pre>
+// 1. Spring核心配置类（替代applicationContext.xml）
+package com.ssm.config;
+
+import org.mybatis.spring.annotation.MapperScan;
+import org.springframework.context.annotation.ComponentScan;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.EnableAspectJAutoProxy;
+import org.springframework.transaction.annotation.EnableTransactionManagement;
+
+@Configuration // 标记为配置类
+@ComponentScan("com.ssm.service,com.ssm.aspect") // 扫描Service/切面
+@MapperScan("com.ssm.mapper") // 扫描MyBatis Mapper
+@EnableTransactionManagement // 开启事务
+@EnableAspectJAutoProxy // 开启AOP
+public class SpringConfig {
+    // 数据源、事务管理器等Bean配置（见前文）
+}
+
+// 2. SpringMVC配置类（替代spring-mvc.xml）
+package com.ssm.config;
+
+import org.springframework.context.annotation.ComponentScan;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.web.servlet.config.annotation.EnableWebMvc;
+import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
+
+@Configuration
+@EnableWebMvc // 开启SpringMVC注解
+@ComponentScan("com.ssm.controller,com.ssm.exception") // 扫描Controller/全局异常
+public class WebConfig implements WebMvcConfigurer {
+    // 拦截器、视图解析器等配置（见前文）
+}
+
+// 3. Web启动类（替代web.xml）
+package com.ssm.config;
+
+import org.springframework.web.servlet.support.AbstractAnnotationConfigDispatcherServletInitializer;
+
+// 替代web.xml，Tomcat启动时自动加载
+public class WebAppInitializer extends AbstractAnnotationConfigDispatcherServletInitializer {
+
+    // Spring根容器配置类（Service/DAO）
+    @Override
+    protected Class<?>[] getRootConfigClasses() {
+        return new Class[]{SpringConfig.class};
+    }
+
+    // SpringMVC容器配置类（Controller）
+    @Override
+    protected Class<?>[] getServletConfigClasses() {
+        return new Class[]{WebConfig.class};
+    }
+
+    // DispatcherServlet映射路径
+    @Override
+    protected String[] getServletMappings() {
+        return new String[]{"/"};
+    }
+}
+            </pre>
+            
+            <div class="tip">
+                ✅ 纯注解整合优势：<br>
+                1. 无XML文件，配置集中在Java类，易维护；<br>
+                2. 适配JDK24+Jakarta，无兼容性问题；<br>
+                3. 企业级开发主流方案。
+            </div>
+        </div>
+
+        <!-- 核心总结 -->
+        <div class="section">
+            <h2>六、SSM 进阶核心总结</h2>
+            <div class="tip">
+                ✅ Spring 进阶核心：<br>
+                1. Bean管控：作用域（prototype解决线程安全）、生命周期（初始化/销毁资源）；<br>
+                2. 事务管理：@Transactional（传播行为+隔离级别+回滚规则）；<br>
+                3. AOP：切面编程（日志/监控/权限，无侵入增强）。
+            </div>
+            
+            <div class="tip">
+                ✅ SpringMVC 进阶核心：<br>
+                1. 全局异常：@RestControllerAdvice统一返回，避免try-catch；<br>
+                2. 参数校验：@Validated+JSR380注解，替代手动if；<br>
+                3. 拦截器链：多拦截器顺序配置，实现登录+权限双层校验。
+            </div>
+            
+            <div class="tip">
+                ✅ MyBatis 进阶核心：<br>
+                1. 分页：PageHelper一行代码实现分页，企业必用；<br>
+                2. 缓存：一级缓存默认开启，二级缓存慎用（频繁修改表禁用）；<br>
+                3. 类型转换：TypeHandler解决特殊类型映射（JSON/枚举）。
+            </div>
+            
+            <div class="tip">
+                ✅ 整合进阶核心：<br>
+                1. 纯注解替代XML，减少配置文件；<br>
+                2. 适配JDK24+Jakarta，替换javax为jakarta包；<br>
+                3. 事务一致性：Spring事务+MyBatis操作，保证数据原子性。
+            </div>
+        </div>
+    </div>
+</body>
+</html>

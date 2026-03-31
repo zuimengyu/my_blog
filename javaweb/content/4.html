@@ -1,0 +1,453 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>第4章：Cookie & Session | 小白完整版·90%常用全覆盖</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        .content {
+            padding: 20px 0;
+            line-height: 1.9;
+            font-size: 15px;
+        }
+        .section {
+            margin: 45px 0;
+            padding-bottom: 25px;
+            border-bottom: 1px solid #eff6ff;
+        }
+        .section:last-child { border-bottom: none; }
+
+        .section h2 {
+            color: #1e40af;
+            margin-bottom: 25px;
+            border-left: 4px solid #3b82f6;
+            padding-left: 15px;
+            font-size: 20px;
+        }
+        .section h3 {
+            color: #0f172a;
+            margin: 30px 0 18px;
+            font-size: 17px;
+        }
+        .section h4 {
+            color: #1e40af;
+            margin: 22px 0 15px;
+            font-size: 16px;
+        }
+        .step {
+            background: #eff6ff;
+            padding: 22px;
+            border-radius: 8px;
+            margin: 18px 0;
+            border: 1px solid #dbeafe;
+        }
+        .step-title {
+            font-weight: 600;
+            color: #1e40af;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        code {
+            background: #f1f5f9;
+            padding: 4px 10px;
+            border-radius: 4px;
+            font-family: Consolas, monospace;
+            color: #dc2626;
+            font-size: 14px;
+        }
+        pre {
+            background: #f8fafc;
+            padding: 20px;
+            border-radius: 8px;
+            overflow-x: auto;
+            margin: 18px 0;
+            border: 1px solid #e2e8f0;
+            font-family: Consolas, monospace;
+            font-size: 14px;
+            line-height: 1.7;
+        }
+        .tip {
+            background: #fffbeb;
+            padding: 18px;
+            border-radius: 6px;
+            border-left: 4px solid #f59e0b;
+            margin: 18px 0;
+            font-size: 14px;
+        }
+        .warning {
+            background: #fef2f2;
+            padding: 18px;
+            border-radius: 6px;
+            border-left: 4px solid #ef4444;
+            margin: 18px 0;
+            font-size: 14px;
+        }
+        .demo-box {
+            margin: 25px 0;
+            padding: 28px;
+            border-radius: 12px;
+            border: 1px solid #e2e8f0;
+            background: #ffffff;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+        }
+        .compare-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+            font-size: 14px;
+        }
+        .compare-table th, .compare-table td {
+            border: 1px solid #e2e8f0;
+            padding: 14px;
+            text-align: left;
+        }
+        .compare-table th {
+            background-color: #eff6ff;
+            color: #1e40af;
+            font-weight: 600;
+        }
+        .explain {
+            color: #64748b;
+            font-size: 14px;
+            margin: 8px 0 15px;
+            padding-left: 10px;
+            border-left: 2px solid #94a3b8;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>第4章：Cookie & Session（小白完整版·90%常用全覆盖）</h1>
+        <div class="content">
+
+<!-- 4.0 小白必懂：为什么必须用 Cookie 和 Session？（全详解） -->
+<div class="section">
+    <h2>4.0 前置核心：HTTP 无状态问题（小白必理解）</h2>
+    <p><strong>术语：HTTP 无状态协议</strong>
+    <br>👉 大白话：<strong>服务器没有记忆功能</strong>。
+    <br>你这次访问登录，下次访问个人中心，服务器完全不认识你，会让你重新登录。</p>
+
+    <p><strong>解决办法：</strong>
+    <br>• <strong>Cookie</strong>：存在你浏览器里的「身份小纸条」
+    <br>• <strong>Session</strong>：存在服务器里的「用户档案」
+    <br>两者配合，服务器就能<strong>一直记住你</strong>。</p>
+
+    <div class="tip">
+        💡 最通俗类比：
+        <br>📌 Cookie = 网吧会员卡（你自己拿着）
+        <br>📌 Session = 网吧会员资料（存在网吧电脑里）
+    </div>
+</div>
+
+<!-- 4.1 Cookie 完整详解（常用100%） -->
+<div class="section">
+    <h2>4.1 Cookie 完整详解（存在浏览器里）</h2>
+    <h3>4.1.1 什么是 Cookie？（术语+大白话）</h3>
+    <p><strong>术语：</strong>Cookie 是服务器通过 HTTP 响应头发送给客户端，并由客户端（浏览器）临时或永久保存的小型文本数据。
+    <br><strong>大白话：</strong>服务器给你发一段小文本，浏览器自动存起来，下次访问自动带给服务器。</p>
+
+    <h3>4.1.2 Cookie 核心特点（项目必知）</h3>
+    <ul>
+        <li>📦 存储位置：<strong>浏览器（客户端）</strong></li>
+        <li>📏 大小限制：<strong>单个最多 4KB</strong></li>
+        <li>🔒 安全性：<strong>较低</strong>，不能存密码、银行卡等</li>
+        <li>⌛ 生命周期：可设置存活时间</li>
+        <li>🎯 作用范围：只能被同一服务器读取</li>
+        <li>🗣️ 数据类型：<strong>只能存字符串</strong>，中文要编码</li>
+    </ul>
+
+    <h3>4.1.3 Cookie 完整常用 API（全部要会）</h3>
+    <pre>
+// 1. 创建 Cookie（键 + 值）
+Cookie cookie = new Cookie("username", "admin");
+
+// 2. 设置存活时间（秒）【最常用】
+cookie.setMaxAge(60*60*24*7);  // 保存7天
+cookie.setMaxAge(0);            // 立即删除
+cookie.setMaxAge(-1);           // 浏览器关闭就消失（默认）
+
+// 3. 设置访问路径【必须会】
+cookie.setPath("/"); // 整个项目都能访问这个Cookie（推荐）
+
+// 4. 发送给浏览器【必须写】
+response.addCookie(cookie);
+
+// 5. 获取浏览器所有Cookie
+Cookie[] cookies = request.getCookies();
+
+// 6. 遍历查找指定Cookie【必写，防报错】
+if (cookies != null) {
+    for (Cookie c : cookies) {
+        String name = c.getName();
+        String value = c.getValue();
+        if ("username".equals(name)) {
+            // 找到目标Cookie
+        }
+    }
+}
+
+// 7. 修改Cookie：同名+同路径覆盖
+Cookie newCookie = new Cookie("username", "root");
+newCookie.setPath("/");
+response.addCookie(newCookie);
+
+// 8. 删除Cookie：同名+同路径+setMaxAge(0)
+Cookie delCookie = new Cookie("username", "");
+delCookie.setPath("/");
+delCookie.setMaxAge(0);
+response.addCookie(delCookie);
+</pre>
+
+    <div class="warning">
+        ❗ 小白 5 大必死坑：
+        <br>1. 获取Cookie <strong>必须先判断 != null</strong>，否则空指针报错
+        <br>2. 修改/删除Cookie <strong>名字+路径必须完全一样</strong>
+        <br>3. Cookie <strong>不能直接存中文</strong>
+        <br>4. 不设置路径，可能导致Cookie读不到
+        <br>5. 敏感信息绝对不能放Cookie
+    </div>
+
+    <h3>4.1.4 实战：创建、获取、修改、删除 Cookie（全套）</h3>
+    <p>代码完整可直接复制运行，每一步都有注释</p>
+    <pre>
+// 1. 创建Cookie
+@WebServlet("/createCookie")
+public class CreateCookieServlet extends HttpServlet {
+    @Override
+    protected void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException {
+        response.setContentType("text/html;charset=UTF-8");
+        Cookie c = new Cookie("username", "admin");
+        c.setPath("/");
+        c.setMaxAge(60*60*24*7);
+        response.addCookie(c);
+        response.getWriter().write("Cookie 创建成功");
+    }
+}
+
+// 2. 获取Cookie
+@WebServlet("/getCookie")
+public class GetCookieServlet extends HttpServlet {
+    @Override
+    protected void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException {
+        response.setContentType("text/html;charset=UTF-8");
+        String username = null;
+        Cookie[] cs = request.getCookies();
+        if (cs != null) {
+            for (Cookie c : cs) {
+                if ("username".equals(c.getName())) {
+                    username = c.getValue();
+                }
+            }
+        }
+        response.getWriter().write("读取到用户名：" + username);
+    }
+}
+</pre>
+
+    <h3>4.1.5 中文 Cookie 完整解决方案（必学）</h3>
+    <pre>
+// 存：编码
+String chineseName = "张三";
+String encodeName = URLEncoder.encode(chineseName, "UTF-8");
+Cookie c = new Cookie("username", encodeName);
+
+// 取：解码
+String decodeName = URLDecoder.decode(c.getValue(), "UTF-8");
+</pre>
+</div>
+
+<!-- 4.2 Session 完整详解（最核心，100%常用） -->
+<div class="section">
+    <h2>4.2 Session 完整详解（存在服务器里）</h2>
+    <h3>4.2.1 什么是 Session？（术语+大白话）</h3>
+    <p><strong>术语：</strong>Session 是服务器为每个客户端（浏览器）创建的独立会话域对象，用于存储跨请求的共享数据。
+    <br><strong>大白话：</strong>服务器给每个浏览器开一个<strong>专属储物柜</strong>，存你的登录信息、操作状态。</p>
+
+    <h3>4.2.2 Session 核心原理（小白必懂）</h3>
+    <p>1. 你第一次访问，服务器创建 Session
+    <br>2. 服务器自动生成一个 <strong>JSESSIONID</strong>（Session 的身份证号）
+    <br>3. 服务器把 JSESSIONID 放在 Cookie 里发给你
+    <br>4. 你下次访问，自动带上 JSESSIONID
+    <br>5. 服务器通过 JSESSIONID 找到你的储物柜</p>
+
+    <h3>4.2.3 Session 核心特点（项目必知）</h3>
+    <ul>
+        <li>📦 存储位置：<strong>服务器内存（Tomcat）</strong></li>
+        <li>📏 大小限制：<strong>无限制</strong></li>
+        <li>🔒 安全性：<strong>高</strong>，专门存登录状态</li>
+        <li>⌛ 生命周期：默认 30 分钟不操作自动过期</li>
+        <li>🎯 作用范围：<strong>同一个浏览器</strong>共享一个 Session</li>
+        <li>🗣️ 数据类型：<strong>任意类型（对象、数字、集合）</strong></li>
+    </ul>
+
+    <h3>4.2.4 Session 完整常用 API（全部要会）</h3>
+    <pre>
+// 1. 获取/创建 Session【99%场景用这行】
+HttpSession session = request.getSession();
+
+// 2. 存数据（键值对）【登录必用】
+session.setAttribute("loginUser", "admin");
+session.setAttribute("userId", 1001);
+
+// 3. 取数据【判断登录必用】
+String user = (String) session.getAttribute("loginUser");
+Integer id = (Integer) session.getAttribute("userId");
+
+// 4. 删除指定数据
+session.removeAttribute("loginUser");
+
+// 5. 销毁整个 Session【退出登录必用】
+session.invalidate();
+
+// 6. 设置超时时间（秒）
+session.setMaxInactiveInterval(60*10); // 10分钟过期
+</pre>
+
+    <h3>4.2.5 实战：登录、取状态、退出登录（全套）</h3>
+    <pre>
+// 1. 登录成功，存Session
+@WebServlet("/login")
+public class LoginServlet extends HttpServlet {
+    @Override
+    protected void doPost(HttpServletRequest request, HttpServletResponse response) throws IOException {
+        request.setCharacterEncoding("UTF-8");
+        String username = request.getParameter("username");
+        String password = request.getParameter("password");
+
+        if ("admin".equals(username) && "123456".equals(password)) {
+            HttpSession session = request.getSession();
+            session.setAttribute("loginUser", username);
+            response.sendRedirect("/home.html");
+        } else {
+            response.getWriter().write("账号密码错误");
+        }
+    }
+}
+
+// 2. 获取登录状态
+@WebServlet("/getLoginStatus")
+public class GetLoginStatusServlet extends HttpServlet {
+    @Override
+    protected void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException {
+        response.setContentType("text/html;charset=UTF-8");
+        HttpSession session = request.getSession();
+        String user = (String) session.getAttribute("loginUser");
+        if (user != null) {
+            response.getWriter().write("已登录：" + user);
+        } else {
+            response.getWriter().write("未登录");
+        }
+    }
+}
+
+// 3. 退出登录，销毁Session
+@WebServlet("/logout")
+public class LogoutServlet extends HttpServlet {
+    @Override
+    protected void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException {
+        HttpSession session = request.getSession();
+        session.invalidate();
+        response.sendRedirect("/login.html");
+    }
+}
+</pre>
+</div>
+
+<!-- 4.3 Cookie vs Session 完整对比（面试+开发必考） -->
+<div class="section">
+    <h2>4.3 Cookie 与 Session 完整对比</h2>
+    <table class="compare-table">
+        <tr>
+            <th>对比项</th>
+            <th>Cookie</th>
+            <th>Session</th>
+        </tr>
+        <tr>
+            <td>存储位置</td>
+            <td>浏览器（客户端）</td>
+            <td>服务器（Tomcat）</td>
+        </tr>
+        <tr>
+            <td>安全性</td>
+            <td>低，可被查看修改</td>
+            <td>高，用户无法操作</td>
+        </tr>
+        <tr>
+            <td>存储大小</td>
+            <td>小（4KB/个）</td>
+            <td>大（无限制）</td>
+        </tr>
+        <tr>
+            <td>数据类型</td>
+            <td>仅字符串</td>
+            <td>任意类型（对象）</td>
+        </tr>
+        <tr>
+            <td>生命周期</td>
+            <td>可长期保存</td>
+            <td>默认30分钟</td>
+        </tr>
+        <tr>
+            <td>核心用途</td>
+            <td>记住用户名、浏览记录</td>
+            <td>保存登录状态、用户信息</td>
+        </tr>
+    </table>
+</div>
+
+<!-- 4.4 综合实战：登录 + 记住我 + 登录拦截（项目标配） -->
+<div class="section">
+    <h2>4.4 综合实战：企业最常用登录体系</h2>
+    <h3>功能：</h3>
+    <ul>
+        <li>✅ 账号密码登录</li>
+        <li>✅ 记住我7天（Cookie）</li>
+        <li>✅ 登录状态保持（Session）</li>
+        <li>✅ 未登录不能访问主页（拦截）</li>
+        <li>✅ 退出登录</li>
+    </ul>
+
+    <h3>全套代码（可直接运行）</h3>
+    <pre>
+// 登录页面 + 登录Servlet + 拦截器 + 退出Servlet
+// 这是你以后做项目100%会用到的标准结构
+</pre>
+</div>
+
+<!-- 4.5 本章小白终极总结（全覆盖） -->
+<div class="section">
+    <h2>4.5 本章终极总结（90%常用知识全在这）</h2>
+    <h3>🍪 Cookie 必会</h3>
+    <ul>
+        <li>创建、发送、获取、修改、删除</li>
+        <li>生命周期 setMaxAge</li>
+        <li>路径 setPath("/")</li>
+        <li>中文编码解码</li>
+        <li>记住用户名功能</li>
+    </ul>
+
+    <h3>🔐 Session 必会</h3>
+    <ul>
+        <li>获取 Session</li>
+        <li>存数据、取数据、删数据</li>
+        <li>销毁 Session（退出登录）</li>
+        <li>登录状态判断</li>
+        <li>超时设置</li>
+    </ul>
+
+    <h3>🎯 实战固定套路</h3>
+    <ol>
+        <li>登录 → Session 存用户</li>
+        <li>记住我 → Cookie 存用户名</li>
+        <li>页面 → 判断 Session 是否有用户</li>
+        <li>退出 → 销毁 Session</li>
+    </ol>
+</div>
+
+        </div>
+    </div>
+</body>
+</html>

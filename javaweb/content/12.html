@@ -1,0 +1,685 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>第12章：JavaWeb 实战项目（用户管理系统）| 完整版</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        .content {
+            padding: 20px 0;
+            line-height: 1.9;
+            font-size: 15px;
+        }
+        .section {
+            margin: 40px 0;
+            padding-bottom: 25px;
+            border-bottom: 1px solid #eee;
+        }
+        .section:last-child { border-bottom: none; }
+        .section h2 {
+            color: #1e40af;
+            margin-bottom: 20px;
+            border-left: 4px solid #3b82f6;
+            padding-left: 14px;
+            font-size: 20px;
+        }
+        .section h3 {
+            color: #0f172a;
+            margin: 25px 0 15px;
+            font-size: 17px;
+        }
+        .section h4 {
+            color: #1e40af;
+            margin: 18px 0 10px;
+            font-size: 16px;
+        }
+        code {
+            background: #f1f5f9;
+            padding: 2px 6px;
+            border-radius: 3px;
+            color: #dc2626;
+            font-weight: 600;
+        }
+        pre {
+            background: #f8fafc;
+            padding: 16px;
+            border-radius: 6px;
+            overflow-x: auto;
+            border: 1px solid #e2e8f0;
+            font-size: 14px;
+            line-height: 1.6;
+        }
+        .tip {
+            background: #fffbeb;
+            padding: 14px;
+            border-left: 4px solid #f59e0b;
+            margin: 15px 0;
+            font-size: 14px;
+        }
+        .warning {
+            background: #fef2f2;
+            padding: 14px;
+            border-left: 4px solid #ef4444;
+            margin: 15px 0;
+            font-size: 14px;
+        }
+        .step {
+            background: #eff6ff;
+            padding: 18px;
+            border-radius: 6px;
+            margin: 15px 0;
+            border: 1px solid #dbeafe;
+        }
+        .step-title {
+            font-weight: 600;
+            color: #1e40af;
+            margin-bottom: 10px;
+            font-size: 16px;
+        }
+        .idea-op {
+            color: #0284c7;
+            font-weight: 600;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h1>第12章：JavaWeb 实战项目（用户管理系统）</h1>
+    <div class="content">
+        <div class="tip">
+            ✅ 项目说明：<br>
+            项目名称：用户管理系统（User Manage System）<br>
+            技术栈：SpringBoot3.2 + MyBatis + MySQL8 + SpringMVC + 文件上传<br>
+            核心功能：登录认证、用户CRUD、头像上传、登录拦截、全局统一返回<br>
+            全程适配：IDEA2025社区版 + JDK24 + 内嵌Tomcat11，无会员、纯手动
+        </div>
+
+<!-- 12.1 项目需求分析 & 数据库设计 -->
+<div class="section">
+    <h2>12.1 需求分析 & 数据库设计</h2>
+    <h3>12.1.1 功能需求（全覆盖之前知识点）</h3>
+    <ul>
+        <li>用户登录（Session 认证）</li>
+        <li>登录拦截（未登录不能访问）</li>
+        <li>用户列表查询</li>
+        <li>用户添加、删除、修改</li>
+        <li>用户头像上传（文件上传）</li>
+        <li>全局统一JSON返回</li>
+    </ul>
+
+    <h3>12.1.2 数据库设计（复用+扩展）</h3>
+    <p>使用之前的 <code>javaweb_test</code> 库，给 user 表增加头像字段：</p>
+<pre>
+USE javaweb_test;
+
+-- 给user表添加头像字段
+ALTER TABLE USER ADD COLUMN avatar VARCHAR(255) NULL COMMENT '用户头像路径';
+
+-- 查看表结构
+DESC USER;
+</pre>
+    <div class="tip">
+        💡 表结构最终：id、username、password、age、address、avatar
+    </div>
+</div>
+
+<!-- 12.2 项目结构搭建（纯手动Maven） -->
+<div class="section">
+    <h2>12.2 项目结构搭建（直接照抄）</h2>
+    <h3>12.2.1 最终项目结构</h3>
+<pre>
+springboot-ums
+├── src/main/java/com/ums
+│   ├── SpringbootUmsApplication.java  # 启动类
+│   ├── config        # 配置类（拦截器、文件上传）
+│   ├── controller    # 控制层（接口）
+│   ├── service       # 业务层
+│   │   └── impl      # 业务实现类
+│   ├── mapper        # MyBatis映射接口
+│   ├── pojo          # 实体类
+│   ├── interceptor   # 登录拦截器
+│   └── util          # 工具类（统一返回）
+├── src/main/resources
+│   ├── application.yml   # 配置文件
+│   ├── mapper        # MyBatis XML映射
+│   └── static        # 静态资源（前端）
+├── src/main/webapp   # 上传文件存储目录
+└── pom.xml           # Maven依赖
+</pre>
+
+    <h3>12.2.2 pom.xml（完整依赖，直接复制）</h3>
+<pre>
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <!-- SpringBoot 父工程 -->
+    <parent>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-starter-parent</artifactId>
+        <version>3.2.5</version>
+        <relativePath/>
+    </parent>
+
+    <groupId>com.ums</groupId>
+    <artifactId>springboot-ums</artifactId>
+    <version>1.0-SNAPSHOT</version>
+
+    <properties>
+        <maven.compiler.source>24</maven.compiler.source>
+        <maven.compiler.target>24</maven.compiler.target>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    </properties>
+
+    <dependencies>
+        <!-- Web核心 -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-web</artifactId>
+        </dependency>
+
+        <!-- MyBatis整合 -->
+        <dependency>
+            <groupId>org.mybatis.spring.boot</groupId>
+            <artifactId>mybatis-spring-boot-starter</artifactId>
+            <version>3.0.3</version>
+        </dependency>
+
+        <!-- MySQL驱动 -->
+        <dependency>
+            <groupId>com.mysql</groupId>
+            <artifactId>mysql-connector-j</artifactId>
+            <scope>runtime</scope>
+        </dependency>
+
+        <!-- 文件上传 -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-web</artifactId>
+        </dependency>
+
+        <!-- Lombok -->
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+            <optional>true</optional>
+        </dependency>
+
+        <!-- 测试 -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-maven-plugin</artifactId>
+            </plugin>
+        </plugins>
+    </build>
+</project>
+</pre>
+
+    <h3>12.2.3 application.yml（完整配置）</h3>
+<pre>
+server:
+  port: 8080
+  servlet:
+    context-path: /
+
+spring:
+  # 数据库配置
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://localhost:3306/javaweb_test?serverTimezone=UTC&useSSL=false&characterEncoding=utf8
+    username: root
+    password: 123456  # 改成你的MySQL密码
+
+  # 文件上传配置
+  servlet:
+    multipart:
+      max-file-size: 10MB
+      max-request-size: 100MB
+
+# MyBatis配置
+mybatis:
+  mapper-locations: classpath:mapper/*.xml
+  type-aliases-package: com.ums.pojo
+  configuration:
+    map-underscore-to-camel-case: true
+</pre>
+</div>
+
+<!-- 12.3 核心代码开发（手把手） -->
+<div class="section">
+    <h2>12.3 核心功能代码（直接复制运行）</h2>
+
+    <h3>12.3.1 启动类（SpringbootUmsApplication）</h3>
+<pre>
+package com.ums;
+
+import org.mybatis.spring.annotation.MapperScan;
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
+
+@SpringBootApplication
+@MapperScan("com.ums.mapper")
+public class SpringbootUmsApplication {
+    public static void main(String[] args) {
+        SpringApplication.run(SpringbootUmsApplication.class, args);
+        System.out.println("✅ 用户管理系统启动成功！");
+    }
+}
+</pre>
+
+    <h3>12.3.2 统一返回结果（Result 工具类）</h3>
+<pre>
+package com.ums.util;
+
+import lombok.Data;
+
+@Data
+public class Result<T> {
+    private int code;
+    private String msg;
+    private T data;
+
+    // 成功
+    public static <T> Result<T> success(T data) {
+        Result<T> result = new Result<>();
+        result.setCode(200);
+        result.setMsg("操作成功");
+        result.setData(data);
+        return result;
+    }
+
+    // 失败
+    public static <T> Result<T> fail(String msg) {
+        Result<T> result = new Result<>();
+        result.setCode(500);
+        result.setMsg(msg);
+        result.setData(null);
+        return result;
+    }
+}
+</pre>
+
+    <h3>12.3.3 实体类（User）</h3>
+<pre>
+package com.ums.pojo;
+
+import lombok.Data;
+
+@Data
+public class User {
+    private Integer id;
+    private String username;
+    private String password;
+    private Integer age;
+    private String address;
+    private String avatar;
+}
+</pre>
+
+    <h3>12.3.4 Mapper 接口（UserMapper）</h3>
+<pre>
+package com.ums.mapper;
+
+import com.ums.pojo.User;
+import org.apache.ibatis.annotations.*;
+import java.util.List;
+
+@Mapper
+public interface UserMapper {
+    // 登录
+    User login(@Param("username") String username, @Param("password") String password);
+
+    // 查询所有用户
+    List<User> findAll();
+
+    // 根据ID查询
+    User findById(Integer id);
+
+    // 添加用户
+    int add(User user);
+
+    // 修改用户
+    int update(User user);
+
+    // 删除用户
+    int delete(Integer id);
+}
+</pre>
+
+    <h3>12.3.5 Mapper XML（UserMapper.xml）</h3>
+    <p>路径：resources/mapper/UserMapper.xml</p>
+<pre>
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ums.mapper.UserMapper">
+    <resultMap id="userMap" type="com.ums.pojo.User">
+        <id column="id" property="id"/>
+        <result column="username" property="username"/>
+        <result column="password" property="password"/>
+        <result column="age" property="age"/>
+        <result column="address" property="address"/>
+        <result column="avatar" property="avatar"/>
+    </resultMap>
+
+    <!-- 登录 -->
+    <select id="login" resultMap="userMap">
+        select * from user where username=#{username} and password=#{password}
+    </select>
+
+    <!-- 查询所有 -->
+    <select id="findAll" resultMap="userMap">
+        select * from user
+    </select>
+
+    <!-- 根据ID查询 -->
+    <select id="findById" resultMap="userMap">
+        select * from user where id=#{id}
+    </select>
+
+    <!-- 添加 -->
+    <insert id="add">
+        insert into user(username,password,age,address,avatar)
+        values(#{username},#{password},#{age},#{address},#{avatar})
+    </insert>
+
+    <!-- 修改 -->
+    <update id="update">
+        update user set
+        username=#{username},password=#{password},age=#{age},address=#{address},avatar=#{avatar}
+        where id=#{id}
+    </update>
+
+    <!-- 删除 -->
+    <delete id="delete">
+        delete from user where id=#{id}
+    </delete>
+</mapper>
+</pre>
+
+    <h3>12.3.6 Service 层（UserService）</h3>
+<pre>
+package com.ums.service;
+
+import com.ums.pojo.User;
+import com.ums.util.Result;
+import org.springframework.web.multipart.MultipartFile;
+
+public interface UserService {
+    Result<User> login(String username, String password);
+    Result findAll();
+    Result add(User user);
+    Result update(User user);
+    Result delete(Integer id);
+    Result uploadAvatar(MultipartFile file);
+}
+</pre>
+
+    <h3>12.3.7 Service 实现类（UserServiceImpl）</h3>
+<pre>
+package com.ums.service.impl;
+
+import com.ums.mapper.UserMapper;
+import com.ums.pojo.User;
+import com.ums.service.UserService;
+import com.ums.util.Result;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
+import java.io.File;
+import java.util.UUID;
+
+@Service
+public class UserServiceImpl implements UserService {
+
+    @Autowired
+    private UserMapper userMapper;
+
+    // 登录
+    @Override
+    public Result<User> login(String username, String password) {
+        User user = userMapper.login(username, password);
+        if(user == null) return Result.fail("用户名或密码错误");
+        return Result.success(user);
+    }
+
+    // 查询所有
+    @Override
+    public Result findAll() {
+        return Result.success(userMapper.findAll());
+    }
+
+    // 添加
+    @Override
+    public Result add(User user) {
+        return userMapper.add(user) > 0 ? Result.success(null) : Result.fail("添加失败");
+    }
+
+    // 修改
+    @Override
+    public Result update(User user) {
+        return userMapper.update(user) > 0 ? Result.success(null) : Result.fail("修改失败");
+    }
+
+    // 删除
+    @Override
+    public Result delete(Integer id) {
+        return userMapper.delete(id) > 0 ? Result.success(null) : Result.fail("删除失败");
+    }
+
+    // 头像上传
+    @Override
+    public Result uploadAvatar(MultipartFile file) {
+        try {
+            // 生成唯一文件名
+            String fileName = UUID.randomUUID() + "_" + file.getOriginalFilename();
+            // 上传路径
+            String path = System.getProperty("user.dir") + "/src/main/webapp/upload/";
+            File dir = new File(path);
+            if(!dir.exists()) dir.mkdirs();
+            // 写入文件
+            file.transferTo(new File(dir, fileName));
+            // 返回文件路径
+            return Result.success("/upload/" + fileName);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return Result.fail("上传失败");
+        }
+    }
+}
+</pre>
+
+    <h3>12.3.8 登录拦截器（LoginInterceptor）</h3>
+<pre>
+package com.ums.interceptor;
+
+import com.ums.util.Result;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import org.springframework.web.servlet.HandlerInterceptor;
+
+public class LoginInterceptor implements HandlerInterceptor {
+    @Override
+    public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
+        Object user = request.getSession().getAttribute("loginUser");
+        if(user == null) {
+            response.setContentType("application/json;charset=utf-8");
+            response.getWriter().write(new ObjectMapper().writeValueAsString(Result.fail("请先登录")));
+            return false;
+        }
+        return true;
+    }
+}
+</pre>
+
+    <h3>12.3.9 拦截器配置（MvcConfig）</h3>
+<pre>
+package com.ums.config;
+
+import com.ums.interceptor.LoginInterceptor;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
+import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
+import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
+
+@Configuration
+public class MvcConfig implements WebMvcConfigurer {
+    // 登录拦截
+    @Override
+    public void addInterceptors(InterceptorRegistry registry) {
+        registry.addInterceptor(new LoginInterceptor())
+                .addPathPatterns("/**")
+                .excludePathPatterns("/user/login", "/upload/**", "/error");
+    }
+
+    // 静态资源映射
+    @Override
+    public void addResourceHandlers(ResourceHandlerRegistry registry) {
+        registry.addResourceHandler("/upload/**")
+                .addResourceLocations("file:" + System.getProperty("user.dir") + "/src/main/webapp/upload/");
+    }
+}
+</pre>
+
+    <h3>12.3.10 Controller 层（UserController）</h3>
+<pre>
+package com.ums.controller;
+
+import com.ums.pojo.User;
+import com.ums.service.UserService;
+import com.ums.util.Result;
+import jakarta.servlet.http.HttpSession;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
+
+@RestController
+@RequestMapping("/user")
+public class UserController {
+
+    @Autowired
+    private UserService userService;
+
+    // 登录
+    @PostMapping("/login")
+    public Result login(String username, String password, HttpSession session) {
+        Result<User> result = userService.login(username, password);
+        if(result.getCode() == 200) session.setAttribute("loginUser", result.getData());
+        return result;
+    }
+
+    // 查询所有用户
+    @GetMapping("/list")
+    public Result list() {
+        return userService.findAll();
+    }
+
+    // 添加用户
+    @PostMapping("/add")
+    public Result add(@RequestBody User user) {
+        return userService.add(user);
+    }
+
+    // 修改用户
+    @PutMapping("/update")
+    public Result update(@RequestBody User user) {
+        return userService.update(user);
+    }
+
+    // 删除用户
+    @DeleteMapping("/delete/{id}")
+    public Result delete(@PathVariable Integer id) {
+        return userService.delete(id);
+    }
+
+    // 头像上传
+    @PostMapping("/upload")
+    public Result upload(MultipartFile file) {
+        return userService.uploadAvatar(file);
+    }
+}
+</pre>
+</div>
+
+<!-- 12.4 项目启动 & 接口测试 -->
+<div class="section">
+    <h2>12.4 项目启动 & 接口测试</h2>
+    <div class="step">
+        <div class="step-title">启动步骤</div>
+        <ol>
+            <li>创建 <code>src/main/webapp/upload</code> 文件夹（存储头像）</li>
+            <li>运行启动类 <code>SpringbootUmsApplication</code></li>
+            <li>控制台出现启动成功提示即完成</li>
+        </ol>
+    </div>
+
+    <h3>接口清单（Postman 直接测试）</h3>
+    <ul>
+        <li>登录：POST <code>http://localhost:8080/user/login?username=admin&password=123456</code></li>
+        <li>用户列表：GET <code>http://localhost:8080/user/list</code></li>
+        <li>添加用户：POST <code>http://localhost:8080/user/add</code>（JSON参数）</li>
+        <li>头像上传：POST <code>http://localhost:8080/user/upload</code>（form-data文件）</li>
+        <li>修改/删除：PUT/DELETE 请求</li>
+    </ul>
+
+    <div class="warning">
+        ❗ 测试必看：<br>
+        1. 必须先登录，否则所有接口被拦截<br>
+        2. 上传文件夹必须手动创建<br>
+        3. MySQL 服务必须启动
+    </div>
+</div>
+
+<!-- 12.5 项目部署（JAR 包部署） -->
+<div class="section">
+    <h2>12.5 项目部署（SpringBoot 一键打包）</h2>
+    <div class="step">
+        <div class="step-title">打包 & 运行步骤（IDEA2025社区版）</div>
+        <ol>
+            <li>右侧打开 <span class="idea-op">Maven → Lifecycle → package</span></li>
+            <li>等待打包完成，在 <code>target</code> 目录生成 <code>xxx.jar</code></li>
+            <li>打开 cmd，进入 jar 所在目录</li>
+            <li>运行命令：<code>java -jar springboot-ums-1.0-SNAPSHOT.jar</code></li>
+            <li>项目启动，内嵌Tomcat11直接运行</li>
+        </ol>
+    </div>
+    <div class="tip">
+        ✅ 优势：不用外置Tomcat，不用配置服务器，直接运行JAR包即可上线
+    </div>
+</div>
+
+<!-- 12.6 本章总结（JavaWeb 全套闭环） -->
+<div class="section">
+    <h2>12.6 本章总结（全套知识点闭环）</h2>
+    <div class="step">
+        <div class="step-title">本项目覆盖 1-11 章所有核心知识点</div>
+        <ul>
+            <li>JavaWeb 基础：请求/响应、会话、文件上传</li>
+            <li>Servlet & SpringMVC：拦截器、RESTful、参数接收</li>
+            <li>JDBC & MyBatis：数据库CRUD、映射、XML</li>
+            <li>Spring：IOC/DI、注解开发</li>
+            <li>SpringBoot：自动配置、内嵌Tomcat、打包部署</li>
+        </ul>
+    </div>
+    <div class="tip">
+        💡 学完本章，你已经掌握企业级 JavaWeb 开发全流程，可以独立开发后端项目！
+    </div>
+</div>
+
+</div>
+</div>
+</body>
+</html>

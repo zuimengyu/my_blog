@@ -1,0 +1,414 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Git 企业级实战教学文档</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: "Microsoft YaHei", Arial, sans-serif;
+        }
+        body {
+            background-color: #f5f7fa;
+            padding: 20px;
+            line-height: 1.6;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            text-align: center;
+            color: #2c3e50;
+            margin-bottom: 30px;
+            border-bottom: 3px solid #3498db;
+            padding-bottom: 10px;
+        }
+        h2 {
+            color: #3498db;
+            margin: 25px 0 15px;
+            padding-left: 10px;
+            border-left: 4px solid #3498db;
+        }
+        h3 {
+            color: #2c3e50;
+            margin: 15px 0 10px;
+        }
+        p {
+            color: #555;
+            margin-bottom: 10px;
+        }
+        code {
+            background-color: #f1f5f9;
+            padding: 2px 6px;
+            border-radius: 4px;
+            color: #e74c3c;
+            font-family: Consolas, monospace;
+        }
+        pre {
+            background-color: #2d3748;
+            color: #fff;
+            padding: 15px;
+            border-radius: 6px;
+            overflow-x: auto;
+            margin: 10px 0;
+            font-family: Consolas, monospace;
+        }
+        .catalog {
+            background-color: #eef5ff;
+            padding: 15px;
+            border-radius: 6px;
+            margin-bottom: 20px;
+        }
+        .catalog ul {
+            list-style: none;
+        }
+        .catalog li {
+            margin: 5px 0;
+        }
+        .catalog a {
+            color: #3498db;
+            text-decoration: none;
+        }
+        .catalog a:hover {
+            text-decoration: underline;
+        }
+        .branch-model {
+            background-color: #f8f9fa;
+            padding: 20px;
+            border-radius: 6px;
+            border-left: 4px solid #2ecc71;
+            margin: 15px 0;
+        }
+        .tip {
+            background-color: #fff3cd;
+            padding: 10px;
+            border-radius: 4px;
+            color: #856404;
+            margin: 10px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Git 企业级实战教学文档</h1>
+
+        <!-- 目录 -->
+        <div class="catalog">
+            <h3>📚 目录</h3>
+            <ul>
+                <li><a href="#config">1. Git全局配置</a></li>
+                <li><a href="#base-command">2. 核心基础命令</a></li>
+                <li><a href="#core-structure">3. Git核心三层架构</a></li>
+                <li><a href="#data-object">4. Git数据对象</a></li>
+                <li><a href="#command-type">5. Git命令体系分类</a></li>
+                <li><a href="#extend">6. 扩展模块</a></li>
+                <li><a href="#branch-model">7. 企业标准分支模型</a></li>
+                <li><a href="#team-step">8. 团队协作完整步骤</a></li>
+                <li><a href="#qa">9. 常见疑问解答</a></li>
+            </ul>
+        </div>
+
+        <!-- 全局配置 -->
+        <h2 id="config">1. Git全局配置</h2>
+        <p>配置用户信息（所有仓库生效，仅需配置一次）</p>
+        <pre>
+# 配置用户名
+git config --global user.name "你的名字"
+# 配置邮箱
+git config --global user.email "你的邮箱"
+# 查看配置
+git config --list
+# 查看Git版本
+git --version
+        </pre>
+
+        <!-- 基础命令 -->
+        <h2 id="base-command">2. 核心基础命令</h2>
+        <h3>仓库初始化</h3>
+        <pre>
+# 初始化本地仓库
+git init
+# 克隆远程仓库
+git clone 远程仓库地址
+        </pre>
+
+        <h3>代码提交</h3>
+        <pre>
+# 添加单个文件到暂存区
+git add 文件名
+# 添加所有变更文件
+git add .
+#取消添加（从暂存区移除）
+git restore --staged .
+# 提交到本地仓库
+git commit -m "提交说明"
+# 查看工作区状态
+git status
+# 查看提交历史
+git log
+        </pre>
+
+        <h3>分支操作</h3>
+        <pre>
+# 查看所有分支
+git branch
+# 创建分支
+git branch 分支名
+# 切换分支
+git checkout 分支名
+# 创建并切换分支
+git checkout -b 分支名
+# 合并分支到当前分支
+git merge 分支名
+# 删除本地分支
+git branch -d 分支名
+        </pre>
+
+        <h3>远程交互</h3>
+        <pre>
+# 查看远程仓库
+git remote -v
+# 关联远程仓库
+git remote add origin 远程地址
+# 推送并关联远程分支
+git push -u origin 分支名
+# 拉取远程更新（拉取+合并）
+git pull
+# 仅拉取不合并
+git fetch
+        </pre>
+
+        <h3>撤销与回退</h3>
+        <pre>
+# 丢弃工作区修改
+git checkout -- 文件名
+# 取消暂存
+git reset HEAD 文件名
+# 回退到指定版本
+git reset --hard 版本号
+# 打版本标签
+git tag v1.0
+        </pre>
+
+        <!-- 核心架构 -->
+        <h2 id="core-structure">3. Git核心三层架构</h2>
+        <p>Git的核心存储模型，理解后才能熟练使用</p>
+        <ul>
+            <li><strong>工作区</strong>：本地电脑的文件目录，直接编辑代码</li>
+            <li><strong>暂存区</strong>：临时存放待提交的变更，<code>git add</code>写入</li>
+            <li><strong>版本库</strong>：.git文件夹，存储所有历史版本与元数据</li>
+        </ul>
+
+        <!-- 数据对象 -->
+        <h2 id="data-object">4. Git数据对象</h2>
+        <ul>
+            <li><strong>Blob</strong>：存储文件的原始数据</li>
+            <li><strong>Tree</strong>：存储目录结构+文件指针</li>
+            <li><strong>Commit</strong>：版本快照，包含树、父提交、作者信息</li>
+            <li><strong>Tag</strong>：版本标记，用于发布稳定版</li>
+        </ul>
+
+        <!-- 命令分类 -->
+        <h2 id="command-type">5. Git命令体系分类</h2>
+        <ul>
+            <li>配置类：<code>config</code></li>
+            <li>仓库创建：<code>init、clone</code></li>
+            <li>快照操作：<code>add、commit、status、diff</code></li>
+            <li>分支合并：<code>branch、checkout、merge、rebase</code></li>
+            <li>远程交互：<code>remote、fetch、pull、push</code></li>
+            <li>撤销修复：<code>reset、revert、checkout --</code></li>
+        </ul>
+
+        <!-- 扩展模块 -->
+        <h2 id="extend">6. Git扩展模块</h2>
+        <ul>
+            <li><strong>Git Hooks</strong>：钩子脚本（提交前、推送后自动执行）</li>
+            <li><strong>Submodules</strong>：子仓库管理</li>
+            <li><strong>Reflog</strong>：恢复误删分支</li>
+        </ul>
+
+        <!-- 企业分支模型 -->
+        <h2 id="branch-model">7. 企业标准分支模型</h2>
+        <div class="branch-model">
+            <strong>main（主分支）</strong>：最终上线版本，<span style="color:red">永远稳定，禁止直接修改</span><br>
+            ↓<br>
+            <strong>dev（开发分支）</strong>：功能汇总分支，所有功能完成后合并到此测试<br>
+            ↙ ↓ ← ↓ ↘<br>
+            <strong>feature-login</strong>（A开发登录）<br>
+            <strong>feature-register</strong>（B开发注册）<br>
+            <strong>feature-home</strong>（C开发主页面）<br>
+            <strong>feature-star</strong>（D开发收藏）<br>
+            <strong>feature-setting</strong>（E开发设置）
+        </div>
+        <div class="tip">
+            ✅ 关键：<strong>不是复制粘贴合并</strong>，Git会自动合并代码；每个功能一个分支，不是多个项目文件夹！
+        </div>
+
+        <!-- 团队实战步骤 -->
+        <h2 id="team-step">8. 团队协作完整实战步骤</h2>
+        <div class="container">
+        <h1>Git 团队协作完整实战教学文档</h1>
+
+        <div class="tip">
+            ✅ 文档说明：<strong>完全保留原始命令，无任何删减</strong>，严格按照项目负责人A、成员B、成员C的角色分阶段执行，适用于Gitee/GitHub平台团队协作
+        </div>
+
+        <h2>第一阶段：项目初始化 + 团队协作全流程</h2>
+
+        <h3>👨‍💻 角色：项目负责人 A</h3>
+        <pre>
+# 1. 配置全局用户信息（A/B/C统一配置）
+git config --global user.name "项目负责人A"
+git config --global user.email "a@xxx.com"
+
+git config --global user.name "成员B"
+git config --global user.email "b@xxx.com"
+
+git config --global user.name "成员C"
+git config --global user.email "c@xxx.com"
+
+# 2. 初始化本地Git仓库
+git init
+
+# 3. 添加README文件到暂存区
+git add README.md
+
+# 4. 提交到本地仓库
+git commit -m "A创建项目，新建README.md"
+
+# 5. 查看当前分支
+git branch
+
+# 6. 创建并切换到dev开发分支
+git checkout -b dev
+
+# 7. 再次查看分支（确认dev分支创建成功）
+git branch
+
+# 8. 关联远程Gitee仓库
+git remote add origin https://gitee.com/your-name/my-project.git
+
+# 9. 推送main主分支到远程，并建立关联
+git push -u origin main
+
+# 10. 推送dev开发分支到远程，并建立关联
+git push -u origin dev
+</pre>
+
+        <h3>👨‍💻 角色：成员 B</h3>
+        <pre>
+# 1. 克隆远程仓库到本地
+git clone https://gitee.com/your-name/my-project.git
+
+# 2. 查看所有分支（本地+远程）
+git branch -a
+
+# 3. 切换到dev开发分支
+git checkout dev
+
+# 4. 添加所有修改文件到暂存区
+git add .
+
+# 5. 提交修改到本地仓库
+git commit -m "B修改README，添加功能模块"
+
+# 6. 推送修改到远程dev分支
+git push origin dev
+</pre>
+
+        <h3>👨‍💻 角色：成员 C</h3>
+        <pre>
+# 1. 克隆远程仓库到本地
+git clone https://gitee.com/your-name/my-project.git
+
+# 2. 切换到dev开发分支
+git checkout dev
+
+# 3. 添加所有修改文件到暂存区
+git add .
+
+# 4. 提交修改到本地仓库
+git commit -m "C新增Function.java文件"
+
+# 5. 推送修改到远程dev分支
+git push origin dev
+</pre>
+
+        <h3>👨‍💻 角色：项目负责人 A（合并代码）</h3>
+        <pre>
+# 1. 切换到dev分支
+git checkout dev
+
+# 2. 拉取远程dev分支最新代码
+git pull origin dev
+
+# 3. 切换到main主分支
+git checkout main
+
+# 4. 将dev分支代码合并到main主分支
+git merge dev
+
+# 5. 拉取远程main分支最新代码（同步远程）
+git pull origin main
+</pre>
+
+        <h2>后续修改：迭代开发 + 最终上线流程</h2>
+        <h3>👨‍💻 角色：项目负责人 A / 全体成员</h3>
+        <pre>
+# 1. 切换到dev开发分支
+git checkout dev
+
+# 2. 拉取远程dev分支最新代码
+git pull origin dev
+
+# 3. 添加修改文件到暂存区
+git add .
+
+# 4. 提交修改
+git commit -m "修改了xxx"
+
+# 5. 推送修改到远程dev分支
+git push origin dev
+
+# 6. 切换到main主分支
+git checkout main
+
+# 7. 合并dev分支代码到main
+git merge dev
+
+# 8. 推送最终代码到远程main分支（上线）
+git push origin main
+</pre>
+
+        <div class="tip">
+            📌 核心总结：<br>
+            1. 主分支main：仅用于上线，保持稳定<br>
+            2. 开发分支dev：团队日常开发、合并代码<br>
+            3. 所有修改先提交dev，测试无误后合并main
+        </div>
+    </div>
+
+        <!-- 疑问解答 -->
+        <h2 id="qa">9. 常见疑问解答</h2>
+        <h3>Q1：合并是手动复制文件夹吗？</h3>
+        <p>❌ 不是！Git会<strong>自动合并代码</strong>，仅冲突时需要手动修改，无需复制粘贴。</p>
+
+        <h3>Q2：多人开发是共用一个分支还是多个分支？</h3>
+        <p>✅ 一人/一个功能一个<strong>feature分支</strong>，完成后合并到dev，最后合并到main。</p>
+
+        <h3>Q3：多个分支会有多个项目文件夹吗？</h3>
+        <p>❌ 只有<strong>一个项目文件夹</strong>，分支是Git内部的版本管理，切换分支自动切换代码。</p>
+
+        <h3>Q4：dev怎么合并到main？</h3>
+        <p>✅ 用<code>git merge dev</code>命令，Git自动合并，不是删除main替换。</p>
+    </div>
+</body>
+</html>

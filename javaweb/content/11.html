@@ -1,0 +1,467 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>第11章：SpringBoot 快速开发 | 纯手动搭建版（适配JDK24+IDEA2025社区版）</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        .content {
+            padding: 20px 0;
+            line-height: 1.9;
+            font-size: 15px;
+        }
+        .section {
+            margin: 40px 0;
+            padding-bottom: 25px;
+            border-bottom: 1px solid #eee;
+        }
+        .section:last-child { border-bottom: none; }
+        .section h2 {
+            color: #1e40af;
+            margin-bottom: 20px;
+            border-left: 4px solid #3b82f6;
+            padding-left: 14px;
+            font-size: 20px;
+        }
+        .section h3 {
+            color: #0f172a;
+            margin: 25px 0 15px;
+            font-size: 17px;
+        }
+        .section h4 {
+            color: #1e40af;
+            margin: 18px 0 10px;
+            font-size: 16px;
+        }
+        code {
+            background: #f1f5f9;
+            padding: 2px 6px;
+            border-radius: 3px;
+            color: #dc2626;
+            font-weight: 600;
+        }
+        pre {
+            background: #f8fafc;
+            padding: 16px;
+            border-radius: 6px;
+            overflow-x: auto;
+            border: 1px solid #e2e8f0;
+            font-size: 14px;
+            line-height: 1.6;
+        }
+        .tip {
+            background: #fffbeb;
+            padding: 14px;
+            border-left: 4px solid #f59e0b;
+            margin: 15px 0;
+            font-size: 14px;
+        }
+        .warning {
+            background: #fef2f2;
+            padding: 14px;
+            border-left: 4px solid #ef4444;
+            margin: 15px 0;
+            font-size: 14px;
+        }
+        .step {
+            background: #eff6ff;
+            padding: 18px;
+            border-radius: 6px;
+            margin: 15px 0;
+            border: 1px solid #dbeafe;
+        }
+        .step-title {
+            font-weight: 600;
+            color: #1e40af;
+            margin-bottom: 10px;
+            font-size: 16px;
+        }
+        .idea-op {
+            color: #0284c7;
+            font-weight: 600;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h1>第11章：SpringBoot 快速开发（纯手动搭建版）</h1>
+    <div class="content">
+        <div class="tip">
+            ✅ 适配你的环境：<br>
+            IDEA 2025.1.1 社区版（无会员、无Spring Initializr）| JDK24 | SpringBoot3.2.x（**内嵌Tomcat11**，完美匹配你的Tomcat11）<br>
+            全程手动Maven搭建、零XML配置、开箱即用、代码直接运行
+        </div>
+
+<!-- 11.1 SpringBoot 是什么？解决什么问题（实战视角） -->
+<div class="section">
+    <h2>11.1 SpringBoot 是什么？解决什么问题</h2>
+    <p><strong>大白话（实战版）：</strong><br>
+        SpringBoot = Spring+SpringMVC的<strong>简化升级版</strong>，用来解决之前Spring/ SpringMVC的繁琐配置问题。
+    </p>
+
+    <h3>之前Spring+SpringMVC的痛点（SpringBoot全解决）</h3>
+    <ul>
+        <li>要手动配N多XML：web.xml、applicationContext.xml、spring-mvc.xml</li>
+        <li>要手动导一堆依赖、处理版本冲突</li>
+        <li>要手动配置Tomcat、部署项目</li>
+        <li>配置繁琐、上手慢、易出错</li>
+    </ul>
+
+    <h3>SpringBoot 4大核心优势（企业必用）</h3>
+    <ul>
+        <li>✅ <strong>起步依赖</strong>：一键导入整套依赖，不用管版本</li>
+        <li>✅ <strong>自动配置</strong>：零XML，SpringBoot自动配Spring/MVC/Tomcat</li>
+        <li>✅ <strong>内嵌Tomcat</strong>：不用外置Tomcat，直接运行main方法启动项目</li>
+        <li>✅ <strong>准生产环境</strong>：内置监控、日志、异常处理</li>
+    </ul>
+
+    <div class="tip">
+        💡 一句话记住：<br>
+        <strong>SpringBoot = 约定大于配置 + 一键整合 + 内嵌服务器</strong><br>
+        以前1小时配环境，现在<strong>1分钟搭建项目</strong>
+    </div>
+</div>
+
+<!-- 11.2 SpringBoot 环境搭建（纯手动·IDEA2025社区版·JDK24） -->
+<div class="section">
+    <h2>11.2 SpringBoot 纯手动环境搭建（无脚手架·全程步骤）</h2>
+    <div class="warning">
+        ❗ 关键适配：<br>
+        SpringBoot3.x 只支持 JDK17+，完美适配你的<strong>JDK24</strong>；<br>
+        SpringBoot3.2.x 默认<strong>内嵌Tomcat11</strong>，和你的外置Tomcat11完全兼容！
+    </div>
+
+    <div class="step">
+        <div class="step-title">Step 1：创建纯Maven项目（IDEA2025社区版操作）</div>
+        <ol>
+            <li>打开IDEA → <span class="idea-op">File → New → Project</span>；</li>
+            <li>左侧选 <span class="idea-op">Maven</span> → <strong>取消勾选</strong> <span class="idea-op">Create from archetype</span>（社区版无脚手架，纯手动）；</li>
+            <li>填写信息：
+                <ul>
+                    <li>Name：springboot-demo</li>
+                    <li>Location：自定义项目路径</li>
+                    <li>JDK：选择<strong>24</strong></li>
+                </ul>
+            </li>
+            <li>点击 <span class="idea-op">Create</span> → 等待Maven初始化完成。</li>
+        </ol>
+    </div>
+
+    <div class="step">
+        <div class="step-title">Step 2：配置pom.xml（核心·SpringBoot3.2+JDK24）</div>
+        <p>完全手动复制，无任何自动生成，适配你的环境：</p>
+<pre>
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <!-- SpringBoot 父工程（统一版本管理，核心！） -->
+    <parent>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-starter-parent</artifactId>
+        <version>3.2.5</version>
+        <relativePath/>
+    </parent>
+
+    <groupId>com.example</groupId>
+    <artifactId>springboot-demo</artifactId>
+    <version>1.0-SNAPSHOT</version>
+
+    <properties>
+        <!-- 适配JDK24 -->
+        <maven.compiler.source>24</maven.compiler.source>
+        <maven.compiler.target>24</maven.compiler.target>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    </properties>
+
+    <dependencies>
+        <!-- 1. SpringBoot Web核心依赖（自动配SpringMVC+内嵌Tomcat11） -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-web</artifactId>
+        </dependency>
+
+        <!-- 2. SpringBoot 整合MyBatis（衔接第9章） -->
+        <dependency>
+            <groupId>org.mybatis.spring.boot</groupId>
+            <artifactId>mybatis-spring-boot-starter</artifactId>
+            <version>3.0.3</version>
+        </dependency>
+
+        <!-- 3. MySQL8驱动（适配你的数据库） -->
+        <dependency>
+            <groupId>com.mysql</groupId>
+            <artifactId>mysql-connector-j</artifactId>
+            <scope>runtime</scope>
+        </dependency>
+
+        <!-- 4. 测试依赖 -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+
+        <!-- 5. Lombok（简化代码，复用之前） -->
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+            <optional>true</optional>
+        </dependency>
+    </dependencies>
+
+    <!-- SpringBoot 打包插件 -->
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-maven-plugin</artifactId>
+            </plugin>
+        </plugins>
+    </build>
+</project>
+</pre>
+        <p><span class="idea-op">操作</span>：IDEA右侧 <span class="idea-op">Maven → Reload All Maven Projects</span> 加载依赖。</p>
+    </div>
+
+    <div class="step">
+        <div class="step-title">Step 3：编写SpringBoot启动类（项目入口·唯一核心类）</div>
+        <p>创建包：<code>com.example</code>，新建启动类 <code>SpringbootDemoApplication.java</code></p>
+<pre>
+package com.example;
+
+import org.mybatis.spring.annotation.MapperScan;
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
+
+// @SpringBootApplication：SpringBoot核心注解，自动配置
+// @MapperScan：扫描MyBatis的Mapper接口（衔接第9章）
+@SpringBootApplication
+@MapperScan("com.example.mapper")
+public class SpringbootDemoApplication {
+    // SpringBoot项目唯一入口：运行main方法即可启动项目（内嵌Tomcat11）
+    public static void main(String[] args) {
+        SpringApplication.run(SpringbootDemoApplication.class, args);
+        System.out.println("✅ SpringBoot 启动成功！内嵌Tomcat11+JDK24");
+    }
+}
+</pre>
+        <div class="tip">
+            💡 革命性变化：<br>
+            以前启动项目要配Tomcat、部署war包；<br>
+            现在<strong>直接运行main方法</strong>，自动启动内嵌Tomcat11！
+        </div>
+    </div>
+</div>
+
+<!-- 11.3 SpringBoot 核心配置（零XML·yml格式） -->
+<div class="section">
+    <h2>11.3 SpringBoot 核心配置（application.yml）</h2>
+    <p>SpringBoot抛弃XML，用<strong>application.yml/application.properties</strong>配置，简洁易读。</p>
+
+    <div class="step">
+        <div class="step-title">Step 1：创建配置文件</div>
+        <ol>
+            <li>目录：<code>src/main/resources</code>；</li>
+            <li>新建文件：<code>application.yml</code>（SpringBoot默认识别）；</li>
+        </ol>
+    </div>
+
+    <div class="step">
+        <div class="step-title">Step 2：编写核心配置（端口+数据库+MyBatis）</div>
+<pre>
+# 服务器配置（内嵌Tomcat11）
+server:
+  port: 8080          # 访问端口
+  servlet:
+    context-path: /   # 项目访问路径
+
+# 数据库配置（复用你的javaweb_test库）
+spring:
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://localhost:3306/javaweb_test?serverTimezone=UTC&useSSL=false&characterEncoding=utf8
+    username: root
+    password: 123456   # 改成你的MySQL密码
+
+# MyBatis配置
+mybatis:
+  mapper-locations: classpath:mapper/*.xml  # SQL映射文件路径
+  type-aliases-package: com.example.pojo     # 实体类别名
+  configuration:
+    map-underscore-to-camel-case: true      # 下划线转驼峰
+</pre>
+</div>
+
+<!-- 11.4 SpringBoot 整合 MyBatis（衔接第9章·纯实战） -->
+<div class="section">
+    <h2>11.4 SpringBoot 整合 MyBatis（复用之前代码）</h2>
+    <p>完全复用第9章的User、Mapper，零改动，直接整合！</p>
+
+    <h3>1）实体类：com.example.pojo.User</h3>
+<pre>
+package com.example.pojo;
+
+import lombok.Data;
+
+@Data
+public class User {
+    private Integer id;
+    private String username;
+    private String password;
+    private Integer age;
+    private String address;
+}
+</pre>
+
+    <h3>2）Mapper接口：com.example.mapper.UserMapper</h3>
+<pre>
+package com.example.mapper;
+
+import com.example.pojo.User;
+import org.apache.ibatis.annotations.Select;
+import java.util.List;
+
+public interface UserMapper {
+    // 查询所有用户（注解版SQL，也可用XML）
+    @Select("select * from user")
+    List<User> findAll();
+
+    // 根据ID查询用户
+    @Select("select * from user where id=#{id}")
+    User findById(Integer id);
+}
+</pre>
+    <div class="tip">
+        💡 SpringBoot+MyBatis支持两种写法：<br>
+        1. 注解版（简单SQL，无XML）；2. XML版（复杂SQL，复用第9章）
+    </div>
+
+    <h3>3）Service层：com.example.service.UserService</h3>
+<pre>
+package com.example.service;
+
+import com.example.mapper.UserMapper;
+import com.example.pojo.User;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import java.util.List;
+
+@Service
+public class UserService {
+    @Autowired
+    private UserMapper userMapper;
+
+    // 查询所有用户
+    public List<User> findAll() {
+        return userMapper.findAll();
+    }
+
+    // 根据ID查询用户
+    public User findById(Integer id) {
+        return userMapper.findById(id);
+    }
+}
+</pre>
+</div>
+
+<!-- 11.5 SpringBoot 实现 RESTful 接口（企业标配·纯实战） -->
+<div class="section">
+    <h2>11.5 SpringBoot 实现 RESTful 接口（前后端分离标配）</h2>
+    <p><strong>RESTful：用HTTP动词表示操作（GET查询、POST添加、PUT修改、DELETE删除），返回JSON数据</strong></p>
+
+    <h3>1）Controller层：com.example.controller.UserController</h3>
+<pre>
+package com.example.controller;
+
+import com.example.pojo.User;
+import com.example.service.UserService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+import java.util.List;
+
+// @RestController = @Controller + @ResponseBody（直接返回JSON，不跳转页面）
+@RestController
+@RequestMapping("/user") // 统一前缀
+public class UserController {
+    @Autowired
+    private UserService userService;
+
+    // 1. GET查询：查询所有用户
+    @GetMapping("/list")
+    public List<User> findAll() {
+        return userService.findAll();
+    }
+
+    // 2. GET查询：根据ID查询用户
+    @GetMapping("/{id}")
+    public User findById(@PathVariable Integer id) {
+        return userService.findById(id);
+    }
+}
+</pre>
+
+    <h3>2）启动测试（零配置·直接运行）</h3>
+    <ol>
+        <li>找到启动类 <code>SpringbootDemoApplication</code>；</li>
+        <li>右键 <span class="idea-op">Run 'SpringbootDemoApplication'</span>；</li>
+        <li>控制台看到 <strong>Tomcat started on port 8080</strong> 即启动成功；</li>
+        <li>浏览器访问：
+            <ul>
+                <li>所有用户：<code>http://localhost:8080/user/list</code></li>
+                <li>ID=1用户：<code>http://localhost:8080/user/1</code></li>
+            </ul>
+        </li>
+        <li>直接返回JSON数据，前后端分离标配！</li>
+    </ol>
+
+    <div class="warning">
+        ❗ 小白必坑：<br>
+        1. 启动类要在<strong>最外层包</strong>（com.example），否则扫描不到Controller/Service；<br>
+        2. MySQL服务必须启动，否则连接数据库失败；<br>
+        3. 密码改成你自己的MySQL密码。
+    </div>
+</div>
+
+<!-- 11.6 本章实战总结（SpringBoot开发固定套路） -->
+<div class="section">
+    <h2>11.6 本章核心总结（背会直接写企业项目）</h2>
+    <div class="step">
+        <div class="step-title">SpringBoot 纯手动开发固定5步（社区版通用）</div>
+        <ol>
+            <li>创建纯Maven项目，导入SpringBoot父工程+web起步依赖；</li>
+            <li>编写<strong>启动类</strong>，加@SpringBootApplication，运行main方法；</li>
+            <li>写application.yml配置（端口、数据库、MyBatis）；</li>
+            <li>写代码：Mapper（@Mapper）→ Service（@Service）→ Controller（@RestController）；</li>
+            <li>启动项目，访问RESTful接口。</li>
+        </ol>
+    </div>
+
+    <h3>核心注解必背（SpringBoot3.x）</h3>
+    <ul>
+        <li>🍪 <code>@SpringBootApplication</code>：启动类核心，自动配置</li>
+        <li>🔐 <code>@RestController</code>：RESTful接口，返回JSON</li>
+        <li>⚡ <code>@GetMapping/@PostMapping</code>：请求映射</li>
+        <li>🎯 <code>@Service/@Autowired</code>：业务层+依赖注入</li>
+        <li>📊 <code>@MapperScan</code>：扫描MyBatis接口</li>
+    </ul>
+
+    <div class="tip">
+        ✅ 你的环境适配总结：<br>
+        1. SpringBoot3.2.x + JDK24 + 内嵌Tomcat11 完美匹配；<br>
+        2. 社区版IDEA纯手动搭建，无会员、无脚手架；<br>
+        3. 无缝衔接MyBatis、Spring、SpringMVC，代码完全复用。
+    </div>
+</div>
+
+    </div>
+</div>
+</body>
+</html>

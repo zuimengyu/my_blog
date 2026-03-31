@@ -1,0 +1,220 @@
+
+        /* 全局重置与基础样式 */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: "Microsoft YaHei", "PingFang SC", sans-serif;
+            line-height: 1.8;
+            color: #333;
+            background-color: #f5f7fa;
+            padding: 0;
+            margin: 0;
+        }
+
+        /* 容器布局 */
+        .container {
+            display: flex;
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px 0;
+        }
+
+        /* 侧边目录 */
+       /* 侧边目录（最终修复版） */
+.sidebar {
+    width: 300px; /* 足够宽，保证文字单行显示 */
+    min-width: 300px; /* 强制最小宽度，避免挤压 */
+    background: #fff;
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+    padding: 20px;
+    position: sticky;
+    top: 20px;
+    height: calc(100vh - 40px);
+    overflow-y: auto;
+    margin-right: 20px;
+    /* 强制水平排版，彻底解决竖排问题 */
+    writing-mode: horizontal-tb;
+    direction: ltr;
+    text-align: left;
+}
+
+.sidebar h3 {
+    font-size: 20px;
+    color: #2c3e50;
+    margin-bottom: 15px;
+    padding-bottom: 8px;
+    border-bottom: 2px solid #409eff;
+    /* 标题强制单行 */
+    white-space: nowrap;
+}
+
+.sidebar-nav {
+    list-style: none;
+}
+
+.sidebar-nav li {
+    margin: 6px 0;
+}
+
+.sidebar-nav a {
+    text-decoration: none;
+    color: #333;
+    font-size: 15px;
+    padding: 6px 10px;
+    border-radius: 4px;
+    display: block;
+    transition: all 0.3s;
+    /* 文字强制单行，不换行 */
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.sidebar-nav a:hover {
+    color: #fff;
+    background-color: #409eff;
+    padding-left: 14px;
+}
+
+.sidebar-nav .sub-item {
+    padding-left: 20px; /* 子项缩进更明显 */
+    font-size: 14px;
+    color: #666;
+}
+        /* 主内容区 */
+        .main-content {
+            flex: 1;
+            background: #fff;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+            padding: 40px;
+        }
+
+        /* 标题样式 */
+        h1 {
+            font-size: 28px;
+            color: #2c3e50;
+            margin: 30px 0 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #409eff;
+        }
+
+        h2 {
+            font-size: 22px;
+            color: #34495e;
+            margin: 25px 0 15px;
+            padding-left: 8px;
+            border-left: 4px solid #409eff;
+        }
+
+        /* 段落与列表 */
+        p {
+            margin: 10px 0;
+            font-size: 16px;
+            color: #555;
+        }
+
+        ul {
+            margin: 10px 0 10px 25px;
+            font-size: 16px;
+        }
+
+        ul li {
+            margin: 8px 0;
+            color: #555;
+        }
+
+        /* 代码块样式 */
+        .code-wrapper {
+            position: relative;
+            margin: 15px 0;
+            border-radius: 6px;
+            overflow: hidden;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+
+        pre {
+            background-color: #2d2d2d;
+            color: #ccc;
+            padding: 15px;
+            overflow-x: auto;
+            font-family: "Consolas", "Monaco", monospace;
+            font-size: 20px;
+            line-height: 1.1;
+            margin: 0;
+        }
+
+        code pre {
+            white-space: pre;
+        }
+
+        /* 代码复制按钮 */
+        .copy-btn {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            padding: 4px 10px;
+            background-color: #409eff;
+            color: #fff;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+            transition: background-color 0.3s;
+        }
+
+        .copy-btn:hover {
+            background-color: #337ecc;
+        }
+
+        .copy-btn.copied {
+            background-color: #67c23a;
+        }
+
+        /* 图片样式 */
+        img {
+            margin: 15px 0;
+            border-radius: 4px;
+            max-width: 100%;
+            height: auto;
+            box-shadow: 0 1px 5px rgba(0,0,0,0.1);
+        }
+
+        /* 响应式适配 */
+        @media (max-width: 992px) {
+            .container {
+                flex-direction: column;
+                padding: 10px;
+            }
+
+            .sidebar {
+                width: 100%;
+                height: auto;
+                position: static;
+                margin-right: 0;
+                margin-bottom: 20px;
+            }
+
+            .main-content {
+                padding: 20px;
+            }
+
+            h1 {
+                font-size: 24px;
+            }
+
+            h2 {
+                font-size: 20px;
+            }
+        }
+
+        /* 平滑滚动 */
+        html {
+            scroll-behavior: smooth;
+        }
+   

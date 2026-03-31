@@ -1,0 +1,163 @@
+/* 基础重置 + 全局样式（字体/间距核心配置） */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: "Microsoft YaHei", Consolas, Monaco, monospace;
+    font-size: 16px; /* 基础字体放大（原14px） */
+    line-height: 2.0; /* 全局行间距加大（原1.8） */
+}
+body {
+    background-color: #f5f7fa;
+    padding: 30px 20px; /* 页面内边距加大 */
+    max-width: 1200px;
+    margin: 0 auto;
+    color: #34495e;
+}
+
+/* 目录样式（顶端专属） */
+.catalog {
+    background-color: #fff;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    margin-bottom: 30px;
+}
+.catalog h2 {
+    font-size: 20px;
+    color: #2c3e50;
+    margin-bottom: 15px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid #eee;
+}
+.catalog ul {
+    list-style: none;
+    column-count: 2; /* 两列布局，方便查阅 */
+    column-gap: 20px;
+}
+.catalog li {
+    margin-bottom: 8px;
+}
+.catalog a {
+    color: #2980b9;
+    text-decoration: none;
+}
+.catalog a:hover {
+    text-decoration: underline;
+    color: #e74c3c;
+}
+
+/* 标题层级（字体逐级放大，间距加大） */
+h1 {
+    font-size: 26px; /* 原24px */
+    color: #2c3e50;
+    text-align: center;
+    margin-bottom: 35px; /* 原30px */
+    padding-bottom: 15px; /* 原10px */
+    border-bottom: 2px solid #2c3e50;
+}
+h2 {
+    font-size: 22px; /* 原20px */
+    color: #2c3e50;
+    margin: 30px 0 20px; /* 原25px 0 15px */
+    padding-left: 12px; /* 原10px */
+    border-left: 4px solid #2c3e50;
+}
+h3 {
+    font-size: 20px; /* 原18px */
+    color: #2c3e50;
+    margin: 25px 0 15px; /* 原20px 0 10px */
+}
+h4 {
+    font-size: 18px; /* 原16px */
+    color: #2c3e50;
+    margin: 20px 0 10px; /* 原15px 0 8px */
+}
+
+/* 段落、列表（间距加大） */
+p {
+    margin: 15px 0; /* 原10px 0 */
+}
+ul, ol {
+    margin: 15px 0 15px 30px; /* 原10px 0 10px 25px */
+}
+li {
+    margin-bottom: 10px; /* 增加列表项间距 */
+}
+
+/* 核心自定义模块（提示框、代码块、结果块等，间距加大） */
+.tip, .warn {
+    padding: 15px 20px; /* 原10px 15px */
+    margin: 20px 0; /* 原15px 0 */
+    border-radius: 0 6px 6px 0; /* 原4px */
+}
+.code-block, .result-block, .cmd-box, .io-tree {
+    padding: 20px; /* 原15px/10px */
+    border-radius: 8px; /* 原6px/4px */
+    margin: 15px 0; /* 原10px 0 */
+    overflow-x: auto;
+}
+.code-block {
+    background-color: #2d2d2d;
+    color: #ccc;
+}
+.result-block {
+    background-color: #ebf5fb;
+    border: 1px solid #3498db;
+    color: #2980b9;
+}
+.cmd-box, .io-tree {
+    background-color: #f8f9fa;
+    border: 1px solid #dee2e6;
+}
+.cmd-box {
+    color: #e74c3c;
+}
+.section {
+    background-color: #fff;
+    padding: 25px; /* 原20px */
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    margin-bottom: 35px; /* 原30px */
+}
+
+/* 分栏布局（保留功能，间距加大） */
+.split {
+    display: flex;
+    gap: 25px; /* 原20px */
+    margin: 20px 0; /* 原15px 0 */
+}
+.split > div {
+    flex: 1;
+}
+
+/* 响应式适配（手机端） */
+@media (max-width: 768px) {
+    .catalog ul {
+        column-count: 1; /* 手机端单列目录 */
+    }
+    .split {
+        flex-direction: column;
+        gap: 20px;
+    }
+    body {
+        padding: 20px 15px;
+    }
+    h1 {
+        font-size: 24px;
+    }
+    h2 {
+        font-size: 20px;
+    }
+}
+
+/* 代码高亮兼容（保留Nginx/Java语法高亮基础样式） */
+.token.comment, .token.prolog, .token.doctype, .token.cdata {
+    color: #95a5a6;
+}
+.token.property, .token.tag, .token.boolean, .token.number, .token.constant, .token.symbol, .token.deleted {
+    color: #f06292;
+}
+.token.selector, .token.attr-name, .token.string, .token.char, .token.builtin, .token.inserted {
+    color: #64b5f6;
+}

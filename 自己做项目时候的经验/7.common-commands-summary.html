@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>常用命令汇总（Linux+Nginx+MySQL+SSL）</title>
+    <link rel="stylesheet" href="./style.css">
+</head>
+<body>
+    <!-- 回到顶部按钮 -->
+    <div class="back-to-top" onclick="window.scrollTo({top: 0, behavior: 'smooth'})">↑</div>
+
+    <!-- 头部 -->
+    <div class="header-container">
+        <h1>常用命令汇总（Linux+Nginx+MySQL+SSL）</h1>
+        <p>整理 Todo 项目部署和维护过程中高频使用的命令，按类别划分，方便快速查询。</p>
+    </div>
+
+    <!-- 主要内容 -->
+    <div class="content-container">
+        <div class="category">
+            <h2>一、Linux 基础命令</h2>
+            <div class="code-block">
+                <button class="copy-btn" onclick="copyCode(this)">复制</button>
+                <pre><code># 系统更新
+apt update -y          # 更新包索引
+apt upgrade -y         # 升级已安装包
+
+# 软件安装
+apt install -y 软件名   # 安装指定软件（如 nginx、mysql-server）
+
+# 目录/文件操作
+pwd                    # 查看当前所在目录
+mkdir 目录名            # 创建目录（如 mkdir todo-project）
+cd 目录路径             # 进入目录（如 cd /root/todo-project）
+ls                     # 查看当前目录文件
+rm -rf 目录/文件        # 强制删除目录/文件（谨慎使用）
+
+# 文件编辑（nano）
+nano 文件名             # 打开/创建文件（如 nano db.js）
+Ctrl+O                  # 保存文件
+Ctrl+X                  # 退出编辑器
+Y                      # 确认保存（退出时提示）
+
+# Windows 上传文件到 Linux（SCP 命令，在 Windows 终端执行）
+scp Windows文件路径 root@服务器IP:Linux目标路径
+# 示例：scp C:\todo-project\frontend\script.js root@123.45.67.89:/root/todo-project/frontend</code></pre>
+            </div>
+        </div>
+
+        <div class="category">
+            <h2>二、Nginx 命令</h2>
+            <div class="code-block">
+                <button class="copy-btn" onclick="copyCode(this)">复制</button>
+                <pre><code># 服务管理
+systemctl start nginx   # 启动 Nginx
+systemctl stop nginx    # 停止 Nginx
+systemctl restart nginx # 重启 Nginx
+systemctl reload nginx  # 重新加载配置（不停止服务）
+systemctl enable nginx  # 设置开机自启
+systemctl disable nginx # 关闭开机自启
+systemctl status nginx  # 查看服务状态（按 q 退出）
+
+# 配置相关
+nginx -t                # 验证配置文件语法
+nano /etc/nginx/conf.d/todo.conf  # 编辑项目配置
+nano /etc/nginx/sites-available/default  # 编辑默认站点配置
+cat /var/log/nginx/error.log  # 查看错误日志（排查问题）</code></pre>
+            </div>
+        </div>
+
+        <div class="category">
+            <h2>三、MySQL 命令</h2>
+            <div class="code-block">
+                <button class="copy-btn" onclick="copyCode(this)">复制</button>
+                <pre><code># 服务管理
+systemctl start mysql   # 启动 MySQL
+systemctl stop mysql    # 停止 MySQL
+systemctl restart mysql # 重启 MySQL
+systemctl enable mysql  # 开机自启
+
+# 登录/退出
+mysql -u root -p        # 登录 MySQL（需输入密码）
+exit;                   # 退出 MySQL 命令行
+
+# 数据库操作（登录后执行）
+CREATE DATABASE 库名;   # 创建数据库（如 CREATE DATABASE todo_db;）
+USE 库名;               # 切换数据库（如 USE todo_db;）
+SHOW DATABASES;         # 查看所有数据库
+SHOW TABLES;            # 查看当前数据库的表
+DESCRIBE 表名;          # 查看表结构（如 DESCRIBE users;）</code></pre>
+            </div>
+        </div>
+
+        <div class="category">
+            <h2>四、SSL 证书生成（OpenSSL）</h2>
+            <p>生成自签名 SSL 证书，用于 HTTPS 访问（可选）：</p>
+            <div class="code-block">
+                <button class="copy-btn" onclick="copyCode(this)">复制</button>
+                <pre><code># 1. 安装 OpenSSL（若未安装）
+apt install -y openssl
+
+# 2. 生成私钥（key.pem）
+openssl genrsa -out /root/ssl/key.pem 4096  # 路径可自定义
+
+# 3. 生成证书（cert.pem，有效期 10 年）
+openssl req -new -x509 -key /root/ssl/key.pem -out /root/ssl/cert.pem -days 3650
+
+# 执行后需填写以下信息：
+Country Name (2 letter code) [AU]:CN  # 国家代码（中国填 CN）
+State or Province Name (full name) [Some-State]:Beijing  # 省份
+Locality Name (eg, city) []:Beijing  # 城市
+Organization Name (eg, company) [Internet Widgits Pty Ltd]:Fitness-System  # 组织名
+Organizational Unit Name (eg, section) []:IT  # 部门
+Common Name (e.g. server FQDN or YOUR name) []:你的公网IP  # 必须填服务器公网IP
+Email Address []:admin@fitness-system.com  # 邮箱（可选）</code></pre>
+            </div>
+        </div>
+
+        <div class="category">
+            <h2>五、PM2 命令（Node.js 进程管理）</h2>
+            <div class="code-block">
+                <button class="copy-btn" onclick="copyCode(this)">复制</button>
+                <pre><code>pm2 start server.js --name "todo-server"  # 启动服务并命名
+pm2 list                  # 查看所有进程状态
+pm2 stop todo-server      # 停止服务
+pm2 restart todo-server   # 重启服务
+pm2 logs todo-server      # 查看服务日志
+pm2 delete todo-server    # 删除服务
+pm2 startup               # 设置开机自启
+pm2 save                  # 保存进程列表</code></pre>
+            </div>
+        </div>
+    </div>
+
+    <!-- 复制代码和回到顶部逻辑 -->
+    <script>
+        // 复制代码功能
+        function copyCode(btn) {
+            const codeBlock = btn.nextElementSibling;
+            const code = codeBlock.textContent;
+            navigator.clipboard.writeText(code).then(() => {
+                btn.textContent = "已复制";
+                btn.classList.add("copied");
+                setTimeout(() => {
+                    btn.textContent = "复制";
+                    btn.classList.remove("copied");
+                }, 2000);
+            }).catch(err => {
+                alert("复制失败：" + err);
+            });
+        }
+
+        // 回到顶部按钮显示/隐藏
+        window.addEventListener("scroll", () => {
+            const backToTopBtn = document.querySelector(".back-to-top");
+            if (window.scrollY > 300) {
+                backToTopBtn.classList.add("show");
+            } else {
+                backToTopBtn.classList.remove("show");
+            }
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,584 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>第5章：JSP 核心 | 小白完整版·90%常用全覆盖</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        .content {
+            padding: 20px 0;
+            line-height: 1.9;
+            font-size: 15px;
+        }
+        .section {
+            margin: 45px 0;
+            padding-bottom: 25px;
+            border-bottom: 1px solid #eff6ff;
+        }
+        .section:last-child { border-bottom: none; }
+
+        .section h2 {
+            color: #1e40af;
+            margin-bottom: 25px;
+            border-left: 4px solid #3b82f6;
+            padding-left: 15px;
+            font-size: 20px;
+        }
+        .section h3 {
+            color: #0f172a;
+            margin: 30px 0 18px;
+            font-size: 17px;
+        }
+        .section h4 {
+            color: #1e40af;
+            margin: 22px 0 15px;
+            font-size: 16px;
+        }
+        .step {
+            background: #eff6ff;
+            padding: 22px;
+            border-radius: 8px;
+            margin: 18px 0;
+            border: 1px solid #dbeafe;
+        }
+        .step-title {
+            font-weight: 600;
+            color: #1e40af;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        code {
+            background: #f1f5f9;
+            padding: 4px 10px;
+            border-radius: 4px;
+            font-family: Consolas, monospace;
+            color: #dc2626;
+            font-size: 14px;
+        }
+        pre {
+            background: #f8fafc;
+            padding: 20px;
+            border-radius: 8px;
+            overflow-x: auto;
+            margin: 18px 0;
+            border: 1px solid #e2e8f0;
+            font-family: Consolas, monospace;
+            font-size: 14px;
+            line-height: 1.7;
+        }
+        .tip {
+            background: #fffbeb;
+            padding: 18px;
+            border-radius: 6px;
+            border-left: 4px solid #f59e0b;
+            margin: 18px 0;
+            font-size: 14px;
+        }
+        .warning {
+            background: #fef2f2;
+            padding: 18px;
+            border-radius: 6px;
+            border-left: 4px solid #ef4444;
+            margin: 18px 0;
+            font-size: 14px;
+        }
+        .demo-box {
+            margin: 25px 0;
+            padding: 28px;
+            border-radius: 12px;
+            border: 1px solid #e2e8f0;
+            background: #ffffff;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+        }
+        .compare-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+            font-size: 14px;
+        }
+        .compare-table th, .compare-table td {
+            border: 1px solid #e2e8f0;
+            padding: 14px;
+            text-align: left;
+        }
+        .compare-table th {
+            background-color: #eff6ff;
+            color: #1e40af;
+            font-weight: 600;
+        }
+        .explain {
+            color: #64748b;
+            font-size: 14px;
+            margin: 8px 0 15px;
+            padding-left: 10px;
+            border-left: 2px solid #94a3b8;
+        }
+        .maven-box {
+            background: #f5f5f5;
+            border-left: 4px solid #8b5cf6;
+            padding: 18px;
+            border-radius: 8px;
+            margin: 18px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>第5章：JSP 核心（小白完整版·Maven+Tomcat11）</h1>
+        <div class="content">
+
+<!-- 5.0 前置：JSP 到底是啥？（小白必懂） -->
+<div class="section">
+    <h2>5.0 前置核心：JSP 是干嘛的？</h2>
+    <p><strong>术语：JSP（Java Server Pages）Java 服务器页面</strong>
+    <br>👉 <strong>大白话：能直接写 Java 代码的 HTML 页面</strong>。</p>
+
+    <p><strong>为啥要用 JSP？</strong>
+    <br>之前我们在 Servlet 里输出 HTML，要写一堆 <code>out.write("&lt;h1&gt;...&lt;/h1&gt;")</code>，又臭又长、难维护。
+    <br>JSP 直接在 HTML 里嵌 Java 代码，<strong>写页面和逻辑一步到位</strong>。</p>
+
+    <div class="tip">
+        💡 最通俗类比：
+        <br>📌 HTML = 纯静态页面（只能看，不能跑Java）
+        <br>📌 Servlet = 纯Java代码（能跑逻辑，写页面麻烦）
+        <br>📌 <strong>JSP = HTML + Java 合体（既能写页面，又能跑逻辑）</strong>
+    </div>
+
+    <p><strong>核心真相：</strong> JSP 本质就是一个 <strong>Servlet</strong>，Tomcat 会把 JSP 编译成 Java 类运行。</p>
+</div>
+
+<!-- 5.1 Maven 依赖配置（JSP3.1 + Tomcat11适配） -->
+<div class="section">
+    <h2>5.1 Maven 依赖配置（必须加，否则JSP报错）</h2>
+    <p>Tomcat11 对应 <strong>JSP3.1</strong> 规范，必须用 jakarta 包，在 <code>pom.xml</code> 加依赖：</p>
+
+    <div class="maven-box">
+        <strong>JSP 核心 Maven 坐标（Tomcat11专用）</strong>
+        <pre>
+&lt;!-- JSP 3.1 API（必须加） --&gt;
+&lt;dependency&gt;
+    &lt;groupId&gt;jakarta.servlet.jsp&lt;/groupId&gt;
+    &lt;artifactId&gt;jakarta.servlet.jsp-api&lt;/artifactId&gt;
+    &lt;version&gt;3.1.0&lt;/version&gt;
+    &lt;scope&gt;provided&lt;/scope&gt;
+&lt;/dependency&gt;
+
+&lt;!-- JSTL 标签库（后面常用，一起加上） --&gt;
+&lt;dependency&gt;
+    &lt;groupId&gt;jakarta.servlet.jsp.jstl&lt;/groupId&gt;
+    &lt;artifactId&gt;jakarta.servlet.jsp.jstl-api&lt;/artifactId&gt;
+    &lt;version&gt;3.0.0&lt;/version&gt;
+&lt;/dependency&gt;
+&lt;dependency&gt;
+    &lt;groupId&gt;org.glassfish.web&lt;/groupId&gt;
+    &lt;artifactId&gt;jakarta.servlet.jsp.jstl&lt;/artifactId&gt;
+    &lt;version&gt;3.0.1&lt;/version&gt;
+&lt;/dependency&gt;
+</pre>
+    </div>
+
+    <div class="warning">
+        ❗ 小白必坑：
+        <br>1. 必须是 <strong>jakarta.servlet.jsp</strong> 包（Tomcat11强制）
+        <br>2. <code>&lt;scope&gt;provided&lt;/scope&gt;</code> 不能删（Tomcat自带JSP）
+    </div>
+</div>
+
+<!-- 5.2 JSP 基础结构 & 第一个JSP页面 -->
+<div class="section">
+    <h2>5.2 JSP 基础结构 & 第一个页面</h2>
+    <h3>5.2.1 JSP 页面存放位置</h3>
+    <p>Maven 项目：<code>src/main/webapp/</code> 目录下（和 HTML 放一起）</p>
+
+    <h3>5.2.2 JSP 标准结构</h3>
+    <pre>
+&lt;%@ page contentType="text/html;charset=UTF-8" language="java" %&gt;
+&lt;!DOCTYPE html&gt;
+&lt;html&gt;
+&lt;head&gt;
+    &lt;meta charset="UTF-8"&gt;
+    &lt;title&gt;第一个JSP&lt;/title&gt;
+&lt;/head&gt;
+&lt;body&gt;
+    &lt;!-- HTML 内容 --&gt;
+    &lt;h1&gt;Hello JSP&lt;/h1&gt;
+
+    &lt;!-- Java 代码（嵌在HTML里） --&gt;
+    &lt;%
+        String msg = "我是JSP里的Java代码";
+        out.print(msg);
+    %&gt;
+&lt;/body&gt;
+&lt;/html&gt;
+</pre>
+
+    <h3>5.2.3 第一个 JSP 实战（index.jsp）</h3>
+    <p>直接复制到 <code>webapp/index.jsp</code></p>
+    <pre>
+&lt;%@ page contentType="text/html;charset=UTF-8" language="java" %&gt;
+&lt;html&gt;
+&lt;head&gt;
+    &lt;title&gt;第一个JSP&lt;/title&gt;
+&lt;/head&gt;
+&lt;body&gt;
+    &lt;h1&gt;这是 JSP 页面&lt;/h1&gt;
+    &lt;%
+        // Java 代码：定义变量
+        int a = 10;
+        int b = 20;
+        int sum = a + b;
+    %&gt;
+    &lt;p&gt;10 + 20 = &lt;%= sum %&gt;&lt;/p&gt; &lt;!-- 输出变量 --&gt;
+&lt;/body&gt;
+&lt;/html&gt;
+</pre>
+
+    <div class="tip">
+        💡 访问方式：和HTML一样
+        <br><code>http://localhost:8080/项目名/index.jsp</code>
+    </div>
+</div>
+
+<!-- 5.3 JSP 3种脚本元素（90%常用，必学） -->
+<div class="section">
+    <h2>5.3 JSP 3种脚本元素（嵌Java代码的方式）</h2>
+    <p>JSP 里写 Java 代码，只有 3 种写法，<strong>全部是常用</strong>：</p>
+
+    <table class="compare-table">
+        <tr>
+            &lt;
+            <th>写法</th>
+            <th>格式</th>
+            <th>作用（大白话）</th>
+            <th>常用度</th>
+        </tr>
+        <tr>
+            <td>脚本段</td>
+            <td><code>&lt;% Java代码 %&gt;</code></td>
+            <td>写任意Java逻辑（变量、判断、循环）</td>
+            <td>⭐⭐⭐⭐⭐</td>
+        </tr>
+        <tr>
+            <td>表达式</td>
+            <td><code>&lt;%= 变量/值 %&gt;</code></td>
+            <td>直接输出内容到页面</td>
+            <td>⭐⭐⭐⭐⭐</td>
+        </tr>
+        <tr>
+            <td>声明</td>
+            <td><code>&lt;%! 方法/变量 %&gt;</code></td>
+            <td>定义全局变量、方法</td>
+            <td>⭐⭐⭐</td>
+        </tr>
+    </table>
+
+    <h3>5.3.1 脚本段 &lt;% %&gt;（最常用）</h3>
+    <pre>
+&lt;%
+    // 写任意Java代码
+    String name = "Java小白";
+    int age = 20;
+    if(age >= 18){
+        out.print("成年");
+    }
+%&gt;
+</pre>
+
+    <h3>5.3.2 表达式 &lt;%= %&gt;（最常用）</h3>
+    <pre>
+&lt;%
+    String name = "Java小白";
+%&gt;
+&lt;p&gt;姓名：&lt;%= name %&gt;&lt;/p&gt; &lt;!-- 等价于 out.print(name) --&gt;
+</pre>
+
+    <h3>5.3.3 声明 &lt;%! %&gt;（常用）</h3>
+    <pre>
+&lt;%!
+    // 定义全局变量
+    public static final String SITE = "JavaWeb学习";
+    // 定义方法
+    public int add(int x,int y){
+        return x + y;
+    }
+%&gt;
+
+&lt;!-- 使用 --&gt;
+&lt;p&gt;网站：&lt;%= SITE %&gt;&lt;/p&gt;
+&lt;p&gt;3+5=&lt;%= add(3,5) %&gt;&lt;/p&gt;
+</pre>
+</div>
+
+<!-- 5.4 JSP 9大内置对象（只讲常用6个，3个极少用） -->
+<div class="section">
+    <h2>5.4 JSP 内置对象（不用new，直接用）</h2>
+    <p><strong>术语：内置对象</strong> → 大白话：Tomcat 提前创建好的对象，<strong>直接用，不用new</strong>。</p>
+    <p>共9个，<strong>只学6个常用的，3个极少用（标注）</strong>：</p>
+
+    <table class="compare-table">
+        <tr>
+            <th>对象名</th>
+            <th>作用（大白话）</th>
+            <th>常用度</th>
+        </tr>
+        <tr>
+            <td>request</td>
+            <td>请求对象（取参数、存数据）</td>
+            <td>⭐⭐⭐⭐⭐</td>
+        </tr>
+        <tr>
+            <td>response</td>
+            <td>响应对象（跳转、输出）</td>
+            <td>⭐⭐⭐⭐</td>
+        </tr>
+        <tr>
+            <td>session</td>
+            <td>会话对象（存登录状态）</td>
+            <td>⭐⭐⭐⭐⭐</td>
+        </tr>
+        <tr>
+            <td>application</td>
+            <td>全局对象（整个项目共享数据）</td>
+            <td>⭐⭐⭐</td>
+        </tr>
+        <tr>
+            <td>out</td>
+            <td>输出对象（打印到页面）</td>
+            <td>⭐⭐⭐⭐</td>
+        </tr>
+        <tr>
+            <td>pageContext</td>
+            <td>页面上下文（存当前页面数据）</td>
+            <td>⭐⭐⭐</td>
+        </tr>
+        <tr>
+            <td>page</td>
+            <td>当前JSP对象（极少用）</td>
+            <td>⭐</td>
+        </tr>
+        <tr>
+            <td>config</td>
+            <td>配置对象（极少用）</td>
+            <td>⭐</td>
+        </tr>
+        <tr>
+            <td>exception</td>
+            <td>异常对象（极少用）</td>
+            <td>⭐</td>
+        </tr>
+    </table>
+
+    <h3>5.4.1 常用内置对象实战（直接复制）</h3>
+    <pre>
+&lt;%@ page contentType="text/html;charset=UTF-8" %&gt;
+&lt;html&gt;
+&lt;body&gt;
+    &lt;%
+        // 1. request 存数据
+        request.setAttribute("reqMsg", "我是request数据");
+        // 2. session 存数据（登录必用）
+        session.setAttribute("loginUser", "admin");
+        // 3. application 存数据
+        application.setAttribute("appMsg", "我是全局数据");
+    %&gt;
+
+    &lt;p&gt;request数据：&lt;%= request.getAttribute("reqMsg") %&gt;&lt;/p&gt;
+    &lt;p&gt;登录用户：&lt;%= session.getAttribute("loginUser") %&gt;&lt;/p&gt;
+    &lt;p&gt;全局数据：&lt;%= application.getAttribute("appMsg") %&gt;&lt;/p&gt;
+&lt;/body&gt;
+&lt;/html&gt;
+</pre>
+</div>
+
+<!-- 5.5 JSP 四大域对象（核心，必学） -->
+<div class="section">
+    <h2>5.5 JSP 四大域对象（存数据的4个范围）</h2>
+    <p><strong>术语：域对象</strong> → 大白话：<strong>存数据的盒子</strong>，范围不同。</p>
+
+    <table class="compare-table">
+        <tr>
+            <th>域对象</th>
+            <th>范围（大白话）</th>
+            <th>使用场景</th>
+        </tr>
+        <tr>
+            <td>pageContext</td>
+            <td>当前页面</td>
+            <td>页面内临时数据</td>
+        </tr>
+        <tr>
+            <td>request</td>
+            <td>一次请求（转发共享）</td>
+            <td>表单数据、查询结果</td>
+        </tr>
+        <tr>
+            <td>session</td>
+            <td>一次会话（浏览器打开到关闭）</td>
+            <td>登录状态、用户信息</td>
+        </tr>
+        <tr>
+            <td>application</td>
+            <td>整个项目运行期间</td>
+            <td>全局统计、公共数据</td>
+        </tr>
+    </table>
+
+    <div class="tip">
+        💡 小白记住：
+        <br>存数据：<code>setAttribute("key", 值)</code>
+        <br>取数据：<code>getAttribute("key")</code>
+    </div>
+</div>
+
+<!-- 5.6 EL 表达式（简化取数据，99%项目用） -->
+<div class="section">
+    <h2>5.6 EL 表达式（简化取数据，必学）</h2>
+    <p><strong>术语：EL（Expression Language）表达式</strong>
+    <br>👉 大白话：<strong>不用写Java代码，就能取域对象里的数据</strong>。</p>
+
+    <h3>5.6.1 EL 基本语法</h3>
+    <pre>${key}</pre>
+
+    <h3>5.6.2 EL 对比传统写法（简化10倍）</h3>
+    <pre>
+&lt;%-- 传统JSP写法（麻烦） --%&gt;
+&lt;%= session.getAttribute("loginUser") == null ? "未登录" : session.getAttribute("loginUser") %&gt;
+
+&lt;%-- EL写法（简单） --%&gt;
+${loginUser}
+</pre>
+
+    <h3>5.6.3 EL 实战（取域数据）</h3>
+    <pre>
+&lt;%
+    request.setAttribute("username", "EL表达式");
+    session.setAttribute("age", 20);
+%&gt;
+
+&lt;p&gt;用户名：${username}&lt;/p&gt;
+&lt;p&gt;年龄：${age}&lt;/p&gt;
+&lt;p&gt;判断是否成年：${age >= 18}&lt;/p&gt;
+</pre>
+
+    <div class="tip">
+        💡 EL 会自动从四大域里找数据，不用指定域，自动匹配。
+    </div>
+</div>
+
+<!-- 5.7 JSTL 核心标签（替代Java代码，常用） -->
+<div class="section">
+    <h2>5.7 JSTL 核心标签（替代Java判断、循环）</h2>
+    <p><strong>术语：JSTL（JSP标准标签库）</strong>
+    <br>👉 大白话：<strong>用标签替代JSP里的Java代码，页面更干净</strong>。</p>
+
+    <h3>5.7.1 引入JSTL标签（页面顶部加）</h3>
+    <pre>&lt;%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %&gt;</pre>
+
+    <h3>5.7.2 JSTL 常用标签（只学2个最常用）</h3>
+    <h4>1. 循环标签 &lt;c:forEach&gt;（遍历列表，必用）</h4>
+    <pre>
+&lt;%
+    // Servlet里存的列表，JSP直接遍历
+    request.setAttribute("userList", new String[]{"张三","李四","王五"});
+%&gt;
+
+&lt;%-- 循环遍历 --%&gt;
+&lt;c:forEach items="${userList}" var="user"&gt;
+    &lt;p&gt;用户：${user}&lt;/p&gt;
+&lt;/c:forEach&gt;
+</pre>
+
+    <h4>2. 判断标签 &lt;c:if&gt;（条件判断，必用）</h4>
+    <pre>
+&lt;c:if test="${age >= 18}"&gt;
+    &lt;p&gt;已成年&lt;/p&gt;
+&lt;/c:if&gt;
+</pre>
+</div>
+
+<!-- 5.8 综合实战：JSP+EL+JSTL 登录展示（项目标配） -->
+<div class="section">
+    <h2>5.8 综合实战：登录状态展示（最常用）</h2>
+    <h3>需求：</h3>
+    <ul>
+        <li>从Session取登录用户</li>
+        <li>EL显示用户名</li>
+        <li>JSTL判断是否登录</li>
+    </ul>
+
+    <h3>完整代码（home.jsp）</h3>
+    <pre>
+&lt;%@ page contentType="text/html;charset=UTF-8" %&gt;
+&lt;%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %&gt;
+&lt;html&gt;
+&lt;head&gt;
+    &lt;title&gt;个人主页&lt;/title&gt;
+&lt;/head&gt;
+&lt;body&gt;
+    &lt;h1&gt;个人中心&lt;/h1&gt;
+
+    &lt;%-- JSTL+EL 判断登录 --%&gt;
+    &lt;c:if test="${empty loginUser}"&gt;
+        &lt;p&gt;您还未登录，请&lt;a href="/login.jsp"&gt;登录&lt;/a&gt;&lt;/p&gt;
+    &lt;/c:if&gt;
+
+    &lt;c:if test="${not empty loginUser}"&gt;
+        &lt;p&gt;欢迎您：${loginUser}&lt;/p&gt;
+        &lt;p&gt;&lt;a href="/logout"&gt;退出登录&lt;/a&gt;&lt;/p&gt;
+    &lt;/c:if&gt;
+&lt;/body&gt;
+&lt;/html&gt;
+</pre>
+</div>
+
+<!-- 5.9 本章必背总结（90%常用全覆盖） -->
+<div class="section">
+    <h2>5.9 本章终极总结（小白记住这些就够）</h2>
+    <h3>🍉 JSP 基础</h3>
+    <ul>
+        <li>JSP = HTML + Java，本质是 Servlet</li>
+        <li>3种脚本：&lt;%代码%&gt;、&lt;%=输出%&gt;、&lt;%!声明%&gt;</li>
+    </ul>
+
+    <h3>🔐 内置对象（常用6个）</h3>
+    <ul>
+        <li>request、response、session、application、out、pageContext</li>
+        <li>session：存登录状态（最核心）</li>
+    </ul>
+
+    <h3>⚡ EL 表达式（简化取数据）</h3>
+    <ul>
+        <li>语法：${key}</li>
+        <li>自动从四大域取数据，不用写Java</li>
+    </ul>
+
+    <h3>📝 JSTL 标签（替代Java逻辑）</h3>
+    <ul>
+        <li>&lt;c:forEach&gt;：循环</li>
+        <li>&lt;c:if&gt;：判断</li>
+    </ul>
+
+    <h3>🎯 实战套路</h3>
+    <ol>
+        <li>Servlet 存数据到域（request/session）</li>
+        <li>JSP 用 EL+JSTL 展示数据</li>
+        <li>页面干净，无Java代码</li>
+    </ol>
+</div>
+
+<!-- 已删除的10%极少用内容（完全不用学） -->
+<div class="tip">
+    ✅ 本章只删除以下极少用内容：
+    <br>1. JSP 异常页面指令（page指令的errorPage）
+    <br>2. 3个极少用内置对象（page、config、exception）
+    <br>3. JSP 静态包含、动态包含（进阶用法）
+    <br>4. JSTL 其他冷门标签（格式化、XML等）
+</div>
+
+        </div>
+    </div>
+</body>
+</html>

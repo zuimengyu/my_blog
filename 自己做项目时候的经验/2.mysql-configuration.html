@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MySQL 数据库配置（Todo 项目专用）</title>
+    <link rel="stylesheet" href="./style.css">
+</head>
+<body>
+    <!-- 回到顶部按钮 -->
+    <div class="back-to-top" onclick="window.scrollTo({top: 0, behavior: 'smooth'})">↑</div>
+
+    <!-- 头部 -->
+    <div class="header-container">
+        <h1>MySQL 数据库配置（Todo 项目专用）</h1>
+        <p>本文包含：Todo 项目库表创建、MySQL 登录/改密码、完全卸载 MySQL 等核心操作。</p>
+    </div>
+
+    <!-- 主要内容 -->
+    <div class="content-container">
+        <h2>一、创建 Todo 项目数据库和表</h2>
+        <h3>步骤1：登录 MySQL</h3>
+        <div class="code-block">
+            <button class="copy-btn" onclick="copyCode(this)">复制</button>
+            <pre><code>mysql -u root -p  # 输入初始化时设置的密码，回车进入</code></pre>
+        </div>
+        <p>成功后终端提示符变为 <code>mysql></code>。</p>
+
+        <h3>步骤2：执行 SQL 语句（创建库表）</h3>
+        <div class="code-block">
+            <button class="copy-btn" onclick="copyCode(this)">复制</button>
+            <pre><code>-- 创建项目数据库
+CREATE DATABASE todo_db;
+
+-- 切换到该数据库
+USE todo_db;
+
+-- 创建用户表（存储注册信息）
+CREATE TABLE users (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  username VARCHAR(50) NOT NULL UNIQUE,
+  password VARCHAR(255) NOT NULL
+);
+
+-- 创建待办事项表（关联用户）
+CREATE TABLE todos (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  text VARCHAR(200) NOT NULL,
+  completed BOOLEAN DEFAULT FALSE,
+  user_id INT NOT NULL,
+  FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+);
+
+-- 退出 MySQL 命令行
+exit;</code></pre>
+        </div>
+
+        <h2>二、MySQL  root 密码修改</h2>
+        <div class="code-block">
+            <button class="copy-btn" onclick="copyCode(this)">复制</button>
+            <pre><code># 1. 登录 MySQL（若未设置密码，直接输入 mysql -uroot）
+mysql -uroot -p
+
+# 2. 执行以下 SQL 语句（替换「你的新密码」）
+-- 查询用户登录信息
+SELECT User, Host, Authentication_String, plugin FROM mysql.user;
+
+-- 删除无密码登录的 root 账号（若存在）
+DROP USER 'root'@'localhost';
+FLUSH PRIVILEGES;
+
+DROP USER 'root'@'%';
+FLUSH PRIVILEGES;
+
+-- 创建新的 root 账号并设置密码
+CREATE USER 'root'@'localhost' IDENTIFIED BY '你的新密码';
+
+-- 授予所有权限（生产环境可按需缩减）
+GRANT ALL PRIVILEGES ON *.* TO 'root'@'localhost' WITH GRANT OPTION;
+FLUSH PRIVILEGES;
+
+# 3. 退出后重新登录验证
+exit;
+mysql -uroot -p  # 输入新密码登录</code></pre>
+        </div>
+
+        <h2>三、完全卸载 MySQL（如需重装）</h2>
+        <div class="warning">
+            警告：此操作会删除所有 MySQL 数据和配置，谨慎执行！
+        </div>
+        <div class="code-block">
+            <button class="copy-btn" onclick="copyCode(this)">复制</button>
+            <pre><code># 停止 MySQL 服务（若为 mariadb 则替换为 mariadb）
+sudo systemctl stop mysql
+# 若提示服务不存在，执行：sudo systemctl stop mariadb
+
+# 卸载核心包（--purge 删除配置文件）
+sudo apt-get purge mysql-server mysql-client mysql-common mysql-server-core-* mysql-client-core-*
+
+# 清理依赖和缓存
+sudo apt-get autoremove
+sudo apt-get autoclean
+
+# 删除数据、配置、日志目录
+sudo rm -rf /var/lib/mysql/
+sudo rm -rf /etc/mysql/
+sudo rm -rf /var/log/mysql/
+rm -rf ~/.mysql_history
+
+# 检查残留（无输出则清理完成）
+dpkg -l | grep mysql
+ls -ld /var/lib/mysql /etc/mysql /var/log/mysql</code></pre>
+        </div>
+    </div>
+
+    <!-- 复制代码和回到顶部逻辑 -->
+    <script>
+        // 复制代码功能
+        function copyCode(btn) {
+            const codeBlock = btn.nextElementSibling;
+            const code = codeBlock.textContent;
+            navigator.clipboard.writeText(code).then(() => {
+                btn.textContent = "已复制";
+                btn.classList.add("copied");
+                setTimeout(() => {
+                    btn.textContent = "复制";
+                    btn.classList.remove("copied");
+                }, 2000);
+            }).catch(err => {
+                alert("复制失败：" + err);
+            });
+        }
+
+        // 回到顶部按钮显示/隐藏
+        window.addEventListener("scroll", () => {
+            const backToTopBtn = document.querySelector(".back-to-top");
+            if (window.scrollY > 300) {
+                backToTopBtn.classList.add("show");
+            } else {
+                backToTopBtn.classList.remove("show");
+            }
+        });
+    </script>
+</body>
+</html>

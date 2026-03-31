@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>后端依赖安装与 PM2 服务启动</title>
+    <link rel="stylesheet" href="./style.css">
+</head>
+<body>
+    <!-- 回到顶部按钮 -->
+    <div class="back-to-top" onclick="window.scrollTo({top: 0, behavior: 'smooth'})">↑</div>
+
+    <!-- 头部 -->
+    <div class="header-container">
+        <h1>后端依赖安装与 PM2 服务启动</h1>
+        <p>后端基于 Express 框架开发，需安装依赖包后启动服务，使用 PM2 确保服务后台稳定运行。</p>
+    </div>
+
+    <!-- 主要内容 -->
+    <div class="content-container">
+        <h2>一、安装后端依赖包</h2>
+        <p>依赖包包括：Express（web 框架）、mysql2（MySQL 连接）、bcryptjs（密码加密）、jsonwebtoken（JWT 验证）、cors（跨域支持）。</p>
+        <div class="code-block">
+            <button class="copy-btn" onclick="copyCode(this)">复制</button>
+            <pre><code># 1. 进入后端目录（确保路径正确）
+cd /root/todo-project/backend
+
+# 2. 初始化 package.json（自动生成依赖配置文件）
+npm init -y
+
+# 3. 安装核心依赖包
+npm install express mysql2 bcryptjs jsonwebtoken cors
+
+# 4. 验证依赖安装（可选，查看 node_modules 目录）
+ls node_modules/  # 显示依赖包目录即安装成功</code></pre>
+        </div>
+        <div class="note">
+            若后续修改了依赖，可直接执行 <code>npm install</code> 安装 package.json 中声明的所有依赖。
+        </div>
+
+        <h2>二、用 PM2 启动后端服务</h2>
+        <p>PM2 是 Node.js 进程管理工具，支持后台运行、开机自启、日志查看等功能。</p>
+        <div class="code-block">
+            <button class="copy-btn" onclick="copyCode(this)">复制</button>
+            <pre><code># 1. 启动服务（命名为 todo-server，便于管理）
+pm2 start server.js --name "todo-server"
+
+# 2. 查看服务状态（关键！确保状态为 online）
+pm2 list</code></pre>
+        </div>
+
+        <div class="success">
+            成功标志：<code>pm2 list</code> 输出中，<code>todo-server</code> 的 <code>status</code> 列显示 <code>online</code>，<code>pid</code> 列有进程号。
+        </div>
+
+        <h2>三、PM2 常用命令（服务管理）</h2>
+        <div class="code-block">
+            <button class="copy-btn" onclick="copyCode(this)">复制</button>
+            <pre><code># 停止服务
+pm2 stop todo-server
+
+# 重启服务（修改代码后需执行）
+pm2 restart todo-server
+
+# 查看服务日志（排查错误）
+pm2 logs todo-server
+
+# 设置开机自启（服务器重启后自动启动服务）
+pm2 startup
+
+# 保存当前 PM2 进程列表（配合开机自启）
+pm2 save
+
+# 删除服务（无需时执行）
+pm2 delete todo-server</code></pre>
+        </div>
+
+        <div class="note">
+            注意：若服务启动失败（status 为 errored），执行 <code>pm2 logs todo-server</code> 查看错误日志，常见原因：db.js 数据库配置错误、端口被占用。
+        </div>
+    </div>
+
+    <!-- 复制代码和回到顶部逻辑 -->
+    <script>
+        // 复制代码功能
+        function copyCode(btn) {
+            const codeBlock = btn.nextElementSibling;
+            const code = codeBlock.textContent;
+            navigator.clipboard.writeText(code).then(() => {
+                btn.textContent = "已复制";
+                btn.classList.add("copied");
+                setTimeout(() => {
+                    btn.textContent = "复制";
+                    btn.classList.remove("copied");
+                }, 2000);
+            }).catch(err => {
+                alert("复制失败：" + err);
+            });
+        }
+
+        // 回到顶部按钮显示/隐藏
+        window.addEventListener("scroll", () => {
+            const backToTopBtn = document.querySelector(".back-to-top");
+            if (window.scrollY > 300) {
+                backToTopBtn.classList.add("show");
+            } else {
+                backToTopBtn.classList.remove("show");
+            }
+        });
+    </script>
+</body>
+</html>

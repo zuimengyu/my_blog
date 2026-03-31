@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>我的编程学习笔记 | 入口首页</title>
+    <style>
+        /* 新增首页专属优化样式，和原有style.css兼容 */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: "Microsoft YaHei", Consolas, monospace;
+        }
+        body {
+            background-color: #f5f7fa;
+            padding: 40px 20px;
+        }
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            background-color: #fff;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+        }
+        .page-title {
+            text-align: center;
+            font-size: 28px;
+            color: #2c3e50;
+            margin-bottom: 40px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #27ae60;
+        }
+        .note-section {
+            margin-bottom: 35px;
+            padding: 20px;
+            background-color: #f8f9fa;
+            border-radius: 8px;
+            border-left: 4px solid #27ae60;
+        }
+        .section-title {
+            font-size: 22px;
+            color: #2c3e50;
+            margin-bottom: 15px;
+        }
+        .note-link {
+            display: block;
+            color: #2980b9;
+            text-decoration: none;
+            padding: 8px 0;
+            font-size: 16px;
+            transition: color 0.3s;
+        }
+        .note-link:hover {
+            color: #e74c3c;
+            text-decoration: underline;
+        }
+        .project-list {
+            list-style: none;
+            padding-left: 0;
+        }
+        .project-list li {
+            margin-bottom: 8px;
+        }
+        /* 适配手机端 */
+        @media (max-width: 768px) {
+            .container {
+                padding: 20px;
+            }
+            .page-title {
+                font-size: 24px;
+            }
+            .section-title {
+                font-size: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- 页面主标题 -->
+        <h1 class="page-title">我的编程学习笔记 📚</h1>
+
+        <!-- Java语法基础板块 -->
+        <section class="note-section">
+            <h2 class="section-title">Java语法基础</h2>
+            <a href="java学习内容/java学习内容.html" class="note-link">📝 Java语法基础学习笔记</a>
+        </section>
+
+        <!-- 多线程多进程板块 -->
+        <section class="note-section">
+            <h2 class="section-title">多线程多进程</h2>
+            <a href="多线程学习/多线程学习.html" class="note-link">🧵 多线程多进程核心实战</a>
+        </section>
+
+        <!-- 网络编程板块（新增，匹配你的目录） -->
+        <section class="note-section">
+            <h2 class="section-title">网络编程 & Nginx</h2>
+            <ul class="project-list">
+                <li><a href="网络编程/nginx.html" class="note-link">🔧 Nginx 核心配置与实战</a></li>
+                <li><a href="网络编程/TcpUdp.html" class="note-link">🔌 TCP/UDP 通信实战</a></li>
+            </ul>
+        </section>
+
+       
+
+         <section class="note-section">
+            <h2 class="section-title">前端原生</h2>
+            <ul class="project-list">
+                <li><a href="HCJS/html.html" class="note-link">HTML</a></li>
+                <li><a href="HCJS/js3.html" class="note-link">JS进阶1</a></li>
+                <li><a href="HCJS/js4.html" class="note-link">JS进阶2</a></li>
+            </ul>
+        </section>
+        <section class="note-section">
+            <h2 class="section-title">jdbc</h2>
+            <ul class="project-list">
+                <li><a href="jdbc/jdbc.html" class="note-link">JDBC核心实战</a></li>
+            </ul>
+        </section>
+        
+        <section class="note-section">
+            <h2 class="section-title">git</h2>
+            <ul class="project-list">
+                <li><a href="git/git.html" class="note-link">Git核心实战</a></li>
+            </ul>
+        </section>
+
+        <section class="note-section">
+            <h2 class="section-title">手打代码记录</h2>
+            <ul class="project-list">
+                <li><a href="#" class="note-link">待定</a></li>
+                <li><a href="#" class="note-link">待定</a></li>
+                <li><a href="#" class="note-link">待定</a></li>
+                <li><a href="#" class="note-link">待定</a></li>
+            </ul>
+        </section>
+    </div>
+</body>
+</html>

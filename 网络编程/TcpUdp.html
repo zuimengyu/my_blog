@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <h1>IPv4和IPv6</h1>
+    <p>IPv4（Internet Protocol version 4）是第四版互联网协议，是目前使用最广泛的互联网协议。它使用32位地址，允许大约42亿个唯一地址。IPv4地址通常表示为四个十进制数，每个数值范围从0到255，由点分隔（例如，192.168.1.1）。</p>
+    <p>IPv6（Internet Protocol version 6）是第六版互联网协议，设计用于替代IPv4。它使用128位地址，允许极大量的唯一地址。IPv6地址通常表示为八组四个十六进制数，由冒号分隔（例如，2001:0db8:85a3:0000:0000:8a2e:0370:7334）。</p>
+    <h2>特殊ip</h2>
+    <ul>
+        <li><strong>回环地址（Loopback Address）</strong>：IPv4中的回环地址是127.0.0.1，通常用于测试网络接口。</li>
+        <li><strong>私有地址（Private Address）</strong>：IPv4中的私有地址范围包括
+            <ul>
+                <li>10.0.0.0 - 10.255.255.255</li>
+                <li>172.16.0.0 - 172.31.255.255</li>
+                <li>192.168.0.0 - 192.168.255.255</li>
+            </ul>
+        </li>
+        <li><strong>链路本地地址（Link-Local Address）</strong>：IPv6中的链路本地地址通常以FE80::/10开头，用于本地网络通信。</li>
+        <li>0.0.0.0</li>
+        <code>
+            <pre>
+                package test;
+import com.sun.source.tree.TryTree;
+
+import java.net.InetAddress;
+import java.net.UnknownHostException;
+ public class Main {
+    public static void main(String[] args) {
+        try {
+            InetAddress address=InetAddress.getByName("www.baidu.com");
+            System.out.println(address);
+            System.out.println(address.getHostName());
+            System.out.println(address.getHostAddress());
+            System.out.println(address.getHostName());
+            System.out.println(address.getCanonicalHostName());
+        } catch (UnknownHostException e) {
+            e.printStackTrace();
+        }
+    }
+}
+
+            </pre>
+        </code>
+
+        <h1>常用端口</h1>
+
+        共有端口0-1023 称为“知名端口”（Well-Known Ports），这些端口通常分配给常见的服务和协议。以下是一些常用端口及其对应的服务：
+        <ul>
+            <li>HTTP（端口80）：用于网页浏览的超文本传输协议。</li>
+            <li>HTTPS（端口443）：用于安全网页浏览的超文本传输协议。</li>
+            <li>FTP（端口21）：用于文件传输协议。</li>
+            <li>SSH（端口22）：用于安全外壳协议，常用于远程登录。</li>
+            <li>Telnet（端口23）：用于远程登录协议，但不安全，已逐渐被SSH取代。</li>
+            <li>SMTP（端口25）：用于简单邮件传输协议，发送电子邮件。</li>
+            <li>DNS（端口53）：用于域名系统，解析域名到IP地址。</li>
+            <li>POP3（端口110）：用于邮局协议版本3，接收电子邮件。</li>
+            <li>IMAP（端口143）：用于互联网消息访问协议，接收电子邮件。</li>
+            <li>RDP（端口3389）：用于远程桌面协议，远程访问Windows计算机。</li>
+            <li>MySQL（端口3306）：用于MySQL数据库服务。</li>
+            <li>Oracle（端口1521）：用于Oracle数据库服务。</li>
+            <li>Tomcat（端口8080）：常用于Java应用服务器的默认端口。</li>
+
+
+
+    </ul>
+    <h1>动态私有端口</h1>
+    <p>动态私有端口（Dynamic and/or Private Ports）范围是49152到65535。这些端口通常用于客户端应用程序在与服务器通信时临时分配的端口。操作系统会自动为这些端口分配值，以确保不会与已知服务的端口冲突。</p>
+    <h1>DOS命令</h1>
+    <ul>
+        <li><h3><strong>ipconfig</strong></h3>显示当前计算机的IP配置，包括IP地址、子网掩码和默认网关。</li>
+        <li><h3><strong>ping</strong></h3>测试与另一台计算机的网络连接，发送ICMP回显请求并等待响应。</li>
+        <li><h3><strong>tracert</strong></h3>跟踪数据包到达目标主机所经过的路由路径。</li>
+        <li><h3><strong>netstat</strong></h3>显示当前的网络连接、路由表和网络接口统计信息。</li>
+        <li><h3><strong>nslookup</strong></h3>查询域名系统（DNS）以获取域名或IP地址的信息。</li>
+        <li><h3><strong>arp</strong></h3>显示和修改IP地址到物理地址（MAC地址）的映射表。</li>
+        <li><h3><strong>route</strong></h3>显示和修改IP路由表。</li>          
+
+    </ul>
+    <h1>常用完整dos命令</h1>
+    <ul>
+        <li>ipconfig /all：显示所有网络适配器的详细IP配置。</li>
+        <li>ping -t [目标地址]：持续发送ping请求，直到手动停止。</li>
+        <li>tracert -d [目标地址]：跟踪路由时不解析主机名，加快速度。</li>
+        <li>netstat -an：显示所有活动连接和监听端口的数字形式./li>
+        <li>nslookup [域名] [DNS服务器]：使用指定的DNS服务器查询域名信息。</li>
+        <li>arp -a：显示当前的ARP缓存表。</li>
+        <li>route print：显示当前的IP路由表。</li>
+        <li>netstat -ano|findstr 5900：显示所有活动连接和监听端口的数字形式，并筛选出端口号为5900的连接。</li>
+        <li>tasklist|findstr vnc：显示所有正在运行的任务，并筛选出与VNC相关的任务。</li>
+        
+
+
+
+
+    </ul>
+
+
+
+
+    <h1>TCP实现网络聊天</h1>
+    <code>
+        <pre>
+            package test;
+import java.io.OutputStream;
+import java.net.Socket;
+import java.io.IOException;
+import java.net.UnknownHostException;
+import java.net.InetAddress;
+
+public class TcpClientDemo001 {
+    public static void main(String[] args) {
+        Socket socket = null;
+        OutputStream outputStream = null;
+        try {
+            // 1. 要连接的服务器的IP地址和端口号
+            InetAddress serverIP = InetAddress.getByName("127.0.0.1");
+            int port = 9999;
+
+            // 2. 创建一个Socket对象，指定服务器IP地址和端口号
+            socket = new Socket(serverIP, port);
+
+            // 3. 连接成功后，即可进行数据交互
+            System.out.println("成功连接到服务器");
+            outputStream = socket.getOutputStream();
+            // 发送数据到服务器
+            String message = "Hello, Server!";
+            outputStream.write(message.getBytes());
+            // 刷新输出流，确保数据发送到服务器
+            outputStream.flush();
+
+            // 4. 关闭Socket连接
+            //socket.close();
+        } catch (UnknownHostException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        } finally {
+            // 5. 关闭ServerSocket连接
+            if(outputStream!=null)
+                try{
+                    outputStream.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+
+            if (socket != null) {
+                try{
+                    socket.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+    }
+}
+
+        </pre>
+    </code>
+    <code>
+        <pre>
+package test;
+import java.io.ByteArrayOutputStream;
+import java.io.InputStream;
+import java.net.ServerSocket;
+import java.net.Socket;
+import java.io.IOException;
+import java.net.UnknownHostException;
+import java.net.InetAddress;
+
+public class TcpServerDemo001 {
+    public static void main(String[] args) {
+        ServerSocket serverSocket = null;
+        Socket socket = null;
+        InputStream inputStream = null;
+        ByteArrayOutputStream byteArrayOutputStream = null;
+        try {
+            // 1. 创建一个ServerSocket对象，指定端口号
+            int port = 9999;
+            serverSocket = new ServerSocket(port);
+
+            // 2. 监听客户端连接请求
+            System.out.println("服务器已启动，等待客户端连接...");
+            socket = serverSocket.accept();
+            inputStream = socket.getInputStream();
+            // 3. 连接成功后，即可进行数据交互
+            System.out.println("成功连接到客户端");
+            byteArrayOutputStream = new ByteArrayOutputStream();
+            // 接收客户端发送的数据
+            byte[] buffer = new byte[1024];
+            int bytesRead;
+            while ((bytesRead = socket.getInputStream().read(buffer)) != -1) {
+                byteArrayOutputStream.write(buffer, 0, bytesRead);
+            }
+            // 打印客户端发送的消息
+            System.out.println("客户端发送的消息：" + byteArrayOutputStream.toString());
+
+            // 4. 关闭ServerSocket连接
+            serverSocket.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        } finally {
+            if (byteArrayOutputStream != null) {
+                try{
+                    byteArrayOutputStream.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+             if (inputStream != null) {
+                try{
+                    inputStream.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+                 if (socket != null) {
+                try{
+                    socket.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+                 if (serverSocket != null) {
+                try{
+                    serverSocket.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+
+
+        }
+    }
+}
+
+        </pre>
+    </code>
+</body>
+</html>

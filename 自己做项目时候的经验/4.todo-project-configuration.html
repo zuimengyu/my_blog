@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Todo 项目配置修改（适配服务器）</title>
+    <link rel="stylesheet" href="./style.css">
+</head>
+<body>
+    <!-- 回到顶部按钮 -->
+    <div class="back-to-top" onclick="window.scrollTo({top: 0, behavior: 'smooth'})">↑</div>
+
+    <!-- 头部 -->
+    <div class="header-container">
+        <h1>Todo 项目配置修改（适配服务器环境）</h1>
+        <p>项目部署到服务器后，需修改后端数据库连接和前端接口请求地址，确保前后端能正常通信。</p>
+    </div>
+
+    <!-- 主要内容 -->
+    <div class="content-container">
+        <h2>一、修改后端数据库连接（db.js）</h2>
+        <p>db.js 是数据库连接配置文件，需填写服务器 MySQL 的真实信息。</p>
+        <div class="code-block">
+            <button class="copy-btn" onclick="copyCode(this)">复制</button>
+            <pre><code># 1. 进入后端目录（确保项目已上传到服务器 /root/todo-project）
+cd /root/todo-project/backend
+
+# 2. 用 nano 编辑器打开 db.js（Ubuntu 自带，简单易用）
+nano db.js</code></pre>
+        </div>
+
+        <h3>db.js 配置示例（替换为你的信息）</h3>
+        <div class="code-block">
+            <button class="copy-btn" onclick="copyCode(this)">复制</button>
+            <pre><code>// 引入 mysql2 模块
+const mysql = require('mysql2');
+
+// 创建数据库连接池
+const pool = mysql.createPool({
+  host: 'localhost',    // 本地 MySQL，默认 localhost
+  user: 'root',         // MySQL 用户名（默认 root）
+  password: '你的MySQL密码', // 之前设置的 MySQL root 密码
+  database: 'todo_db',  // 项目数据库名（已创建的 todo_db）
+  waitForConnections: true,
+  connectionLimit: 10,
+  queueLimit: 0
+});
+
+// 导出连接池（供 server.js 调用）
+module.exports = pool.promise();</code></pre>
+        </div>
+
+        <div class="note">
+            编辑完成后，按 <code>Ctrl+O</code> 保存，按 <code>Ctrl+X</code> 退出 nano 编辑器。
+        </div>
+
+        <h2>二、修改前端接口请求地址（script.js）</h2>
+        <p>前端需通过服务器公网 IP 调用后端 API，需修改 script.js 中的接口前缀。</p>
+        <div class="code-block">
+            <button class="copy-btn" onclick="copyCode(this)">复制</button>
+            <pre><code># 1. 进入前端目录
+cd /root/todo-project/frontend
+
+# 2. 用 nano 编辑器打开 script.js
+nano script.js</code></pre>
+        </div>
+
+        <h3>script.js 关键修改点</h3>
+        <p>找到所有接口请求地址，将 <code>localhost:3000</code> 替换为你的服务器公网 IP（无需加端口，Nginx 会反向代理）：</p>
+        <div class="code-block">
+            <button class="copy-btn" onclick="copyCode(this)">复制</button>
+            <pre><code>// 原接口地址（本地开发环境）
+const baseUrl = 'http://localhost:3000/api';
+
+// 修改后（服务器环境，替换为你的公网 IP）
+const baseUrl = 'http://你的服务器公网IP/api';
+
+// 示例：登录接口请求（修改后）
+async function login(username, password) {
+  const response = await fetch(`${baseUrl}/login`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ username, password })
+  });
+  return response.json();
+}</code></pre>
+        </div>
+
+        <div class="note">
+            注意：所有接口（登录、注册、待办增删改查）都需使用统一的 <code>baseUrl</code>，避免部分接口失效。
+        </div>
+    </div>
+
+    <!-- 复制代码和回到顶部逻辑 -->
+    <script>
+        // 复制代码功能
+        function copyCode(btn) {
+            const codeBlock = btn.nextElementSibling;
+            const code = codeBlock.textContent;
+            navigator.clipboard.writeText(code).then(() => {
+                btn.textContent = "已复制";
+                btn.classList.add("copied");
+                setTimeout(() => {
+                    btn.textContent = "复制";
+                    btn.classList.remove("copied");
+                }, 2000);
+            }).catch(err => {
+                alert("复制失败：" + err);
+            });
+        }
+
+        // 回到顶部按钮显示/隐藏
+        window.addEventListener("scroll", () => {
+            const backToTopBtn = document.querySelector(".back-to-top");
+            if (window.scrollY > 300) {
+                backToTopBtn.classList.add("show");
+            } else {
+                backToTopBtn.classList.remove("show");
+            }
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>第8章：三层架构 | 小白完整版·90%常用全覆盖</title>
+    <style>
+        .content { padding: 20px 0; line-height: 1.9; font-size: 15px; }
+        .section { margin: 45px 0; padding-bottom: 25px; border-bottom: 1px solid #eff6ff; }
+        .section:last-child { border-bottom: none; }
+        .section h2 { color: #1e40af; margin-bottom: 25px; border-left: 4px solid #3b82f6; padding-left: 15px; font-size: 20px; }
+        .section h3 { color: #0f172a; margin: 30px 0 18px; font-size: 17px; }
+        .step { background: #eff6ff; padding: 22px; border-radius: 8px; margin: 18px 0; border: 1px solid #dbeafe; }
+        .step-title { font-weight: 600; color: #1e40af; margin-bottom: 12px; }
+        code { background: #f1f5f9; padding: 4px 10px; border-radius: 4px; font-family: Consolas, monospace; color: #dc2626; font-size: 14px; }
+        pre { background: #f8fafc; padding: 20px; border-radius: 8px; overflow-x: auto; margin: 18px 0; border: 1px solid #e2e8f0; font-family: Consolas, monospace; font-size: 14px; }
+        .tip { background: #fffbeb; padding: 18px; border-radius: 6px; border-left: 4px solid #f59e0b; margin: 18px 0; font-size: 14px; }
+        .warning { background: #fef2f2; padding: 18px; border-radius: 6px; border-left: 4px solid #ef4444; margin: 18px 0; font-size: 14px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>第8章：三层架构（小白完整版·企业标配）</h1>
+        <div class="content">
+
+<!-- 8.0 前置：为啥要分层？ -->
+<div class="section">
+    <h2>8.0 前置核心：为啥要搞三层架构？</h2>
+    <p><strong>大白话：</strong>
+    之前的代码是「一锅炖」：Servlet里又写业务逻辑、又写JDBC、又处理页面跳转，代码乱成一团！
+    <br>分层就像「餐厅分工」：
+    <br>📌 服务员（表现层）：只负责和顾客交互（接收请求、返回响应）
+    <br>📌 厨师（业务层）：只负责做菜（处理业务逻辑，如登录验证）
+    <br>📌 采购（数据层）：只负责买菜（和数据库交互，DAO）
+    </p>
+    <div class="tip">
+        💡 分层好处：
+        <br>1. 代码清晰，易维护（改业务逻辑不用动DAO，改DAO不用动Servlet）
+        <br>2. 易扩展（比如换数据库，只改DAO层）
+        <br>3. 易分工（前端写页面、后端写Service、数据库写DAO）
+    </div>
+</div>
+
+<!-- 8.1 三层架构核心定义（小白必背） -->
+<div class="section">
+    <h2>8.1 三层架构核心（90%项目都这么分）</h2>
+    <div class="step">
+        <div class="step-title">三层架构（小白版定义）</div>
+        <table style="width:100%; border-collapse: collapse; margin:10px 0;">
+            <tr>
+                <th style="border:1px solid #e2e8f0; padding:12px; background:#eff6ff; color:#1e40af;">层级</th>
+                <th style="border:1px solid #e2e8f0; padding:12px; background:#eff6ff; color:#1e40af;">全称</th>
+                <th style="border:1px solid #e2e8f0; padding:12px; background:#eff6ff; color:#1e40af;">大白话职责</th>
+                <th style="border:1px solid #e2e8f0; padding:12px; background:#eff6ff; color:#1e40af;">对应包名/类</th>
+            </tr>
+            <tr>
+                <td style="border:1px solid #e2e8f0; padding:12px;">表现层</td>
+                <td style="border:1px solid #e2e8f0; padding:12px;">Presentation Layer</td>
+                <td style="border:1px solid #e2e8f0; padding:12px;">接收请求、返回响应、页面跳转</td>
+                <td style="border:1px solid #e2e8f0; padding:12px;">com.servlet（Servlet）、JSP/HTML</td>
+            </tr>
+            <tr>
+                <td style="border:1px solid #e2e8f0; padding:12px;">业务层</td>
+                <td style="border:1px solid #e2e8f0; padding:12px;">Business Layer</td>
+                <td style="border:1px solid #e2e8f0; padding:12px;">处理业务逻辑（登录、权限、校验）</td>
+                <td style="border:1px solid #e2e8f0; padding:12px;">com.service（Service接口+Impl实现）</td>
+            </tr>
+            <tr>
+                <td style="border:1px solid #e2e8f0; padding:12px;">数据层</td>
+                <td style="border:1px solid #e2e8f0; padding:12px;">Data Access Layer</td>
+                <td style="border:1px solid #e2e8f0; padding:12px;">只和数据库交互（增删改查）</td>
+                <td style="border:1px solid #e2e8f0; padding:12px;">com.dao（DAO接口+Impl实现）</td>
+            </tr>
+        </table>
+    </div>
+    <p><strong>额外补充层（辅助）：</strong>
+    <br>📌 实体层（com.pojo）：封装数据库表数据（User、Product等）
+    <br>📌 工具层（com.util）：工具类（DruidUtil、编码工具等）
+    </p>
+</div>
+
+<!-- 8.2 三层架构项目结构（企业标准） -->
+<div class="section">
+    <h2>8.2 三层架构项目结构（小白直接抄）</h2>
+    <pre>
+javaweb-demo（项目名）
+├── src/main/java
+│   ├── com
+│   │   ├── servlet          // 表现层（Servlet）
+│   │   │   └── LoginServlet.java
+│   │   ├── service          // 业务层接口
+│   │   │   └── UserService.java
+│   │   ├── service.impl     // 业务层实现
+│   │   │   └── UserServiceImpl.java
+│   │   ├── dao              // 数据层接口
+│   │   │   └── UserDao.java
+│   │   ├── dao.impl         // 数据层实现
+│   │   │   └── UserDaoImpl.java
+│   │   ├── pojo             // 实体层
+│   │   │   └── User.java
+│   │   └── util             // 工具层
+│   │       └── DruidUtil.java
+│   └── resources            // 配置文件
+│       └── db.properties
+└── src/main/webapp          // 前端页面
+    ├── login.html
+    ├── home.jsp
+    └── upload               // 上传文件目录
+    </pre>
+    <div class="tip">
+        💡 小白记住：包名要「倒写域名+功能」，比如阿里的包名是 com.alibaba.xxx
+    </div>
+</div>
+
+<!-- 8.3 三层架构实战：登录功能（完整流程） -->
+<div class="section">
+    <h2>8.3 实战：登录功能（三层架构完整流程）</h2>
+    <p><strong>完整流程：</strong>
+    <br>浏览器 → 登录页面 → LoginServlet（表现层） → UserService（业务层） → UserDao（数据层） → MySQL → 原路返回
+    </p>
+
+    <h3>8.3.1 1. 实体层（com.pojo.User）</h3>
+    <p>复用第7章的User实体类（略）</p>
+
+    <h3>8.3.2 2. 数据层（DAO）</h3>
+    <p>复用第7章的UserDao接口+UserDaoImpl实现类（略）</p>
+
+    <h3>8.3.3 3. 业务层（Service）</h3>
+    <p>复用第7章的UserService（略），补充异常处理（企业必备）：</p>
+    <pre>
+package com.service.impl;
+
+import com.dao.UserDao;
+import com.dao.impl.UserDaoImpl;
+import com.pojo.User;
+import com.service.UserService;
+
+// 业务层实现类（处理业务逻辑+异常）
+public class UserServiceImpl implements UserService {
+    private UserDao userDao = new UserDaoImpl();
+
+    @Override
+    public boolean login(String username, String password) {
+        // 1. 非空校验（业务逻辑）
+        if (username == null || username.trim().isEmpty()) {
+            throw new RuntimeException("用户名不能为空！");
+        }
+        if (password == null || password.trim().isEmpty()) {
+            throw new RuntimeException("密码不能为空！");
+        }
+
+        // 2. 调用DAO查询用户
+        User user = userDao.findByUsername(username);
+        if (user == null) {
+            throw new RuntimeException("用户名不存在！");
+        }
+
+        // 3. 密码校验
+        if (!user.getPassword().equals(password)) {
+            throw new RuntimeException("密码错误！");
+        }
+
+        return true;
+    }
+}
+    </pre>
+
+    <h3>8.3.4 4. 表现层（Servlet）</h3>
+    <pre>
+package com.servlet;
+
+import com.service.UserService;
+import com.service.impl.UserServiceImpl;
+import jakarta.servlet.annotation.WebServlet;
+import jakarta.servlet.http.HttpServlet;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpSession;
+import java.io.IOException;
+
+// 表现层：只负责接收请求、调用Service、返回响应
+@WebServlet("/login")
+public class LoginServlet extends HttpServlet {
+    // 注入Service（表现层只依赖Service，不直接依赖DAO）
+    private UserService userService = new UserServiceImpl();
+
+    @Override
+    protected void doPost(HttpServletRequest request, HttpServletResponse response) throws IOException {
+        // 1. 编码（表现层职责）
+        request.setCharacterEncoding("UTF-8");
+        response.setContentType("text/html;charset=UTF-8");
+
+        // 2. 获取请求参数（表现层职责）
+        String username = request.getParameter("username");
+        String password = request.getParameter("password");
+
+        try {
+            // 3. 调用业务层（表现层不处理业务逻辑，只调用）
+            boolean isLogin = userService.login(username, password);
+
+            // 4. 处理响应（表现层职责）
+            if (isLogin) {
+                HttpSession session = request.getSession();
+                session.setAttribute("loginUser", username);
+                response.sendRedirect("/home.jsp"); // 登录成功跳主页
+            }
+        } catch (RuntimeException e) {
+            // 5. 异常处理（表现层职责）
+            response.getWriter().write("登录失败：" + e.getMessage());
+        }
+    }
+}
+    </pre>
+
+    <h3>8.3.5 5. 前端页面（login.html）</h3>
+    <pre>
+&lt;!DOCTYPE html&gt;
+&lt;html lang="zh-CN"&gt;
+&lt;head&gt;
+    &lt;meta charset="UTF-8"&gt;
+    &lt;title&gt;登录&lt;/title&gt;
+&lt;/head&gt;
+&lt;body&gt;
+    &lt;h3&gt;用户登录&lt;/h3&gt;
+    &lt;form action="/login" method="post"&gt;
+        用户名：&lt;input type="text" name="username"&gt;&lt;br&gt;
+        密码：&lt;input type="password" name="password"&gt;&lt;br&gt;
+        &lt;input type="submit" value="登录"&gt;
+    &lt;/form&gt;
+&lt;/body&gt;
+&lt;/html&gt;
+    </pre>
+</div>
+
+<!-- 8.4 分层解耦：接口与实现类分离（企业标配） -->
+<div class="section">
+    <h2>8.4 分层解耦：接口与实现类分离（核心）</h2>
+    <p><strong>大白话：</strong>
+    为什么要写接口（UserDao/UserService），再写实现类（UserDaoImpl/UserServiceImpl）？
+    <br>👉 比如你想换数据库（MySQL→Oracle），只需要写一个 <code>UserDaoOracleImpl</code>，Service层不用改任何代码！
+    </p>
+    <div class="tip">
+        💡 企业套路：
+        <br>1. 定义接口：只写方法名，不写实现（规范）
+        <br>2. 写实现类：实现接口的方法（具体逻辑）
+        <br>3. 上层依赖接口，不依赖实现类（如Servlet依赖UserService接口，不是UserServiceImpl）
+    </div>
+    <pre>
+// 表现层只依赖接口，不依赖实现类（解耦）
+private UserService userService = new UserServiceImpl(); 
+// 如果要换实现，只改这一行：
+// private UserService userService = new UserServiceNewImpl();
+    </pre>
+</div>
+
+<!-- 8.5 本章必背总结 -->
+<div class="section">
+    <h2>8.5 本章终极总结（小白记住这些就够）</h2>
+    <ul>
+        <li>🍉 三层架构核心：表现层（Servlet）→ 业务层（Service）→ 数据层（DAO），每层只做自己的事</li>
+        <li>🔐 包名规范：com.servlet / com.service / com.dao / com.pojo / com.util</li>
+        <li>⚡ 解耦关键：接口+实现类分离，上层依赖接口不依赖实现</li>
+        <li>🎯 企业流程：前端请求 → Servlet（收参）→ Service（业务）→ DAO（数据库）→ 原路返回响应</li>
+    </ul>
+</div>
+
+<!-- 已删除的10%极少用内容 -->
+<div class="tip">
+    ✅ 已删除：四层架构（加了控制层）、分层测试、依赖注入进阶（Spring部分再讲）
+</div>
+
+        </div>
+    </div>
+</body>
+</html>

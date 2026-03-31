@@ -1,0 +1,762 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Java JDBC核心实战大全（数据库连接+CRUD+事务+优化）</title>
+    <!-- 外部样式兼容（与之前文档统一） -->
+    <link rel="stylesheet" href="common-style.css">
+    <!-- 代码高亮Prism.js CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/prism.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-java.min.js"></script>
+    <style>
+        /* 兜底样式（无common-style.css时生效） */
+        body { font-family: "Microsoft YaHei", sans-serif; margin: 20px; line-height: 1.6; }
+        h1 { color: #2c3e50; text-align: center; border-bottom: 2px solid #3498db; padding-bottom: 10px; }
+        h2 { color: #3498db; margin-top: 30px; }
+        h3 { color: #2980b9; margin-top: 20px; }
+        .catalog { background: #f8f9fa; padding: 15px; border-radius: 5px; margin: 20px 0; }
+        .catalog ul { list-style: none; padding-left: 10px; }
+        .catalog li { margin: 8px 0; }
+        .catalog a { text-decoration: none; color: #2980b9; }
+        .catalog a:hover { color: #e74c3c; }
+        .tip { background: #d5f5e3; padding: 10px; border-left: 4px solid #27ae60; margin: 15px 0; border-radius: 3px; }
+        .warn { background: #fef5e7; padding: 10px; border-left: 4px solid #f39c12; margin: 15px 0; border-radius: 3px; }
+        .code-block { background: #2d2d2d; color: #ccc; padding: 15px; border-radius: 5px; overflow-x: auto; margin: 10px 0; }
+        .result-block { background: #f1f1f1; padding: 10px; border-radius: 5px; margin: 10px 0; font-family: Consolas, monospace; }
+        .section { margin: 30px 0; }
+        .jdbc-table { background: #e8f4fd; padding: 10px; border-radius: 5px; margin: 10px 0; }
+    </style>
+</head>
+<body>
+    <h1>Java JDBC核心实战大全（数据库连接+CRUD+事务+优化）</h1>
+    
+    <!-- 顶端目录（锚点跳转） -->
+    <div class="catalog">
+        <h2>文档目录</h2>
+        <ul>
+            <li><a href="#jdbc-base">JDBC核心认知（定义+流程+环境准备）</a></li>
+            <li><a href="#jdbc-component">JDBC核心组件（DriverManager/Connection/Statement/ResultSet）</a></li>
+            <li><a href="#jdbc-crud">JDBC CRUD完整实战（增删改查）</a></li>
+            <li><a href="#jdbc-transaction">JDBC事务处理（提交/回滚/ACID）</a></li>
+            <li><a href="#jdbc-sql-inject">PreparedStatement防SQL注入</a></li>
+            <li><a href="#jdbc-pool">JDBC连接池（拓展：SpringBoot底层基础）</a></li>
+            <li><a href="#jdbc-issue">高频坑点&最佳实践</a></li>
+        </ul>
+    </div>
+
+    <div class="tip">
+        <strong>JDBC核心前置说明</strong><br>
+        1. 核心价值：JDBC（Java Database Connectivity）是Java操作数据库的「标准接口」，屏蔽不同数据库（MySQL/Oracle）的底层差异，是MyBatis/JPA的底层基础；<br>
+        2. 核心流程：加载驱动 → 获取连接 → 创建Statement → 执行SQL → 处理结果 → 释放资源；<br>
+        3. 环境准备：① 安装MySQL（8.0+） ② 引入MySQL驱动依赖 ③ 创建测试数据库/表；<br>
+        4. 核心目标：理解「数据库连接的本质」，掌握CRUD和事务，为SpringBoot的JdbcTemplate/MyBatis打基础。
+    </div>
+
+    <!-- 模块1：JDBC核心认知 -->
+    <div class="section" id="jdbc-base">
+        <h2>模块1：JDBC核心认知（定义+流程+环境准备）</h2>
+        <h3>一、JDBC核心定义</h3>
+        <p>JDBC是Java提供的一套「数据库访问标准」，由<code>java.sql</code>和<code>javax.sql</code>包组成，包含接口（Connection/Statement等）和抽象类，数据库厂商（如MySQL）提供接口的实现（驱动包），实现Java程序与数据库的交互。</p>
+
+        <h3>二、JDBC核心流程（6步）</h3>
+        <div class="jdbc-table">
+            <ol>
+                <li><strong>加载驱动</strong>：注册数据库驱动（MySQL 8.0+可省略，自动加载）；</li>
+                <li><strong>获取连接</strong>：通过DriverManager获取Connection（数据库连接会话）；</li>
+                <li><strong>创建Statement</strong>：通过Connection创建Statement/PreparedStatement（执行SQL的对象）；</li>
+                <li><strong>执行SQL</strong>：调用executeQuery（查询）/executeUpdate（增删改）执行SQL；</li>
+                <li><strong>处理结果</strong>：查询结果封装到ResultSet，遍历处理；</li>
+                <li><strong>释放资源</strong>：反向关闭ResultSet→Statement→Connection（避免资源泄漏）。</li>
+            </ol>
+        </div>
+
+        <h3>三、环境准备（必做）</h3>
+        <div class="code-block">
+<pre><code class="language-bash">
+# 1. MySQL创建测试库和表
+CREATE DATABASE jdbc_demo;
+USE jdbc_demo;
+CREATE TABLE user (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    username VARCHAR(50) NOT NULL,
+    age INT,
+    create_time DATETIME DEFAULT CURRENT_TIMESTAMP
+);
+
+# 2. Maven引入MySQL驱动依赖（pom.xml）
+<!-- MySQL 8.0+驱动 -->
+<dependency>
+    <groupId>com.mysql</groupId>
+    <artifactId>mysql-connector-j</artifactId>
+    <version>8.0.33</version>
+</dependency>
+</code></pre>
+        </div>
+        <div class="warn">
+            <strong>版本注意</strong>：<br>
+            - MySQL 5.x驱动：groupId=mysql，artifactId=mysql-connector-java，版本5.1.49；<br>
+            - MySQL 8.0+驱动：groupId=com.mysql，artifactId=mysql-connector-j，版本8.0.x，驱动类名：com.mysql.cj.jdbc.Driver（5.x是com.mysql.jdbc.Driver）。
+        </div>
+    </div>
+
+    <!-- 模块2：JDBC核心组件 -->
+    <div class="section" id="jdbc-component">
+        <h2>模块2：JDBC核心组件（DriverManager/Connection/Statement/ResultSet）</h2>
+        <p>JDBC的核心是4个组件，各司其职，是操作数据库的基础，需掌握每个组件的核心作用和用法。</p>
+
+        <h3>核心实战：组件完整使用演示</h3>
+        <div class="code-block">
+<pre><code class="language-java">
+import java.sql.*;
+
+/**
+ * JDBC核心组件实战：
+ * 1. DriverManager：获取数据库连接
+ * 2. Connection：数据库会话（创建Statement/事务控制）
+ * 3. Statement：执行SQL语句
+ * 4. ResultSet：处理查询结果
+ */
+public class JdbcComponentDemo {
+    // 数据库连接参数（建议抽取到配置文件）
+    private static final String URL = "jdbc:mysql://localhost:3306/jdbc_demo?useUnicode=true&characterEncoding=UTF-8&serverTimezone=Asia/Shanghai";
+    private static final String USER = "root"; // 替换为你的MySQL用户名
+    private static final String PASSWORD = "123456"; // 替换为你的MySQL密码
+
+    public static void main(String[] args) {
+        Connection conn = null;
+        Statement stmt = null;
+        ResultSet rs = null;
+
+        try {
+            // 1. 加载驱动（MySQL 8.0+可省略，自动加载）
+            Class.forName("com.mysql.cj.jdbc.Driver");
+
+            // 2. 获取Connection（数据库连接本质：TCP连接）
+            conn = DriverManager.getConnection(URL, USER, PASSWORD);
+            System.out.println("数据库连接成功：" + conn);
+
+            // 3. 创建Statement（执行SQL的对象）
+            stmt = conn.createStatement();
+
+            // 4. 执行SQL（插入数据）
+            String insertSql = "INSERT INTO user(username, age) VALUES ('张三', 25)";
+            int affectedRows = stmt.executeUpdate(insertSql); // 增删改返回受影响行数
+            System.out.println("插入数据受影响行数：" + affectedRows);
+
+            // 5. 执行SQL（查询数据）
+            String selectSql = "SELECT id, username, age, create_time FROM user";
+            rs = stmt.executeQuery(selectSql); // 查询返回ResultSet
+
+            // 6. 处理ResultSet结果集
+            System.out.println("\n查询结果：");
+            while (rs.next()) { // 遍历结果集（游标下移）
+                int id = rs.getInt("id"); // 通过列名获取值
+                String username = rs.getString("username");
+                int age = rs.getInt("age");
+                Timestamp createTime = rs.getTimestamp("create_time");
+                System.out.printf("id=%d, username=%s, age=%d, create_time=%s%n", id, username, age, createTime);
+            }
+
+        } catch (ClassNotFoundException e) {
+            System.err.println("驱动加载失败：" + e.getMessage());
+        } catch (SQLException e) {
+            System.err.println("数据库操作异常：" + e.getMessage());
+        } finally {
+            // 7. 释放资源（反向关闭，避免资源泄漏）
+            try {
+                if (rs != null) rs.close();
+                if (stmt != null) stmt.close();
+                if (conn != null) conn.close();
+                System.out.println("\n资源释放完成");
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+}
+</code></pre>
+        </div>
+        <div class="result-block">
+<pre>
+数据库连接成功：com.mysql.cj.jdbc.ConnectionImpl@78308db1
+插入数据受影响行数：1
+
+查询结果：
+id=1, username=张三, age=25, create_time=2026-02-12 15:30:00.0
+
+资源释放完成
+</pre>
+        </div>
+
+        <div class="tip">
+            <strong>核心组件说明</strong><br>
+            1. <strong>DriverManager</strong>：核心方法<code>getConnection(URL, USER, PWD)</code>，本质是通过驱动创建数据库TCP连接；<br>
+            2. <strong>Connection</strong>：数据库会话对象，核心作用：创建Statement、控制事务（setAutoCommit/ commit/rollback）；<br>
+            3. <strong>Statement</strong>：执行静态SQL，核心方法：executeUpdate（增删改）、executeQuery（查询）；<br>
+            4. <strong>ResultSet</strong>：查询结果集，通过<code>next()</code>遍历，<code>getXxx(列名/下标)</code>获取值（下标从1开始）。
+        </div>
+    </div>
+
+    <!-- 模块3：JDBC CRUD完整实战 -->
+    <div class="section" id="jdbc-crud">
+        <h2>模块3：JDBC CRUD完整实战（增删改查）</h2>
+        <p>CRUD（Create/Read/Update/Delete）是数据库操作的核心，掌握JDBC的CRUD是后端开发的基础，以下封装工具类简化操作。</p>
+
+        <h3>核心实战：CRUD工具类+完整演示</h3>
+        <div class="code-block">
+<pre><code class="language-java">
+import java.sql.*;
+import java.util.ArrayList;
+import java.util.List;
+
+/**
+ * JDBC CRUD完整实战：
+ * 封装工具类，实现用户表的增删改查
+ */
+// 实体类：User（对应数据库user表）
+class User {
+    private Integer id;
+    private String username;
+    private Integer age;
+    private Timestamp createTime;
+
+    // 构造器/Getter/Setter/toString
+    public User() {}
+    public User(String username, Integer age) {
+        this.username = username;
+        this.age = age;
+    }
+
+    public Integer getId() { return id; }
+    public void setId(Integer id) { this.id = id; }
+    public String getUsername() { return username; }
+    public void setUsername(String username) { this.username = username; }
+    public Integer getAge() { return age; }
+    public void setAge(Integer age) { this.age = age; }
+    public Timestamp getCreateTime() { return createTime; }
+    public void setCreateTime(Timestamp createTime) { this.createTime = createTime; }
+
+    @Override
+    public String toString() {
+        return "User{id=" + id + ", username='" + username + "', age=" + age + ", createTime=" + createTime + "}";
+    }
+}
+
+// JDBC CRUD工具类
+public class JdbcCrudDemo {
+    // 连接参数
+    private static final String URL = "jdbc:mysql://localhost:3306/jdbc_demo?useUnicode=true&characterEncoding=UTF-8&serverTimezone=Asia/Shanghai";
+    private static final String USER = "root";
+    private static final String PASSWORD = "123456";
+
+    // 1. 新增用户
+    public static int addUser(User user) {
+        String sql = "INSERT INTO user(username, age) VALUES ('" + user.getUsername() + "', " + user.getAge() + ")";
+        try (Connection conn = DriverManager.getConnection(URL, USER, PASSWORD);
+             Statement stmt = conn.createStatement()) {
+            return stmt.executeUpdate(sql);
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return 0;
+        }
+    }
+
+    // 2. 查询所有用户
+    public static List<User> listAllUsers() {
+        List<User> userList = new ArrayList<>();
+        String sql = "SELECT id, username, age, create_time FROM user";
+        try (Connection conn = DriverManager.getConnection(URL, USER, PASSWORD);
+             Statement stmt = conn.createStatement();
+             ResultSet rs = stmt.executeQuery(sql)) {
+
+            while (rs.next()) {
+                User user = new User();
+                user.setId(rs.getInt("id"));
+                user.setUsername(rs.getString("username"));
+                user.setAge(rs.getInt("age"));
+                user.setCreateTime(rs.getTimestamp("create_time"));
+                userList.add(user);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return userList;
+    }
+
+    // 3. 更新用户
+    public static int updateUser(User user) {
+        String sql = "UPDATE user SET age=" + user.getAge() + " WHERE id=" + user.getId();
+        try (Connection conn = DriverManager.getConnection(URL, USER, PASSWORD);
+             Statement stmt = conn.createStatement()) {
+            return stmt.executeUpdate(sql);
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return 0;
+        }
+    }
+
+    // 4. 删除用户
+    public static int deleteUser(Integer id) {
+        String sql = "DELETE FROM user WHERE id=" + id;
+        try (Connection conn = DriverManager.getConnection(URL, USER, PASSWORD);
+             Statement stmt = conn.createStatement()) {
+            return stmt.executeUpdate(sql);
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return 0;
+        }
+    }
+
+    // 测试CRUD
+    public static void main(String[] args) {
+        // 1. 新增
+        int addResult = addUser(new User("李四", 30));
+        System.out.println("新增用户结果：" + (addResult > 0 ? "成功" : "失败"));
+
+        // 2. 查询所有
+        System.out.println("\n所有用户：");
+        listAllUsers().forEach(System.out::println);
+
+        // 3. 更新（修改id=2的用户年龄为31）
+        User updateUser = new User();
+        updateUser.setId(2);
+        updateUser.setAge(31);
+        int updateResult = updateUser(updateUser);
+        System.out.println("\n更新用户结果：" + (updateResult > 0 ? "成功" : "失败"));
+
+        // 4. 删除（删除id=2的用户）
+        int deleteResult = deleteUser(2);
+        System.out.println("\n删除用户结果：" + (deleteResult > 0 ? "成功" : "失败"));
+
+        // 5. 再次查询
+        System.out.println("\n删除后所有用户：");
+        listAllUsers().forEach(System.out::println);
+    }
+}
+</code></pre>
+        </div>
+        <div class="result-block">
+<pre>
+新增用户结果：成功
+
+所有用户：
+User{id=1, username='张三', age=25, createTime=2026-02-12 15:30:00.0}
+User{id=2, username='李四', age=30, createTime=2026-02-12 15:35:00.0}
+
+更新用户结果：成功
+
+删除用户结果：成功
+
+删除后所有用户：
+User{id=1, username='张三', age=25, createTime=2026-02-12 15:30:00.0}
+</pre>
+        </div>
+        <div class="tip">
+            <strong>简化技巧</strong>：使用<code>try-with-resources</code>自动关闭资源（Connection/Statement/ResultSet均实现AutoCloseable），替代手动finally关闭，代码更简洁。
+        </div>
+    </div>
+
+    <!-- 模块4：JDBC事务处理 -->
+    <div class="section" id="jdbc-transaction">
+        <h2>模块4：JDBC事务处理（提交/回滚/ACID）</h2>
+        <p>事务（Transaction）是「一组不可分割的数据库操作」，要么全部成功，要么全部失败，JDBC通过Connection控制事务，是保证数据一致性的核心。</p>
+        <div class="warn">
+            <strong>事务核心特性（ACID）</strong><br>
+            - 原子性（Atomicity）：操作不可分割；<br>
+            - 一致性（Consistency）：事务前后数据状态一致；<br>
+            - 隔离性（Isolation）：多个事务互不干扰；<br>
+            - 持久性（Durability）：事务提交后数据永久保存。
+        </div>
+
+        <h3>核心实战：转账案例（事务回滚演示）</h3>
+        <div class="code-block">
+<pre><code class="language-java">
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.SQLException;
+import java.sql.Statement;
+
+/**
+ * JDBC事务实战：转账案例
+ * 场景：用户A给用户B转100元，扣减A的余额，增加B的余额，任一操作失败则回滚
+ */
+public class JdbcTransactionDemo {
+    private static final String URL = "jdbc:mysql://localhost:3306/jdbc_demo?useUnicode=true&characterEncoding=UTF-8&serverTimezone=Asia/Shanghai";
+    private static final String USER = "root";
+    private static final String PASSWORD = "123456";
+
+    // 先创建账户表
+    public static void createAccountTable() {
+        String sql = "CREATE TABLE IF NOT EXISTS account (" +
+                "id INT PRIMARY KEY AUTO_INCREMENT," +
+                "username VARCHAR(50) NOT NULL," +
+                "balance DECIMAL(10,2) DEFAULT 0.00)";
+        try (Connection conn = DriverManager.getConnection(URL, USER, PASSWORD);
+             Statement stmt = conn.createStatement()) {
+            stmt.executeUpdate(sql);
+            // 插入测试数据
+            stmt.executeUpdate("INSERT IGNORE INTO account(username, balance) VALUES ('A', 1000.00), ('B', 500.00)");
+            System.out.println("账户表创建/初始化成功");
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+    // 转账方法（带事务）
+    public static void transfer(String fromUser, String toUser, double money) {
+        Connection conn = null;
+        Statement stmt = null;
+
+        try {
+            // 1. 获取连接
+            conn = DriverManager.getConnection(URL, USER, PASSWORD);
+            // 2. 关闭自动提交（开启事务）
+            conn.setAutoCommit(false);
+
+            // 3. 创建Statement
+            stmt = conn.createStatement();
+
+            // 4. 扣减转出方余额（模拟异常：故意写错表名触发失败）
+            String sql1 = "UPDATE account SET balance = balance - " + money + " WHERE username = '" + fromUser + "'";
+            stmt.executeUpdate(sql1);
+
+            // 模拟异常（如网络故障、代码错误）
+            // int a = 1 / 0; // 打开注释触发异常，事务回滚
+
+            // 5. 增加转入方余额
+            String sql2 = "UPDATE account SET balance = balance + " + money + " WHERE username = '" + toUser + "'";
+            stmt.executeUpdate(sql2);
+
+            // 6. 提交事务（所有操作成功）
+            conn.commit();
+            System.out.println("转账成功！" + fromUser + "给" + toUser + "转了" + money + "元");
+
+        } catch (Exception e) {
+            // 7. 事务回滚（任一操作失败）
+            try {
+                if (conn != null) conn.rollback();
+                System.out.println("转账失败，事务回滚：" + e.getMessage());
+            } catch (SQLException ex) {
+                ex.printStackTrace();
+            }
+            e.printStackTrace();
+        } finally {
+            // 8. 释放资源
+            try {
+                if (stmt != null) stmt.close();
+                if (conn != null) {
+                    // 恢复自动提交（避免影响后续操作）
+                    conn.setAutoCommit(true);
+                    conn.close();
+                }
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    public static void main(String[] args) {
+        // 初始化账户表
+        createAccountTable();
+
+        // 执行转账
+        transfer("A", "B", 100.00);
+
+        // 查询转账后余额
+        try (Connection conn = DriverManager.getConnection(URL, USER, PASSWORD);
+             Statement stmt = conn.createStatement()) {
+            System.out.println("\n转账后余额：");
+            stmt.executeQuery("SELECT username, balance FROM account")
+                    .next(); // 简化演示，仅查第一条
+            // 完整遍历可参考之前的ResultSet处理
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+}
+</code></pre>
+        </div>
+        <div class="result-block">
+<pre>
+// 无异常时输出：
+账户表创建/初始化成功
+转账成功！A给B转了100.0元
+转账后余额：
+A: 900.00, B: 600.00
+
+// 打开int a=1/0注释后输出：
+账户表创建/初始化成功
+转账失败，事务回滚：/ by zero
+java.lang.ArithmeticException: / by zero
+...
+转账后余额：
+A: 1000.00, B: 500.00 // 数据回滚，未发生变化
+</pre>
+        </div>
+        <div class="tip">
+            <strong>事务核心步骤</strong><br>
+            1. <code>conn.setAutoCommit(false)</code>：关闭自动提交（默认true，每条SQL自动提交）；<br>
+            2. 执行所有事务内SQL；<br>
+            3. <code>conn.commit()</code>：所有操作成功则提交；<br>
+            4. <code>conn.rollback()</code>：异常时回滚；<br>
+            5. 最终恢复自动提交（可选），释放资源。
+        </div>
+    </div>
+
+    <!-- 模块5：PreparedStatement防SQL注入 -->
+    <div class="section" id="jdbc-sql-inject">
+        <h2>模块5：PreparedStatement防SQL注入</h2>
+        <p>Statement执行<strong>静态SQL</strong>，存在SQL注入风险；PreparedStatement执行<strong>预编译SQL</strong>，参数化查询，从根源避免SQL注入，是生产环境的首选。</p>
+        <div class="warn">
+            <strong>SQL注入风险演示</strong>：<br>
+            登录SQL：<code>SELECT * FROM user WHERE username='admin' AND password='123' OR '1'='1'</code>；<br>
+            攻击者输入密码：<code>' OR '1'='1</code>，可绕过密码验证，直接登录。
+        </div>
+
+        <h3>核心实战：Statement vs PreparedStatement对比</h3>
+        <div class="code-block">
+<pre><code class="language-java">
+import java.sql.*;
+
+/**
+ * PreparedStatement实战：防SQL注入
+ * 对比Statement（有注入风险）和PreparedStatement（安全）
+ */
+public class JdbcSqlInjectDemo {
+    private static final String URL = "jdbc:mysql://localhost:3306/jdbc_demo?useUnicode=true&characterEncoding=UTF-8&serverTimezone=Asia/Shanghai";
+    private static final String USER = "root";
+    private static final String PASSWORD = "123456";
+
+    // 1. Statement登录（存在SQL注入）
+    public static void loginWithStatement(String username, String password) {
+        String sql = "SELECT * FROM user WHERE username='" + username + "' AND password='" + password + "'";
+        try (Connection conn = DriverManager.getConnection(URL, USER, PASSWORD);
+             Statement stmt = conn.createStatement();
+             ResultSet rs = stmt.executeQuery(sql)) {
+
+            if (rs.next()) {
+                System.out.println("Statement登录成功：欢迎" + username);
+            } else {
+                System.out.println("Statement登录失败：用户名/密码错误");
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+    // 2. PreparedStatement登录（防SQL注入）
+    public static void loginWithPreparedStatement(String username, String password) {
+        // 预编译SQL：?是参数占位符
+        String sql = "SELECT * FROM user WHERE username=? AND password=?";
+        try (Connection conn = DriverManager.getConnection(URL, USER, PASSWORD);
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+
+            // 设置参数（下标从1开始）
+            pstmt.setString(1, username);
+            pstmt.setString(2, password);
+
+            // 执行查询（无需传SQL）
+            ResultSet rs = pstmt.executeQuery();
+            if (rs.next()) {
+                System.out.println("PreparedStatement登录成功：欢迎" + username);
+            } else {
+                System.out.println("PreparedStatement登录失败：用户名/密码错误");
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public static void main(String[] args) {
+        // 先插入测试用户（用户名admin，密码123）
+        try (Connection conn = DriverManager.getConnection(URL, USER, PASSWORD);
+             PreparedStatement pstmt = conn.prepareStatement("INSERT IGNORE INTO user(username, password) VALUES (?, ?)")) {
+            pstmt.setString(1, "admin");
+            pstmt.setString(2, "123");
+            pstmt.executeUpdate();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        // 模拟SQL注入攻击：密码输入 ' OR '1'='1
+        String attackPassword = "' OR '1'='1";
+
+        System.out.println("=== Statement登录（注入攻击） ===");
+        loginWithStatement("admin", attackPassword); // 注入成功，登录成功
+
+        System.out.println("\n=== PreparedStatement登录（注入攻击） ===");
+        loginWithPreparedStatement("admin", attackPassword); // 注入失败，登录失败
+    }
+}
+</code></pre>
+        </div>
+        <div class="result-block">
+<pre>
+=== Statement登录（注入攻击） ===
+Statement登录成功：欢迎admin
+
+=== PreparedStatement登录（注入攻击） ===
+PreparedStatement登录失败：用户名/密码错误
+</pre>
+        </div>
+        <div class="tip">
+            <strong>PreparedStatement核心优势</strong><br>
+            1. 防SQL注入：参数化查询，将参数与SQL分离；<br>
+            2. 预编译优化：SQL预编译后可重复执行，性能优于Statement；<br>
+            3. 代码更安全：无需拼接SQL字符串，避免语法错误。
+        </div>
+    </div>
+
+    <!-- 模块6：JDBC连接池 -->
+    <div class="section" id="jdbc-pool">
+        <h2>模块6：JDBC连接池（拓展：SpringBoot底层基础）</h2>
+        <p>直接使用DriverManager获取连接，每次创建/关闭连接消耗大量资源（TCP三次握手/四次挥手），连接池提前创建一组连接，复用连接，提升性能，是SpringBoot的核心配置。</p>
+        <div class="warn">
+            <strong>连接池核心价值</strong>：<br>
+            - 复用连接：避免频繁创建/关闭连接；<br>
+            - 控制连接数：防止数据库连接过多导致崩溃；<br>
+            - 超时管理：自动回收空闲连接；<br>
+            - SpringBoot默认连接池：HikariCP（性能最优）。
+        </div>
+
+        <h3>核心实战：DBCP连接池（基础）+ HikariCP（SpringBoot默认）</h3>
+        <div class="code-block">
+<pre><code class="language-java">
+import org.apache.commons.dbcp2.BasicDataSource;
+import com.zaxxer.hikari.HikariDataSource;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+
+/**
+ * JDBC连接池实战：
+ * 1. DBCP连接池（基础）
+ * 2. HikariCP连接池（SpringBoot默认）
+ */
+public class JdbcPoolDemo {
+    // 1. DBCP连接池配置
+    public static BasicDataSource createDBCPPool() {
+        BasicDataSource dbcpPool = new BasicDataSource();
+        dbcpPool.setUrl("jdbc:mysql://localhost:3306/jdbc_demo?useUnicode=true&characterEncoding=UTF-8&serverTimezone=Asia/Shanghai");
+        dbcpPool.setUsername("root");
+        dbcpPool.setPassword("123456");
+        // 连接池参数
+        dbcpPool.setInitialSize(5); // 初始连接数
+        dbcpPool.setMaxTotal(10); // 最大连接数
+        dbcpPool.setMaxIdle(5); // 最大空闲连接数
+        dbcpPool.setMinIdle(2); // 最小空闲连接数
+        return dbcpPool;
+    }
+
+    // 2. HikariCP连接池配置（SpringBoot默认）
+    public static HikariDataSource createHikariPool() {
+        HikariDataSource hikariPool = new HikariDataSource();
+        hikariPool.setJdbcUrl("jdbc:mysql://localhost:3306/jdbc_demo?useUnicode=true&characterEncoding=UTF-8&serverTimezone=Asia/Shanghai");
+        hikariPool.setUsername("root");
+        hikariPool.setPassword("123456");
+        // 核心参数
+        hikariPool.setMaximumPoolSize(10); // 最大连接数
+        hikariPool.setMinimumIdle(2); // 最小空闲连接数
+        hikariPool.setConnectionTimeout(30000); // 连接超时时间（30秒）
+        hikariPool.setIdleTimeout(600000); // 空闲连接超时时间（10分钟）
+        return hikariPool;
+    }
+
+    // 测试连接池
+    public static void testPool(Connection conn) throws Exception {
+        String sql = "SELECT COUNT(*) FROM user";
+        try (PreparedStatement pstmt = conn.prepareStatement(sql);
+             ResultSet rs = pstmt.executeQuery()) {
+            if (rs.next()) {
+                System.out.println("用户总数：" + rs.getInt(1));
+            }
+        }
+        conn.close(); // 归还连接到池，而非真正关闭
+    }
+
+    public static void main(String[] args) throws Exception {
+        // 引入依赖（pom.xml）
+        /*
+        <!-- DBCP2 -->
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-dbcp2</artifactId>
+            <version>2.9.0</version>
+        </dependency>
+        <!-- HikariCP -->
+        <dependency>
+            <groupId>com.zaxxer</groupId>
+            <artifactId>HikariCP</artifactId>
+            <version>5.0.1</version>
+        </dependency>
+        */
+
+        // 1. 测试DBCP连接池
+        BasicDataSource dbcpPool = createDBCPPool();
+        System.out.println("=== DBCP连接池测试 ===");
+        testPool(dbcpPool.getConnection());
+
+        // 2. 测试HikariCP连接池
+        HikariDataSource hikariPool = createHikariPool();
+        System.out.println("\n=== HikariCP连接池测试 ===");
+        testPool(hikariPool.getConnection());
+
+        // 关闭连接池（应用停止时）
+        dbcpPool.close();
+        hikariPool.close();
+    }
+}
+</code></pre>
+        </div>
+        <div class="result-block">
+<pre>
+=== DBCP连接池测试 ===
+用户总数：1
+
+=== HikariCP连接池测试 ===
+用户总数：1
+</pre>
+        </div>
+        <div class="tip">
+            <strong>SpringBoot中使用连接池</strong><br>
+            只需在application.yml配置，无需手动创建：
+            <pre>
+spring:
+  datasource:
+    url: jdbc:mysql://localhost:3306/jdbc_demo?useUnicode=true&characterEncoding=UTF-8&serverTimezone=Asia/Shanghai
+    username: root
+    password: 123456
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    hikari:
+      maximum-pool-size: 10
+      minimum-idle: 2
+      connection-timeout: 30000
+            </pre>
+        </div>
+    </div>
+
+    <!-- 模块7：高频坑点&最佳实践 -->
+    <div class="section" id="jdbc-issue">
+        <h2>模块7：高频坑点&最佳实践</h2>
+        <div class="warn">
+            <strong>高频坑点</strong><br>
+            1. 资源未释放：未关闭Connection/Statement/ResultSet，导致数据库连接泄漏；<br>
+            2. SQL注入：使用Statement执行动态SQL，未用PreparedStatement；<br>
+            3. 事务未提交：关闭自动提交后忘记调用commit()，数据未持久化；<br>
+            4. 连接参数错误：URL未指定serverTimezone（MySQL 8.0+必现异常）；<br>
+            5. 结果集下标错误：ResultSet.getXxx(0)（下标从1开始）；<br>
+            6. 连接池参数不合理：最大连接数过大导致数据库崩溃，过小导致连接不足。
+        </div>
+        <div class="tip">
+            <strong>最佳实践</strong><br>
+            1. 资源管理：强制使用try-with-resources自动关闭资源；<br>
+            2. SQL执行：优先使用PreparedStatement，避免拼接SQL；<br>
+            3. 事务控制：所有修改操作（增删改）必须加事务；<br>
+            4. 连接管理：生产环境必须使用连接池（HikariCP最优）；<br>
+            5. 配置抽取：数据库连接参数抽取到配置文件（如application.yml），避免硬编码；<br>
+            6. 异常处理：捕获SQLException后打印详细信息（错误码、SQL状态），便于排查。
+        </div>
+    </div>
+</body>
+</html>

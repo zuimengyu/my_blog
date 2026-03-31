@@ -1,0 +1,152 @@
+/* 通用重置 */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: "Microsoft YaHei", "PingFang SC", sans-serif;
+}
+
+/* 页面基础样式 */
+body {
+    background-color: #f9fafb;
+    color: #334155;
+    line-height: 1.6;
+    padding: 20px;
+}
+
+/* 容器样式 - 居中、留白、卡片质感 */
+.container {
+    max-width: 1000px;
+    margin: 0 auto;
+    background: #ffffff;
+    padding: 40px 30px;
+    border-radius: 12px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+}
+
+/* 标题样式 */
+h1 {
+    text-align: center;
+    color: #1e40af;
+    margin-bottom: 40px;
+    font-weight: 600;
+    font-size: 28px;
+    border-bottom: 3px solid #eff6ff;
+    padding-bottom: 15px;
+}
+
+/* 章节列表容器 */
+.chapter-list {
+    display: flex;
+    flex-direction: column;
+    gap: 15px; /* 章节之间的间距 */
+}
+
+/* 章节项样式 - 相对定位，承载子列表 */
+.chapter-item {
+    width: 100%;
+    position: relative;
+}
+
+/* 章节标题按钮（主标签） */
+.chapter-title {
+    display: block;
+    width: 100%;
+    padding: 16px 20px;
+    background-color: #eff6ff;
+    color: #1e40af;
+    text-decoration: none;
+    border-radius: 8px;
+    font-size: 18px;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    border: 1px solid #dbeafe;
+    cursor: pointer;
+}
+
+/* 章节标题hover效果 */
+.chapter-title:hover {
+    background-color: #dbeafe;
+    transform: translateX(5px);
+}
+
+/* 细分课时列表 - 默认隐藏（关键：relative+max-height过渡） */
+.lesson-sub-list {
+    /* 其他样式完全不变 */
+    transition: max-height 1s ease-in-out, padding 1s ease-in-out, gap 1s ease-in-out; /* 仅改这行，拆分过渡属性，更稳定 */
+    max-height: 0;
+    overflow: hidden;
+    padding: 0 15px;
+    gap: 0;
+    display: flex; /* 关键：默认设为flex，只靠max-height控制显示/隐藏 */
+    flex-direction: column;
+}
+
+.lesson-sub-list.show {
+    max-height: 800px; /* 固定足够大的高度，放弃动态计算 */
+    padding: 15px;
+    gap: 10px;
+}
+
+/* 细分课时项 - 初始透明，展开后渐显 */
+.lesson-item {
+    padding: 10px 15px;
+    border-radius: 6px;
+    transition: background-color 0.2s ease;
+    opacity: 0;
+    transform: translateY(10px); /* 初始向上偏移，展开后归位 */
+    transition: all 0.3s ease 0.1s; /* 延迟动画，更自然 */
+}
+
+/* 展开时课时项渐显 */
+.lesson-sub-list.show .lesson-item {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+/* 细分课时链接 */
+.lesson-item a {
+    text-decoration: none;
+    color: #475569;
+    font-size: 16px;
+    display: block;
+}
+
+/* 细分课时hover效果 */
+.lesson-item:hover {
+    background-color: #f1f5f9;
+}
+.lesson-item a:hover {
+    color: #1e40af;
+    font-weight: 500;
+}
+
+/* 上下篇分组标题 */
+.part-title {
+    font-size: 22px;
+    color: #0f172a;
+    margin: 30px 0 20px;
+    font-weight: 600;
+    padding-left: 10px;
+    border-left: 4px solid #3b82f6;
+}
+
+/* 响应式适配（手机端） */
+@media (max-width: 768px) {
+    .container {
+        padding: 20px 15px;
+    }
+    h1 {
+        font-size: 24px;
+    }
+    .chapter-title {
+        font-size: 16px;
+        padding: 14px 15px;
+    }
+    .lesson-item a {
+        font-size: 14px;
+    }
+    .lesson-sub-list.show {
+        max-height: 600px;
+    }
+}

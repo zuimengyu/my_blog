@@ -1,0 +1,730 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>第2章：HTML/CSS/JS 快速入门 | JavaWeb跟练教学</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        /* 章节内专属样式，强化美化效果 */
+        .content { 
+            padding: 20px 0; 
+            line-height: 1.8; 
+            font-size: 15px;
+        }
+        .section { 
+            margin: 40px 0; 
+            padding-bottom: 20px;
+            border-bottom: 1px solid #eff6ff;
+        }
+        .section:last-child { border-bottom: none; }
+        
+        .section h2 { 
+            color: #1e40af; 
+            margin-bottom: 20px; 
+            border-left: 4px solid #3b82f6; 
+            padding-left: 15px;
+            font-size: 20px;
+        }
+        .section h3 {
+            color: #0f172a;
+            margin: 25px 0 15px;
+            font-size: 17px;
+        }
+        .step { 
+            background: #eff6ff; 
+            padding: 20px; 
+            border-radius: 8px; 
+            margin: 15px 0;
+            border: 1px solid #dbeafe;
+        }
+        .step-title {
+            font-weight: 600;
+            color: #1e40af;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        code { 
+            background: #f1f5f9; 
+            padding: 3px 8px; 
+            border-radius: 4px; 
+            font-family: Consolas, monospace;
+            color: #dc2626;
+        }
+        pre { 
+            background: #f8fafc; 
+            padding: 18px; 
+            border-radius: 8px; 
+            overflow-x: auto; 
+            margin: 15px 0;
+            border: 1px solid #e2e8f0;
+            font-family: Consolas, monospace;
+            font-size: 14px;
+        }
+        .tip { 
+            background: #fffbeb; 
+            padding: 15px; 
+            border-radius: 6px; 
+            border-left: 4px solid #f59e0b; 
+            margin: 15px 0;
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+        }
+        .warning {
+            background: #fef2f2;
+            padding: 15px;
+            border-radius: 6px;
+            border-left: 4px solid #ef4444;
+            margin: 15px 0;
+        }
+        .demo-box {
+            margin: 20px 0;
+            padding: 25px;
+            border-radius: 12px;
+            border: 1px solid #e2e8f0;
+            background: #ffffff;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+        }
+        .demo-preview {
+            margin: 15px 0;
+            padding: 20px;
+            border-radius: 8px;
+            background: #f8fafc;
+            border: 1px dashed #94a3b8;
+        }
+        /* 美化示例专用样式 */
+        .beautiful-form {
+            max-width: 400px;
+            margin: 0 auto;
+            padding: 30px;
+            border-radius: 16px;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+        }
+        .beautiful-form h3 {
+            text-align: center;
+            color: #1e40af;
+            margin-bottom: 25px;
+            font-size: 20px;
+            font-weight: 600;
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #334155;
+            font-weight: 500;
+        }
+        .form-control {
+            width: 100%;
+            padding: 12px 15px;
+            border: 1px solid #dbeafe;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: all 0.3s ease;
+            background: #ffffff;
+        }
+        .form-control:focus {
+            outline: none;
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        }
+        .btn-primary {
+            width: 100%;
+            padding: 12px;
+            border: none;
+            border-radius: 8px;
+            background: linear-gradient(135deg, #3b82f6 0%, #1e40af 100%);
+            color: white;
+            font-size: 16px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+        }
+        .btn-primary:active {
+            transform: translateY(0);
+        }
+        /* 卡片美化示例 */
+        .card-container {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+            margin-top: 20px;
+        }
+        .card {
+            flex: 1;
+            min-width: 250px;
+            padding: 25px;
+            border-radius: 12px;
+            background: #ffffff;
+            box-shadow: 0 6px 16px rgba(0,0,0,0.08);
+            transition: all 0.4s ease;
+            border: 1px solid #f1f5f9;
+        }
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 24px rgba(0,0,0,0.12);
+            border-color: #dbeafe;
+        }
+        .card h4 {
+            color: #1e40af;
+            margin-bottom: 15px;
+            font-size: 18px;
+        }
+        .card p {
+            color: #64748b;
+            line-height: 1.6;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>第2章：HTML/CSS/JS 快速入门（适配IDEA2025 | 美化版）</h1>
+        <div class="content">
+            <!-- 2.1 HTML核心标签 -->
+            <div class="section">
+                <h2>2.1 HTML 核心标签与语义化（基础结构）</h2>
+                
+                <h3>2.1.1 HTML5 文档基本结构</h3>
+                <p>HTML5是当前主流版本，支持语义化标签，适配现代浏览器，以下是标准文档结构（可直接在IDEA2025中新建HTML文件生成）：</p>
+                <pre>
+&lt;!DOCTYPE html&gt;  <!-- 声明文档类型为HTML5 -->
+&lt;html lang="zh-CN"&gt;  <!-- 根标签，lang指定语言为中文 -->
+&lt;head&gt;
+    &lt;meta charset="UTF-8"&gt;  <!-- 字符编码，避免中文乱码 -->
+    &lt;meta name="viewport" content="width=device-width, initial-scale=1.0"&gt;  <!-- 适配移动端 -->
+    &lt;title&gt;页面标题&lt;/title&gt;  <!-- 浏览器标签页标题 -->
+    &lt;link rel="stylesheet" href="style.css"&gt;  <!-- 引入外部CSS -->
+&lt;/head&gt;
+&lt;body&gt;
+    <!-- 页面内容区域 -->
+    &lt;script src="script.js"&gt;&lt;/script&gt;  <!-- 引入外部JS（建议放body底部） -->
+&lt;/body&gt;
+&lt;/html&gt;</pre>
+                <div class="tip">
+                    💡 IDEA2025快捷技巧：新建HTML文件后，输入<code>!</code> + 回车，自动生成HTML5标准结构；输入标签名 + tab，自动补全标签（如输入<code>div</code>+tab生成&lt;div&gt;&lt;/div&gt;）。
+                </div>
+
+                <h3>2.1.2 核心语义化标签（HTML5新增）</h3>
+                <p>语义化标签让HTML结构更清晰，利于SEO和维护，替代传统的&lt;div&gt;+class：</p>
+                <div class="step">
+                    <div class="step-title">常用语义化标签</div>
+                    <table style="width:100%;border-collapse:collapse;margin:10px 0;">
+                        <tr>
+                            <th style="border:1px solid #e2e8f0;padding:10px;text-align:left;background:#eff6ff;color:#1e40af;">标签</th>
+                            <th style="border:1px solid #e2e8f0;padding:10px;text-align:left;background:#eff6ff;color:#1e40af;">作用</th>
+                            <th style="border:1px solid #e2e8f0;padding:10px;text-align:left;background:#eff6ff;color:#1e40af;">使用场景</th>
+                        </tr>
+                        <tr>
+                            <td style="border:1px solid #e2e8f0;padding:10px;">&lt;header&gt;</td>
+                            <td style="border:1px solid #e2e8f0;padding:10px;">页面头部</td>
+                            <td style="border:1px solid #e2e8f0;padding:10px;">导航栏、logo、标题</td>
+                        </tr>
+                        <tr>
+                            <td style="border:1px solid #e2e8f0;padding:10px;">&lt;nav&gt;</td>
+                            <td style="border:1px solid #e2e8f0;padding:10px;">导航区域</td>
+                            <td style="border:1px solid #e2e8f0;padding:10px;">菜单、链接列表</td>
+                        </tr>
+                        <tr>
+                            <td style="border:1px solid #e2e8f0;padding:10px;">&lt;main&gt;</td>
+                            <td style="border:1px solid #e2e8f0;padding:10px;">主要内容</td>
+                            <td style="border:1px solid #e2e8f0;padding:10px;">页面核心内容（唯一）</td>
+                        </tr>
+                        <tr>
+                            <td style="border:1px solid #e2e8f0;padding:10px;">&lt;section&gt;</td>
+                            <td style="border:1px solid #e2e8f0;padding:10px;">章节/区块</td>
+                            <td style="border:1px solid #e2e8f0;padding:10px;">功能模块、内容分区</td>
+                        </tr>
+                        <tr>
+                            <td style="border:1px solid #e2e8f0;padding:10px;">&lt;article&gt;</td>
+                            <td style="border:1px solid #e2e8f0;padding:10px;">独立文章</td>
+                            <td style="border:1px solid #e2e8f0;padding:10px;">博客、新闻、评论</td>
+                        </tr>
+                        <tr>
+                            <td style="border:1px solid #e2e8f0;padding:10px;">&lt;aside&gt;</td>
+                            <td style="border:1px solid #e2e8f0;padding:10px;">侧边栏</td>
+                            <td style="border:1px solid #e2e8f0;padding:10px;">广告、推荐、作者信息</td>
+                        </tr>
+                        <tr>
+                            <td style="border:1px solid #e2e8f0;padding:10px;">&lt;footer&gt;</td>
+                            <td style="border:1px solid #e2e8f0;padding:10px;">页面底部</td>
+                            <td style="border:1px solid #e2e8f0;padding:10px;">版权、联系方式</td>
+                        </tr>
+                    </table>
+                </div>
+
+                <h3>2.1.3 表单标签（JavaWeb核心交互入口）</h3>
+                <p>表单是客户端向服务器提交数据的核心方式，以下是完整的表单结构（后续会用CSS美化）：</p>
+                <pre>
+&lt;form action="/login" method="post"&gt;
+    &lt;div class="form-group"&gt;
+        &lt;label for="username"&gt;用户名：&lt;/label&gt;
+        &lt;input type="text" id="username" name="username" required placeholder="请输入用户名"&gt;
+    &lt;/div&gt;
+    &lt;div class="form-group"&gt;
+        &lt;label for="password"&gt;密码：&lt;/label&gt;
+        &lt;input type="password" id="password" name="password" required placeholder="请输入密码"&gt;
+    &lt;/div&gt;
+    &lt;div class="form-group"&gt;
+        &lt;label for="gender"&gt;性别：&lt;/label&gt;
+        &lt;input type="radio" id="male" name="gender" value="male" checked&gt; 男
+        &lt;input type="radio" id="female" name="gender" value="female"&gt; 女
+    &lt;/div&gt;
+    &lt;div class="form-group"&gt;
+        &lt;label for="hobby"&gt;爱好：&lt;/label&gt;
+        &lt;input type="checkbox" name="hobby" value="code"&gt; 编程
+        &lt;input type="checkbox" name="hobby" value="read"&gt; 阅读
+    &lt;/div&gt;
+    &lt;div class="form-group"&gt;
+        &lt;label for="city"&gt;城市：&lt;/label&gt;
+        &lt;select name="city" id="city"&gt;
+            &lt;option value="beijing"&gt;北京&lt;/option&gt;
+            &lt;option value="shanghai" selected&gt;上海&lt;/option&gt;
+            &lt;option value="guangzhou"&gt;广州&lt;/option&gt;
+        &lt;/select&gt;
+    &lt;/div&gt;
+    &lt;button type="submit"&gt;提交&lt;/button&gt;
+    &lt;button type="reset"&gt;重置&lt;/button&gt;
+&lt;/form&gt;</pre>
+                <div class="warning">
+                    ❗ 关键属性说明：
+                    1. action：表单提交的服务器地址（后续Servlet接收地址）；
+                    2. method：提交方式（GET/POST，JavaWeb中优先用POST，更安全）；
+                    3. name：服务器获取参数的标识（必须设置，和后端参数名对应）；
+                    4. required：HTML5新增，必填项验证。
+                </div>
+            </div>
+
+            <!-- 2.2 CSS核心（美化重点） -->
+            <div class="section">
+                <h2>2.2 CSS 核心与美化实战（视觉层）</h2>
+                
+                <h3>2.2.1 CSS 引入方式</h3>
+                <div class="step">
+                    <div class="step-title">三种引入方式对比</div>
+                    <table style="width:100%;border-collapse:collapse;margin:10px 0;">
+                        <tr>
+                            <th style="border:1px solid #e2e8f0;padding:10px;text-align:left;background:#eff6ff;color:#1e40af;">引入方式</th>
+                            <th style="border:1px solid #e2e8f0;padding:10px;text-align:left;background:#eff6ff;color:#1e40af;">语法</th>
+                            <th style="border:1px solid #e2e8f0;padding:10px;text-align:left;background:#eff6ff;color:#1e40af;">适用场景</th>
+                        </tr>
+                        <tr>
+                            <td style="border:1px solid #e2e8f0;padding:10px;">行内样式</td>
+                            <td style="border:1px solid #e2e8f0;padding:10px;">&lt;div style="color:red;"&gt;&lt;/div&gt;</td>
+                            <td style="border:1px solid #e2e8f0;padding:10px;">临时样式、单个元素</td>
+                        </tr>
+                        <tr>
+                            <td style="border:1px solid #e2e8f0;padding:10px;">内部样式</td>
+                            <td style="border:1px solid #e2e8f0;padding:10px;">&lt;style&gt;div{color:red;}&lt;/style&gt;</td>
+                            <td style="border:1px solid #e2e8f0;padding:10px;">单页面样式、小项目</td>
+                        </tr>
+                        <tr>
+                            <td style="border:1px solid #e2e8f0;padding:10px;">外部样式</td>
+                            <td style="border:1px solid #e2e8f0;padding:10px;">&lt;link rel="stylesheet" href="style.css"&gt;</td>
+                            <td style="border:1px solid #e2e8f0;padding:10px;">多页面共享（推荐，如你的style.css）</td>
+                        </tr>
+                    </table>
+                </div>
+
+                <h3>2.2.2 CSS 核心选择器（精准定位元素）</h3>
+                <pre>
+/* 1. 元素选择器：选中所有指定标签 */
+body { font-family: "Microsoft YaHei", sans-serif; }
+
+/* 2. 类选择器（最常用）：选中class="form-group"的元素 */
+.form-group { margin-bottom: 20px; }
+
+/* 3. ID选择器：选中id="username"的元素（唯一） */
+#username { width: 100%; }
+
+/* 4. 后代选择器：选中.form-group下的所有label */
+.form-group label { display: block; }
+
+/* 5. 伪类选择器：交互状态（核心美化） */
+input:focus { border-color: #3b82f6; }  /* 输入框聚焦 */
+button:hover { background: #1e40af; }  /* 按钮悬浮 */
+
+/* 6. 属性选择器：选中type="password"的input */
+input[type="password"] { font-family: monospace; }</pre>
+
+                <h3>2.2.3 盒模型（布局核心）</h3>
+                <p>所有HTML元素都是「盒子」，由content（内容）、padding（内边距）、border（边框）、margin（外边距）组成：</p>
+                <pre>
+/* 标准盒模型（推荐）：width/height仅包含content */
+box-sizing: content-box;
+
+/* 边框盒模型（实战常用）：width/height包含content+padding+border */
+box-sizing: border-box;
+
+/* 通用重置（所有元素用边框盒模型） */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}</pre>
+
+                <h3>2.2.4 美化实战1：高颜值登录表单（核心示例）</h3>
+                <p>结合渐变、阴影、圆角、交互动效，打造好看的登录表单（代码可直接复制运行）：</p>
+                <div class="demo-box">
+                    <h4 style="color:#1e40af;margin-bottom:15px;">效果预览：</h4>
+                    <div class="demo-preview">
+                        <div class="beautiful-form">
+                            <h3>用户登录</h3>
+                            <div class="form-group">
+                                <label for="demo-username">用户名</label>
+                                <input type="text" id="demo-username" class="form-control" placeholder="请输入用户名">
+                            </div>
+                            <div class="form-group">
+                                <label for="demo-password">密码</label>
+                                <input type="password" id="demo-password" class="form-control" placeholder="请输入密码">
+                            </div>
+                            <button class="btn-primary">登录</button>
+                        </div>
+                    </div>
+                    <h4 style="color:#1e40af;margin:20px 0 15px;">完整CSS代码：</h4>
+                    <pre>
+/* 表单容器美化（渐变背景+阴影） */
+.beautiful-form {
+    max-width: 400px;
+    margin: 0 auto;
+    padding: 30px;
+    border-radius: 16px;
+    background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+    box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+}
+
+/* 表单标题 */
+.beautiful-form h3 {
+    text-align: center;
+    color: #1e40af;
+    margin-bottom: 25px;
+    font-size: 20px;
+    font-weight: 600;
+}
+
+/* 表单组间距 */
+.form-group {
+    margin-bottom: 20px;
+}
+
+/* 标签样式 */
+.form-group label {
+    display: block;
+    margin-bottom: 8px;
+    color: #334155;
+    font-weight: 500;
+}
+
+/* 输入框美化 */
+.form-control {
+    width: 100%;
+    padding: 12px 15px;
+    border: 1px solid #dbeafe;
+    border-radius: 8px;
+    font-size: 14px;
+    transition: all 0.3s ease;
+    background: #ffffff;
+}
+
+/* 输入框聚焦效果 */
+.form-control:focus {
+    outline: none;
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+/* 按钮美化（渐变+悬浮动效） */
+.btn-primary {
+    width: 100%;
+    padding: 12px;
+    border: none;
+    border-radius: 8px;
+    background: linear-gradient(135deg, #3b82f6 0%, #1e40af 100%);
+    color: white;
+    font-size: 16px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+/* 按钮悬浮 */
+.btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+}
+
+/* 按钮点击 */
+.btn-primary:active {
+    transform: translateY(0);
+}</pre>
+                </div>
+
+                <h3>2.2.5 美化实战2：响应式卡片布局（JavaWeb列表页常用）</h3>
+                <p>卡片布局是后台管理系统、商品列表的核心样式，支持自适应屏幕：</p>
+                <div class="demo-box">
+                    <h4 style="color:#1e40af;margin-bottom:15px;">效果预览：</h4>
+                    <div class="demo-preview">
+                        <div class="card-container">
+                            <div class="card">
+                                <h4>用户管理</h4>
+                                <p>实现用户的增删改查，权限分配，信息审核等核心功能，基于SpringMVC+MyBatis开发。</p>
+                            </div>
+                            <div class="card">
+                                <h4>商品管理</h4>
+                                <p>商品分类、价格设置、库存管理，支持图片上传和批量操作，适配移动端展示。</p>
+                            </div>
+                            <div class="card">
+                                <h4>订单管理</h4>
+                                <p>订单创建、支付回调、物流跟踪，对接第三方支付接口，生成订单报表。</p>
+                            </div>
+                        </div>
+                    </div>
+                    <h4 style="color:#1e40af;margin:20px 0 15px;">完整CSS代码：</h4>
+                    <pre>
+/* 卡片容器（弹性布局+自动换行） */
+.card-container {
+    display: flex;
+    gap: 20px;
+    flex-wrap: wrap;
+    margin-top: 20px;
+}
+
+/* 卡片样式 */
+.card {
+    flex: 1;
+    min-width: 250px;  /* 最小宽度，适配移动端 */
+    padding: 25px;
+    border-radius: 12px;
+    background: #ffffff;
+    box-shadow: 0 6px 16px rgba(0,0,0,0.08);
+    transition: all 0.4s ease;
+    border: 1px solid #f1f5f9;
+}
+
+/* 卡片悬浮动效 */
+.card:hover {
+    transform: translateY(-5px);  /* 向上偏移 */
+    box-shadow: 0 12px 24px rgba(0,0,0,0.12);  /* 加深阴影 */
+    border-color: #dbeafe;
+}
+
+/* 卡片标题 */
+.card h4 {
+    color: #1e40af;
+    margin-bottom: 15px;
+    font-size: 18px;
+}
+
+/* 卡片内容 */
+.card p {
+    color: #64748b;
+    line-height: 1.6;
+}</pre>
+                </div>
+
+                <h3>2.2.6 CSS 响应式适配（适配手机/PC）</h3>
+                <p>通过媒体查询，让页面在不同屏幕尺寸下自动调整样式（JavaWeb项目必须适配）：</p>
+                <pre>
+/* 移动端适配（屏幕宽度≤768px） */
+@media (max-width: 768px) {
+    /* 表单宽度自适应 */
+    .beautiful-form {
+        max-width: 100%;
+        padding: 20px;
+        margin: 0 10px;
+    }
+    
+    /* 卡片单列显示 */
+    .card-container {
+        flex-direction: column;
+    }
+    
+    /* 输入框/按钮字号缩小 */
+    .form-control, .btn-primary {
+        font-size: 14px;
+        padding: 10px;
+    }
+}</pre>
+            </div>
+
+            <!-- 2.3 JS核心 -->
+            <div class="section">
+                <h2>2.3 JavaScript 核心与交互（行为层）</h2>
+                
+                <h3>2.3.1 JS 基础语法（ES6+）</h3>
+                <p>基于ES6+语法（IDEA2025完全支持），以下是核心基础：</p>
+                <pre>
+// 变量声明（ES6+）
+let username = "admin";       // 块级作用域，可修改
+const PASSWORD = "123456";    // 常量，不可修改
+var age = 20;                 // 函数作用域（不推荐）
+
+// 数据类型
+let num = 10;                // 数字
+let str = "JavaWeb";         // 字符串
+let bool = true;             // 布尔
+let arr = [1, 2, 3];         // 数组
+let obj = {name: "admin", age: 20}; // 对象
+let fn = () => console.log("Hello"); // 箭头函数
+
+// 条件判断
+if (username === "admin") {
+    console.log("管理员");
+} else {
+    console.log("普通用户");
+}
+
+// 循环
+for (let i = 0; i < 5; i++) {
+    console.log(i);
+}
+
+// 数组遍历（ES6+）
+arr.forEach(item => console.log(item));
+const newArr = arr.map(item => item * 2); // 映射
+
+// 函数
+function login(username, password) {
+    if (!username || !password) {
+        alert("用户名或密码不能为空");
+        return false;
+    }
+    console.log(`登录成功：${username}`); // 模板字符串
+    return true;
+}</pre>
+
+                <h3>2.3.2 DOM 操作（核心交互）</h3>
+                <p>DOM（文档对象模型）是JS操作HTML元素的接口，以下是JavaWeb中常用的DOM操作：</p>
+                <pre>
+// 1. 获取元素（核心）
+const usernameInput = document.getElementById("username"); // 通过ID
+const formGroups = document.getElementsByClassName("form-group"); // 通过类名
+const inputs = document.querySelectorAll("input[type='text']"); // 通过选择器
+
+// 2. 修改元素内容/属性
+usernameInput.value = "默认用户名"; // 修改输入框值
+usernameInput.placeholder = "请输入账号"; // 修改占位符
+usernameInput.setAttribute("disabled", "disabled"); // 设置属性
+usernameInput.removeAttribute("disabled"); // 移除属性
+
+// 3. 修改样式（动态美化）
+usernameInput.style.borderColor = "#ef4444"; // 直接修改样式
+usernameInput.classList.add("error"); // 添加类名
+usernameInput.classList.remove("error"); // 移除类名
+usernameInput.classList.toggle("active"); // 切换类名
+
+// 4. 新增/删除元素
+const newBtn = document.createElement("button"); // 创建按钮
+newBtn.textContent = "新按钮";
+newBtn.classList.add("btn-primary");
+document.body.appendChild(newBtn); // 添加到页面
+
+newBtn.remove(); // 删除元素</pre>
+
+                <h3>2.3.3 事件处理（交互核心）</h3>
+                <p>事件是用户操作（点击、输入、鼠标移动）的响应，以下是表单交互示例：</p>
+                <pre>
+// 方式1：直接绑定（简单）
+document.getElementById("loginBtn").onclick = function() {
+    const username = document.getElementById("username").value;
+    const password = document.getElementById("password").value;
+    
+    // 表单验证
+    if (!username) {
+        alert("请输入用户名");
+        return;
+    }
+    if (password.length < 6) {
+        alert("密码长度不能少于6位");
+        return;
+    }
+    
+    // 提交表单（或发送AJAX请求）
+    alert(`登录成功！欢迎 ${username}`);
+};
+
+// 方式2：事件监听（推荐，可绑定多个事件）
+const loginForm = document.querySelector("form");
+loginForm.addEventListener("submit", function(e) {
+    e.preventDefault(); // 阻止表单默认提交（核心，用于AJAX提交）
+    
+    // 获取所有表单数据
+    const formData = new FormData(loginForm);
+    const username = formData.get("username");
+    const password = formData.get("password");
+    
+    // 验证逻辑...
+    console.log("表单数据：", {username, password});
+});
+
+// 常用事件
+// 输入框输入事件（实时验证）
+usernameInput.addEventListener("input", function() {
+    if (this.value.length > 10) {
+        this.classList.add("warning");
+    } else {
+        this.classList.remove("warning");
+    }
+});
+
+// 鼠标悬浮事件
+const btn = document.querySelector(".btn-primary");
+btn.addEventListener("mouseenter", function() {
+    this.style.transform = "scale(1.05)"; // 放大
+});
+btn.addEventListener("mouseleave", function() {
+    this.style.transform = "scale(1)"; // 还原
+});</pre>
+
+                <h3>2.3.4 AJAX 异步请求（JavaWeb核心）</h3>
+                <p>AJAX（异步JavaScript和XML）是前端不刷新页面向服务器请求数据的核心方式，以下是Fetch API示例（ES6+）：</p>
+                <pre>
+// 发送POST请求（登录示例）
+document.querySelector("form").addEventListener("submit", async function(e) {
+    e.preventDefault();
+    
+    const formData = {
+        username: document.getElementById("username").value,
+        password: document.getElementById("password").value
+    };
+    
+    try {
+        // 发送请求到后端Servlet
+        const response = await fetch("/login", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify(formData)
+        });
+        
+        // 处理响应
+        const result = await response.json();
+        if (result.success) {
+            alert("登录成功！");
+            window.location.href = "/home"; // 跳转到首页
+        } else {
+            alert("登录失败：" + result.message);
+        }
+    } catch (error) {
+        console.error("请求失败：", error);
+        alert("网络错误，请重试");
+    }
+});</pre>
+                <div class="tip">
+                    💡 注意：AJAX请求需要后端Servlet支持JSON解析和响应，后续章节会详细讲解Servlet处理AJAX请求的方法。
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

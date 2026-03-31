@@ -1,0 +1,500 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>第9章：MyBatis 快速上手 | 纯实战完整版</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        .content {
+            padding: 20px 0;
+            line-height: 1.9;
+            font-size: 15px;
+        }
+        .section {
+            margin: 40px 0;
+            padding-bottom: 25px;
+            border-bottom: 1px solid #eee;
+        }
+        .section:last-child { border-bottom: none; }
+        .section h2 {
+            color: #1e40af;
+            margin-bottom: 20px;
+            border-left: 4px solid #3b82f6;
+            padding-left: 14px;
+            font-size: 20px;
+        }
+        .section h3 {
+            color: #0f172a;
+            margin: 25px 0 15px;
+            font-size: 17px;
+        }
+        .section h4 {
+            color: #1e40af;
+            margin: 18px 0 10px;
+            font-size: 16px;
+        }
+        code {
+            background: #f1f5f9;
+            padding: 2px 6px;
+            border-radius: 3px;
+            color: #dc2626;
+            font-weight: 600;
+        }
+        pre {
+            background: #f8fafc;
+            padding: 16px;
+            border-radius: 6px;
+            overflow-x: auto;
+            border: 1px solid #e2e8f0;
+            font-size: 14px;
+            line-height: 1.6;
+        }
+        .tip {
+            background: #fffbeb;
+            padding: 14px;
+            border-left: 4px solid #f59e0b;
+            margin: 15px 0;
+            font-size: 14px;
+        }
+        .warning {
+            background: #fef2f2;
+            padding: 14px;
+            border-left: 4px solid #ef4444;
+            margin: 15px 0;
+            font-size: 14px;
+        }
+        .step {
+            background: #eff6ff;
+            padding: 18px;
+            border-radius: 6px;
+            margin: 15px 0;
+        }
+        .step-title {
+            font-weight: 600;
+            color: #1e40af;
+            margin-bottom: 10px;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h1>第9章：MyBatis 快速上手（纯实战版）</h1>
+    <div class="content">
+
+<!-- 9.1 MyBatis 是什么？解决什么问题（实战视角） -->
+<div class="section">
+    <h2>9.1 MyBatis 是什么？解决什么问题</h2>
+    <p><strong>大白话（实战版）：</strong><br>
+        MyBatis 是一款<strong>半自动ORM持久层框架</strong>，专门用来<strong>简化JDBC代码</strong>，不用再写连接、预编译、结果集封装、关闭资源等重复代码。
+    </p>
+
+    <h3>原生JDBC的痛点（MyBatis全解决）</h3>
+    <ul>
+        <li>重复写：注册驱动、获取连接、关闭资源</li>
+        <li>手动封装 ResultSet → Java对象，繁琐易错</li>
+        <li>SQL硬编码在Java里，修改麻烦</li>
+        <li>参数拼接易出现SQL注入</li>
+    </ul>
+
+    <h3>MyBatis 核心优势（企业必用）</h3>
+    <ul>
+        <li>SQL写在XML里，解耦、易维护</li>
+        <li>自动封装结果集，一行代码转Java对象</li>
+        <li>安全参数绑定，防SQL注入</li>
+        <li>轻量、简单、上手快</li>
+    </ul>
+
+    <div class="tip">
+        ✅ 一句话定位：<strong>MyBatis = 简化版JDBC + SQL分离 + 自动映射</strong>
+    </div>
+</div>
+
+<!-- 9.2 MyBatis 环境搭建（一步一代码，直接复制） -->
+<div class="section">
+    <h2>9.2 MyBatis 环境搭建（企业标准流程）</h2>
+    <div class="step">
+        <div class="step-title">搭建固定4步（背会）</div>
+        <ol>
+            <li>导入Maven依赖（MyBatis + MySQL驱动）</li>
+            <li>写核心配置文件（mybatis-config.xml）</li>
+            <li>写实体类 + Mapper接口（Dao层）</li>
+            <li>写SQL映射文件 + 封装MyBatis工具类</li>
+        </ol>
+    </div>
+
+    <h3>1）Maven 依赖（pom.xml，直接复制）</h3>
+<pre>
+<!-- MyBatis 核心依赖 -->
+<dependency>
+    <groupId>org.mybatis</groupId>
+    <artifactId>mybatis</artifactId>
+    <version>3.5.15</version>
+</dependency>
+
+<!-- MySQL8 驱动 -->
+<dependency>
+    <groupId>com.mysql</groupId>
+    <artifactId>mysql-connector-j</artifactId>
+    <version>8.0.33</version>
+</dependency>
+
+<!-- 单元测试（可选，用于测试） -->
+<dependency>
+    <groupId>junit</groupId>
+    <artifactId>junit</artifactId>
+    <version>4.13.2</version>
+    <scope>test</scope>
+</dependency>
+</pre>
+
+    <h3>2）MyBatis 核心配置文件（mybatis-config.xml）</h3>
+    <p>路径：<code>src/main/resources/mybatis-config.xml</code></p>
+<pre>
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE configuration
+        PUBLIC "-//mybatis.org//DTD Config 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-config.dtd">
+<configuration>
+    <!-- 环境配置：开发环境 -->
+    <environments default="development">
+        <environment id="development">
+            <transactionManager type="JDBC"/>
+            <dataSource type="POOLED">
+                <!-- MySQL8 连接信息（改成你自己的） -->
+                <property name="driver" value="com.mysql.cj.jdbc.Driver"/>
+                <property name="url" value="jdbc:mysql://localhost:3306/javaweb_test?serverTimezone=UTC&amp;useSSL=false&amp;characterEncoding=utf8"/>
+                <property name="username" value="root"/>
+                <property name="password" value="123456"/>
+            </dataSource>
+        </environment>
+    </environments>
+
+    <!-- 加载SQL映射文件 -->
+    <mappers>
+        <mapper resource="mapper/UserMapper.xml"/>
+    </mappers>
+</configuration>
+</pre>
+
+    <h3>3）实体类（com.pojo.User，复用之前的）</h3>
+<pre>
+package com.pojo;
+
+public class User {
+    private Integer id;
+    private String username;
+    private String password;
+    private Integer age;
+    private String address;
+
+    // 无参/有参构造、get/set、toString
+    public User() {}
+    public User(Integer id, String username, String password, Integer age, String address) {
+        this.id = id;
+        this.username = username;
+        this.password = password;
+        this.age = age;
+        this.address = address;
+    }
+
+    // 自行生成getter/setter/toString
+    public Integer getId() {return id;}
+    public void setId(Integer id) {this.id = id;}
+    public String getUsername() {return username;}
+    public void setUsername(String username) {this.username = username;}
+    public String getPassword() {return password;}
+    public void setPassword(String password) {this.password = password;}
+    public Integer getAge() {return age;}
+    public void setAge(Integer age) {this.age = age;}
+    public String getAddress() {return address;}
+    public void setAddress(String address) {this.address = address;}
+
+    @Override
+    public String toString() {
+        return "User{id=" + id + ", username='" + username + "'}";
+    }
+}
+</pre>
+
+    <h3>4）Mapper接口（com.mapper.UserMapper，等价于Dao）</h3>
+<pre>
+package com.mapper;
+
+import com.pojo.User;
+import org.apache.ibatis.annotations.Param;
+import java.util.List;
+
+// MyBatis Mapper接口（只需定义方法，无需实现类）
+public interface UserMapper {
+    // 1. 根据id查询用户
+    User findById(Integer id);
+
+    // 2. 查询所有用户
+    List<User> findAll();
+
+    // 3. 添加用户
+    int add(User user);
+
+    // 4. 修改用户
+    int update(User user);
+
+    // 5. 根据id删除用户
+    int deleteById(Integer id);
+
+    // 6. 多条件查询（实战常用）
+    List<User> findByCondition(@Param("username") String username, @Param("age") Integer age);
+}
+</pre>
+
+    <h3>5）SQL映射文件（UserMapper.xml）</h3>
+    <p>路径：<code>src/main/resources/mapper/UserMapper.xml</code></p>
+<pre>
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<!-- namespace：绑定对应Mapper接口（全类名） -->
+<mapper namespace="com.mapper.UserMapper">
+    <!-- 结果集映射：数据库列名 → 实体类属性名 -->
+    <resultMap id="userResultMap" type="com.pojo.User">
+        <id column="id" property="id"/>
+        <result column="username" property="username"/>
+        <result column="password" property="password"/>
+        <result column="age" property="age"/>
+        <result column="address" property="address"/>
+    </resultMap>
+
+    <!-- 1. 根据id查询 -->
+    <select id="findById" resultMap="userResultMap" parameterType="int">
+        select * from user where id = #{id}
+    </select>
+
+    <!-- 2. 查询所有 -->
+    <select id="findAll" resultMap="userResultMap">
+        select * from user
+    </select>
+
+    <!-- 3. 添加用户 -->
+    <insert id="add" parameterType="com.pojo.User">
+        insert into user(username,password,age,address)
+        values(#{username},#{password},#{age},#{address})
+    </insert>
+
+    <!-- 4. 修改用户 -->
+    <update id="update" parameterType="com.pojo.User">
+        update user
+        set username=#{username},password=#{password},age=#{age},address=#{address}
+        where id=#{id}
+    </update>
+
+    <!-- 5. 删除用户 -->
+    <delete id="deleteById" parameterType="int">
+        delete from user where id=#{id}
+    </delete>
+</mapper>
+</pre>
+
+    <h3>6）MyBatis 工具类（com.util.MyBatisUtil，企业标配）</h3>
+<pre>
+package com.util;
+
+import org.apache.ibatis.io.Resources;
+import org.apache.ibatis.session.SqlSession;
+import org.apache.ibatis.session.SqlSessionFactory;
+import org.apache.ibatis.session.SqlSessionFactoryBuilder;
+import java.io.IOException;
+import java.io.InputStream;
+
+// MyBatis 工具类：获取SqlSession（等价于数据库连接）
+public class MyBatisUtil {
+    private static SqlSessionFactory sqlSessionFactory;
+
+    // 静态代码块：项目启动时加载一次
+    static {
+        try {
+            String resource = "mybatis-config.xml";
+            InputStream inputStream = Resources.getResourceAsStream(resource);
+            sqlSessionFactory = new SqlSessionFactoryBuilder().build(inputStream);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    // 获取SqlSession（autoCommit=true：自动提交事务）
+    public static SqlSession getSqlSession() {
+        return sqlSessionFactory.openSession(true);
+    }
+
+    // 关闭SqlSession
+    public static void close(SqlSession session) {
+        if (session != null) session.close();
+    }
+}
+</pre>
+</div>
+
+<!-- 9.3 MyBatis 核心操作（CRUD/参数/结果集） -->
+<div class="section">
+    <h2>9.3 MyBatis 核心操作（纯实战CRUD）</h2>
+    <div class="warning">
+        ❗ 实战必坑：<br>
+        1. <code>#{}</code>：预编译，安全，防SQL注入（<strong>99%场景用这个</strong>）<br>
+        2. <code>${}</code>：字符串拼接，不安全，仅用于表名/排序（极少用）
+    </div>
+
+    <h3>1）查询单条（根据ID）</h3>
+<pre>
+@Test
+public void testFindById() {
+    SqlSession session = MyBatisUtil.getSqlSession();
+    UserMapper mapper = session.getMapper(UserMapper.class);
+    User user = mapper.findById(1);
+    System.out.println(user);
+    MyBatisUtil.close(session);
+}
+</pre>
+
+    <h3>2）查询全部</h3>
+<pre>
+@Test
+public void testFindAll() {
+    SqlSession session = MyBatisUtil.getSqlSession();
+    UserMapper mapper = session.getMapper(UserMapper.class);
+    List<User> list = mapper.findAll();
+    list.forEach(System.out::println);
+    MyBatisUtil.close(session);
+}
+</pre>
+
+    <h3>3）添加用户</h3>
+<pre>
+@Test
+public void testAdd() {
+    SqlSession session = MyBatisUtil.getSqlSession();
+    UserMapper mapper = session.getMapper(UserMapper.class);
+    User user = new User(null, "mybatis", "123456", 25, "深圳");
+    int row = mapper.add(user);
+    System.out.println("影响行数：" + row);
+    MyBatisUtil.close(session);
+}
+</pre>
+
+    <h3>4）修改用户</h3>
+<pre>
+@Test
+public void testUpdate() {
+    SqlSession session = MyBatisUtil.getSqlSession();
+    UserMapper mapper = session.getMapper(UserMapper.class);
+    User user = new User(3, "mybatis-update", "666666", 26, "广州");
+    int row = mapper.update(user);
+    System.out.println("影响行数：" + row);
+    MyBatisUtil.close(session);
+}
+</pre>
+
+    <h3>5）删除用户</h3>
+<pre>
+@Test
+public void testDelete() {
+    SqlSession session = MyBatisUtil.getSqlSession();
+    UserMapper mapper = session.getMapper(UserMapper.class);
+    int row = mapper.deleteById(3);
+    System.out.println("影响行数：" + row);
+    MyBatisUtil.close(session);
+}
+</pre>
+
+    <h3>参数传递总结（实战必背）</h3>
+    <ul>
+        <li>单个参数：直接用 <code>#{参数名}</code></li>
+        <li>对象参数：用 <code>#{属性名}</code></li>
+        <li>多个参数：接口加 <code>@Param("别名")</code>，XML用 <code>#{别名}</code></li>
+    </ul>
+</div>
+
+<!-- 9.4 MyBatis 动态SQL（企业最常用，必学） -->
+<div class="section">
+    <h2>9.4 MyBatis 动态SQL（只学3个实战标签）</h2>
+    <p><strong>动态SQL：根据条件自动拼接SQL，解决多条件查询痛点</strong></p>
+
+    <h3>1）&lt;if&gt;：条件判断（最常用）</h3>
+    <h3>2）&lt;where&gt;：自动处理where/and/or，避免语法错误</h3>
+    <h3>3）&lt;foreach&gt;：遍历集合（批量查询/删除）</h3>
+
+    <h3>实战：多条件动态查询（用户搜索）</h3>
+    <h4>① Mapper接口追加方法</h4>
+<pre>
+// 多条件查询：用户名模糊查询 + 年龄大于
+List<User> findByCondition(@Param("username") String username, @Param("age") Integer age);
+</pre>
+
+    <h4>② UserMapper.xml 追加动态SQL</h4>
+<pre>
+<!-- 动态SQL：多条件查询 -->
+<select id="findByCondition" resultMap="userResultMap">
+    select * from user
+    <where>
+        <!-- if test：条件成立则拼接 -->
+        <if test="username != null and username != ''">
+            and username like concat('%',#{username},'%')
+        </if>
+        <if test="age != null">
+            and age > #{age}
+        </if>
+    </where>
+</select>
+</pre>
+
+    <h4>③ 测试动态查询</h4>
+<pre>
+@Test
+public void testDynamic() {
+    SqlSession session = MyBatisUtil.getSqlSession();
+    UserMapper mapper = session.getMapper(UserMapper.class);
+    // 只传用户名：模糊查询
+    List<User> list = mapper.findByCondition("a", null);
+    // 传用户名+年龄：两个条件
+    // List<User> list = mapper.findByCondition("a", 20);
+    list.forEach(System.out::println);
+    MyBatisUtil.close(session);
+}
+</pre>
+
+    <div class="tip">
+        ✅ 动态SQL优势：<br>
+        传什么参数就拼什么SQL，不用写N个if-else，代码极简、易维护
+    </div>
+
+    <h3>已删除10%极少用动态标签（完全不用学）</h3>
+    <p>trim、set、choose、when、otherwise（企业99%不用）</p>
+</div>
+
+<!-- 9.5 本章实战总结（企业MyBatis固定套路） -->
+<div class="section">
+    <h2>9.5 本章实战总结（背会直接写项目）</h2>
+    <div class="step">
+        <div class="step-title">企业MyBatis开发固定5步</div>
+        <ol>
+            <li>导依赖：MyBatis + MySQL驱动</li>
+            <li>写配置：mybatis-config.xml（数据库+映射文件）</li>
+            <li>写接口：Mapper接口（方法名对应SQL id）</li>
+            <li>写SQL：Mapper.xml（namespace绑定接口）</li>
+            <li>调用：工具类获取SqlSession → getMapper → 调用方法</li>
+        </ol>
+    </div>
+
+    <h3>核心必背</h3>
+    <ul>
+        <li>🍪 <code>#{}</code> 安全预编译，<strong>实战永远用这个</strong></li>
+        <li>🔐 动态SQL：where + if 搞定90%多条件查询</li>
+        <li>⚡ 无实现类，MyBatis自动生成代理对象</li>
+        <li>🎯 解耦：SQL写在XML，Java代码只负责调用</li>
+    </ul>
+</div>
+
+</div>
+</div>
+</body>
+</html>

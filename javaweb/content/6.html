@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>第6章：文件上传与下载 | 小白完整版·90%常用全覆盖</title>
+    <style>
+        .content { padding: 20px 0; line-height: 1.9; font-size: 15px; }
+        .section { margin: 45px 0; padding-bottom: 25px; border-bottom: 1px solid #eff6ff; }
+        .section:last-child { border-bottom: none; }
+        .section h2 { color: #1e40af; margin-bottom: 25px; border-left: 4px solid #3b82f6; padding-left: 15px; font-size: 20px; }
+        .section h3 { color: #0f172a; margin: 30px 0 18px; font-size: 17px; }
+        .step { background: #eff6ff; padding: 22px; border-radius: 8px; margin: 18px 0; border: 1px solid #dbeafe; }
+        .step-title { font-weight: 600; color: #1e40af; margin-bottom: 12px; }
+        code { background: #f1f5f9; padding: 4px 10px; border-radius: 4px; font-family: Consolas, monospace; color: #dc2626; font-size: 14px; }
+        pre { background: #f8fafc; padding: 20px; border-radius: 8px; overflow-x: auto; margin: 18px 0; border: 1px solid #e2e8f0; font-family: Consolas, monospace; font-size: 14px; }
+        .tip { background: #fffbeb; padding: 18px; border-radius: 6px; border-left: 4px solid #f59e0b; margin: 18px 0; font-size: 14px; }
+        .warning { background: #fef2f2; padding: 18px; border-radius: 6px; border-left: 4px solid #ef4444; margin: 18px 0; font-size: 14px; }
+        .maven-box { background: #f5f5f5; border-left: 4px solid #8b5cf6; padding: 18px; border-radius: 8px; margin: 18px 0; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>第6章：文件上传与下载（小白完整版·Tomcat11）</h1>
+        <div class="content">
+
+<!-- 6.0 前置：文件上传下载核心认知 -->
+<div class="section">
+    <h2>6.0 前置核心：文件上传下载是啥？</h2>
+    <p><strong>大白话：</strong>
+    <br>👉 上传：把本地文件（图片/文档）传到服务器保存
+    <br>👉 下载：把服务器里的文件拿到本地
+    </p>
+    <div class="tip">
+        💡 常用场景：
+        <br>📌 上传：头像、身份证照片、Excel报表
+        <br>📌 下载：报表、模板、用户上传的文件
+    </div>
+    <p><strong>核心前提：</strong>
+    <br>1. 前端表单必须用 <code>enctype="multipart/form-data"</code>（二进制传输）
+    <br>2. 后端用 <strong>commons-fileupload</strong> 工具（不用自己写二进制解析）
+    </p>
+</div>
+
+<!-- 6.1 Maven 依赖配置（必须加） -->
+<div class="section">
+    <h2>6.1 Maven 依赖（文件上传核心）</h2>
+    <div class="maven-box">
+        <strong>文件上传下载必备依赖（直接复制）</strong>
+        <pre>
+&lt;!-- 文件上传核心依赖 --&gt;
+&lt;dependency&gt;
+    &lt;groupId&gt;commons-fileupload&lt;/groupId&gt;
+    &lt;artifactId&gt;commons-fileupload&lt;/artifactId&gt;
+    &lt;version&gt;1.5&lt;/version&gt;
+&lt;/dependency&gt;
+
+&lt;!-- 依赖的IO工具包 --&gt;
+&lt;dependency&gt;
+    &lt;groupId&gt;commons-io&lt;/groupId&gt;
+    &lt;artifactId&gt;commons-io&lt;/artifactId&gt;
+    &lt;version&gt;2.15.1&lt;/version&gt;
+&lt;/dependency&gt;
+
+&lt;!-- Servlet依赖（已加，确保是jakarta包） --&gt;
+&lt;dependency&gt;
+    &lt;groupId&gt;jakarta.servlet&lt;/groupId&gt;
+    &lt;artifactId&gt;jakarta.servlet-api&lt;/artifactId&gt;
+    &lt;version&gt;6.0.0&lt;/version&gt;
+    &lt;scope&gt;provided&lt;/scope&gt;
+&lt;/dependency&gt;
+        </pre>
+    </div>
+    <div class="warning">
+        ❗ 小白必坑：
+        <br>1. 必须加 commons-io，否则文件上传报错
+        <br>2. 版本用最新稳定版，避免兼容性问题
+    </div>
+</div>
+
+<!-- 6.2 实战1：文件上传（最常用） -->
+<div class="section">
+    <h2>6.2 实战1：单文件上传（头像/文档）</h2>
+    <h3>6.2.1 前端上传页面（upload.html）</h3>
+    <pre>
+&lt;!DOCTYPE html&gt;
+&lt;html lang="zh-CN"&gt;
+&lt;head&gt;
+    &lt;meta charset="UTF-8"&gt;
+    &lt;title&gt;文件上传&lt;/title&gt;
+&lt;/head&gt;
+&lt;body&gt;
+    &lt;h3&gt;文件上传&lt;/h3&gt;
+    &lt;!-- 核心：method=post + enctype=multipart/form-data --&gt;
+    &lt;form action="/uploadServlet" method="post" enctype="multipart/form-data"&gt;
+        选择文件：&lt;input type="file" name="file"&gt;&lt;br&gt;
+        备注：&lt;input type="text" name="desc"&gt;&lt;br&gt;
+        &lt;input type="submit" value="上传"&gt;
+    &lt;/form&gt;
+&lt;/body&gt;
+&lt;/html&gt;
+    </pre>
+    <div class="warning">
+        ❗ 核心必写：
+        <br>1. 表单 method 必须是 <strong>post</strong>（get 传不了大文件）
+        <br>2. enctype 必须是 <strong>multipart/form-data</strong>（二进制传输）
+    </div>
+
+    <h3>6.2.2 后端上传Servlet（UploadServlet.java）</h3>
+    <pre>
+package com.servlet;
+
+import org.apache.commons.fileupload.FileItem;
+import org.apache.commons.fileupload.FileUploadException;
+import org.apache.commons.fileupload.disk.DiskFileItemFactory;
+import org.apache.commons.fileupload.servlet.ServletFileUpload;
+import jakarta.servlet.annotation.WebServlet;
+import jakarta.servlet.http.HttpServlet;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import java.io.File;
+import java.io.IOException;
+import java.util.List;
+
+@WebServlet("/uploadServlet")
+public class UploadServlet extends HttpServlet {
+    @Override
+    protected void doPost(HttpServletRequest request, HttpServletResponse response) throws IOException {
+        // 1. 设置编码
+        request.setCharacterEncoding("UTF-8");
+        response.setContentType("text/html;charset=UTF-8");
+
+        // 2. 判断是否是多段式上传（防止普通表单提交）
+        if (!ServletFileUpload.isMultipartContent(request)) {
+            response.getWriter().write("不是文件上传表单！");
+            return;
+        }
+
+        try {
+            // 3. 创建文件上传工厂
+            DiskFileItemFactory factory = new DiskFileItemFactory();
+            // 设置临时文件目录（文件过大时先存临时文件）
+            String tempPath = getServletContext().getRealPath("/temp");
+            factory.setRepository(new File(tempPath));
+
+            // 4. 创建文件上传核心对象
+            ServletFileUpload upload = new ServletFileUpload(factory);
+            // 设置文件大小限制：10MB
+            upload.setFileSizeMax(10 * 1024 * 1024);
+
+            // 5. 解析请求，获取所有表单项
+            List&lt;FileItem&gt; items = upload.parseRequest(request);
+
+            // 6. 遍历表单项（区分普通字段和文件字段）
+            for (FileItem item : items) {
+                // 普通表单字段（如备注）
+                if (item.isFormField()) {
+                    String fieldName = item.getFieldName(); // 字段名
+                    String value = item.getString("UTF-8"); // 字段值（解决中文乱码）
+                    System.out.println("备注：" + value);
+                } 
+                // 文件字段（要上传的文件）
+                else {
+                    // 获取文件名（处理浏览器兼容，只取最后一个/后的名字）
+                    String fileName = item.getName();
+                    fileName = fileName.substring(fileName.lastIndexOf("\\") + 1);
+                    System.out.println("上传文件名：" + fileName);
+
+                    // 7. 定义文件保存路径（服务器webapp/upload目录）
+                    String savePath = getServletContext().getRealPath("/upload");
+                    File saveFile = new File(savePath, fileName);
+
+                    // 8. 确保目录存在（不存在则创建）
+                    if (!saveFile.getParentFile().exists()) {
+                        saveFile.getParentFile().mkdirs();
+                    }
+
+                    // 9. 写入文件到服务器
+                    item.write(saveFile);
+                    response.getWriter().write("文件上传成功！路径：" + saveFile.getAbsolutePath());
+
+                    // 10. 删除临时文件（可选）
+                    item.delete();
+                }
+            }
+        } catch (FileUploadException e) {
+            response.getWriter().write("文件上传失败：" + e.getMessage());
+            e.printStackTrace();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+}
+    </pre>
+
+    <div class="tip">
+        💡 小白必改：
+        <br>1. 文件大小限制可调整（10*1024*1024=10MB）
+        <br>2. 保存路径可自定义（/upload 是项目根目录下的文件夹）
+    </div>
+</div>
+
+<!-- 6.3 实战2：文件下载（最常用） -->
+<div class="section">
+    <h2>6.3 实战2：文件下载（服务器文件到本地）</h2>
+    <h3>6.3.1 前端下载页面（download.html）</h3>
+    <pre>
+&lt;!DOCTYPE html&gt;
+&lt;html lang="zh-CN"&gt;
+&lt;head&gt;
+    &lt;meta charset="UTF-8"&gt;
+    &lt;title&gt;文件下载&lt;/title&gt;
+&lt;/head&gt;
+&lt;body&gt;
+    &lt;h3&gt;文件下载&lt;/h3&gt;
+    &lt;a href="/downloadServlet?fileName=test.jpg"&gt;下载test.jpg&lt;/a&gt;&lt;br&gt;
+    &lt;a href="/downloadServlet?fileName=文档.txt"&gt;下载文档.txt&lt;/a&gt;
+&lt;/body&gt;
+&lt;/html&gt;
+    </pre>
+
+    <h3>6.3.2 后端下载Servlet（DownloadServlet.java）</h3>
+    <pre>
+package com.servlet;
+
+import jakarta.servlet.ServletContext;
+import jakarta.servlet.ServletOutputStream;
+import jakarta.servlet.annotation.WebServlet;
+import jakarta.servlet.http.HttpServlet;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.net.URLEncoder;
+
+@WebServlet("/downloadServlet")
+public class DownloadServlet extends HttpServlet {
+    @Override
+    protected void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException {
+        // 1. 获取要下载的文件名（解决中文参数乱码）
+        String fileName = request.getParameter("fileName");
+        fileName = new String(fileName.getBytes("ISO-8859-1"), "UTF-8");
+
+        // 2. 获取文件在服务器的路径（webapp/upload目录）
+        ServletContext context = getServletContext();
+        String filePath = context.getRealPath("/upload/" + fileName);
+        System.out.println("文件路径：" + filePath);
+
+        // 3. 设置响应头（告诉浏览器是下载文件）
+        // 3.1 设置文件类型
+        String mimeType = context.getMimeType(fileName);
+        response.setContentType(mimeType);
+        // 3.2 设置下载弹窗（解决中文文件名乱码）
+        response.setHeader("Content-Disposition", "attachment;filename=" + URLEncoder.encode(fileName, "UTF-8"));
+
+        // 4. 读取服务器文件，写入响应流
+        FileInputStream fis = new FileInputStream(filePath);
+        ServletOutputStream sos = response.getOutputStream();
+
+        // 5. 缓冲区读写
+        byte[] buffer = new byte[1024];
+        int len;
+        while ((len = fis.read(buffer)) != -1) {
+            sos.write(buffer, 0, len);
+        }
+
+        // 6. 关闭流
+        sos.close();
+        fis.close();
+    }
+}
+    </pre>
+
+    <div class="warning">
+        ❗ 小白必坑：
+        <br>1. 中文文件名必须用 <code>URLEncoder.encode</code> 编码，否则下载文件名乱码
+        <br>2. 确保服务器/upload目录下有对应文件，否则报文件找不到
+    </div>
+</div>
+
+<!-- 6.4 本章必背总结 -->
+<div class="section">
+    <h2>6.4 本章终极总结（小白记住这些就够）</h2>
+    <ul>
+        <li>🍉 上传核心：表单 <code>enctype="multipart/form-data"</code> + commons-fileupload 解析</li>
+        <li>🔐 下载核心：设置响应头 <code>Content-Disposition: attachment</code> + 中文文件名URLEncoder编码</li>
+        <li>⚡ 依赖必加：commons-fileupload + commons-io</li>
+        <li>🎯 坑点：上传用POST、设置文件大小限制、确保服务器目录存在</li>
+    </ul>
+</div>
+
+<!-- 已删除的10%极少用内容 -->
+<div class="tip">
+    ✅ 已删除：多文件上传（单文件会了，多文件只需要循环）、文件分片上传（进阶）、复杂文件验证（小白不用）
+</div>
+
+        </div>
+    </div>
+</body>
+</html>

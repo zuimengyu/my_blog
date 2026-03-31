@@ -1,0 +1,754 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JS服务端进阶：server.js核心知识（前7模块）</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: "Microsoft Yahei", sans-serif;
+        }
+        body {
+            background: #f9f9f9;
+            padding: 20px;
+            line-height: 1.8;
+            color: #333;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 0 20px rgba(0,0,0,0.05);
+        }
+        h1 {
+            color: #2c3e50;
+            text-align: center;
+            margin-bottom: 40px;
+            border-bottom: 3px solid #3498db;
+            padding-bottom: 15px;
+        }
+        h2 {
+            color: #3498db;
+            margin: 40px 0 20px;
+            font-size: 24px;
+            position: relative;
+            padding-left: 20px;
+        }
+        h2::before {
+            content: "📌";
+            position: absolute;
+            left: 0;
+            top: 2px;
+        }
+        h3 {
+            color: #2980b9;
+            margin: 30px 0 15px;
+            font-size: 20px;
+            padding-left: 15px;
+            border-left: 3px solid #3498db;
+        }
+        h4 {
+            color: #166bb3;
+            margin: 20px 0 10px;
+            font-size: 18px;
+        }
+        .code-box {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 15px 0;
+            border-left: 4px solid #3498db;
+            overflow-x: auto;
+        }
+        code {
+            font-family: "Consolas", "Monaco", monospace;
+            font-size: 16px;
+            color: #2c3e50;
+        }
+        .note {
+            background: #fff3cd;
+            border-left: 4px solid #ffc107;
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 4px;
+        }
+        .warning {
+            background: #f8d7da;
+            border-left: 4px solid #dc3545;
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 4px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 15px 0;
+        }
+        table th, table td {
+            border: 1px solid #ddd;
+            padding: 12px 15px;
+            text-align: left;
+        }
+        table th {
+            background: #f8f9fa;
+            color: #2c3e50;
+            font-weight: bold;
+        }
+        ul, ol {
+            margin: 10px 0 10px 30px;
+        }
+        li {
+            margin: 8px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>JavaScript 服务端进阶学习文档（基于server.js核心知识）</h1>
+
+        <!-- 一、Node.js 基础核心 -->
+        <h2>一、Node.js 基础核心</h2>
+        <h3>1.1 Node.js 运行环境与服务端执行机制</h3>
+        <p>Node.js 是基于 Chrome V8 引擎的 JavaScript 运行环境，允许 JS 脱离浏览器在服务端执行，核心特性是「非阻塞 I/O」和「事件驱动」，适合处理高并发的网络请求和文件操作。</p>
+        <div class="note">
+            💡 服务端 JS 与浏览器 JS 的核心区别：服务端无 DOM/BOM  API，新增文件操作、数据库连接、网络服务等核心能力。
+        </div>
+
+        <h3>1.2 CommonJS 模块规范（require/module.exports）</h3>
+        <p>Node.js 遵循 CommonJS 模块规范，实现代码模块化拆分与复用，是服务端开发的基础：</p>
+        <h4>1.2.1 模块引入（require）</h4>
+        <p>通过 <pre><pre></pre>require('模块名')</pre></code> 引入内置模块、第三方模块或自定义模块：</p>
+        <div class="code-box">
+<code><pre>// 1. 引入内置模块（无需安装，Node.js 自带）
+const fs = require('fs');
+const path = require('path');
+
+// 2. 引入第三方模块（需先通过 npm 安装）
+const express = require('express');
+const jwt = require('jsonwebtoken');
+
+// 3. 引入自定义模块（路径以 ./ 或 ../ 开头）
+const db = require('./db'); // 引入同目录下的 db.js 模块</pre></code>
+        </div>
+
+        <h4>1.2.2 模块导出（module.exports/exports）</h4>
+        <p>通过 <code><pre>module.exports</pre></code> 或 <code><pre>exports</pre></code> 向外暴露模块内的变量、函数或对象：</p>
+        <div class="code-box">
+<code><pre>// 自定义模块 db.js
+const mysql = require('mysql2/promise');
+
+// 创建数据库连接池
+const pool = mysql.createPool({
+  host: 'localhost',
+  user: 'root',
+  password: '123456',
+  database: 'test_db'
+});
+
+// 暴露 execute 方法供外部调用
+module.exports = {
+  execute: async (sql, params) => {
+    const [rows] = await pool.execute(sql, params);
+    return [rows];
+  }
+};</pre></code>
+        </div>
+
+        <h3>1.3 Node.js 全局内置变量（__dirname、__filename）</h3>
+        <p>Node.js 提供专属全局变量，用于获取文件路径信息，是服务端文件操作的核心：</p>
+        <table>
+            <thead>
+                <tr>
+                    <<th>变量名</</th>
+                    <<th>说明</</th>
+                    <<th>示例</</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>__dirname</td>
+                    <td>当前模块所在文件夹的绝对路径</td>
+                    <td>若 server.js 在 C:\project，则 __dirname = "C:\project"</td>
+                </tr>
+                <tr>
+                    <td>__filename</td>
+                    <td>当前模块文件的绝对路径（包含文件名）</td>
+                    <td>若 server.js 在 C:\project，则 __filename = "C:\project\server.js"</td>
+                </tr>
+            </tbody>
+        </table>
+        <div class="code-box">
+<code><pre>// 实际应用：拼接文件路径
+const logDir = path.join(__dirname, 'logs'); 
+// 结果：C:\project\logs（跨平台兼容）
+const excelPath = path.join(__dirname, 'public', 'result.xlsx');
+// 结果：C:\project\public\result.xlsx</pre></code>
+        </div>
+
+        <h3>1.4 Node.js 命令行运行与项目启动</h3>
+        <p>服务端 JS 需通过命令行运行，核心命令与流程：</p>
+        <ol>
+            <li>进入项目目录：<code><pre>cd 项目路径</pre></code>（如 cd C:\project）</li>
+            <li>安装依赖：<code><pre>npm install</pre></code>（根据 package.json 安装所有依赖）</li>
+            <li>运行服务：<code><pre>node 文件名.js</pre></code>（如 node server.js）</li>
+            <li>停止服务：Ctrl + C（命令行中）</li>
+        </ol>
+
+        <!-- 二、Express 框架核心应用 -->
+        <h2>二、Express 框架核心应用</h2>
+        <h3>2.1 Express 实例创建与 HTTP 服务启动</h3>
+        <p>Express 是 Node.js 最流行的 Web 框架，用于快速搭建 HTTP 服务和接口，核心步骤：</p>
+        <div class="code-box">
+<code><pre>// 1. 引入 Express 模块
+const express = require('express');
+
+// 2. 创建 Express 实例（app 是服务核心对象）
+const app = express();
+
+// 3. 定义服务端口
+const PORT = 3000;
+
+// 4. 启动 HTTP 服务
+app.listen(PORT, '127.0.0.1', () => {
+  console.log(`服务启动成功！监听端口：${PORT}`);
+});</pre></code>
+        </div>
+        <p>参数说明：</p>
+        <ul>
+            <li>PORT：服务监听的端口号（如 3000、8080）</li>
+            <li>'127.0.0.1'：监听的 IP 地址（仅本地访问，对外提供服务需改为 0.0.0.0）</li>
+            <li>回调函数：服务启动成功后执行（通常用于输出启动信息）</li>
+        </ul>
+
+        <h3>2.2 Express 路由（接口）定义（POST/GET 请求）</h3>
+        <p>路由是服务端接口的核心，定义「请求方法 + 接口路径 + 处理逻辑」，Express 支持所有 HTTP 请求方法：</p>
+        <div class="code-box">
+<code><pre>// 1. POST 请求路由（常用於提交数据，如登录、查询）
+app.post('/login', (req, res) => {
+  // req：请求对象（包含客户端提交的数据、Cookie、请求头等）
+  // res：响应对象（用于向客户端返回数据、设置 Cookie 等）
+  const { username, password } = req.body; // 获取请求体数据
+  res.json({ success: true, message: '登录成功' }); // 返回 JSON 响应
+});
+
+// 2. GET 请求路由（常用於获取数据，如查询列表）
+app.get('/users', (req, res) => {
+  const { page } = req.query; // 获取 URL 查询参数（如 /users?page=1）
+  res.json({ success: true, data: [], page: page });
+});
+
+// 3. 带中间件的路由（需登录验证的接口）
+app.post('/query', authMiddleware, (req, res) => {
+  // 先执行 authMiddleware 中间件（验证登录），通过后再执行接口逻辑
+  res.json({ success: true, data: [] });
+});</pre></code>
+        </div>
+
+        <h3>2.3 Express 中间件机制</h3>
+        <p>中间件是 Express 的核心特性，本质是「请求处理函数」，在路由处理逻辑之前或之后执行，用于统一处理请求（如解析、验证、日志）：</p>
+        <h4>2.3.1 中间件分类</h4>
+        <table>
+            <thead>
+                <tr>
+                    <<th>类型</</th>
+                    <<th>说明</</th>
+                    <<th>示例</</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>全局中间件</td>
+                    <td>所有请求都会执行</td>
+                    <td>跨域中间件、日志中间件</td>
+                </tr>
+                <tr>
+                    <td>路由级中间件</td>
+                    <td>仅指定路由的请求执行</td>
+                    <td>登录验证中间件（仅保护特定接口）</td>
+                </tr>
+                <tr>
+                    <td>第三方中间件</td>
+                    <td>npm 安装的现成中间件</td>
+                    <td>body-parser、morgan</td>
+                </tr>
+                <tr>
+                    <td>自定义中间件</td>
+                    <td>手动编写的中间件</td>
+                    <td>登录验证中间件、错误处理中间件</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h4>2.3.2 自定义中间件示例（登录验证）</h4>
+        <div class="code-box">
+<code><pre>// 自定义登录验证中间件
+const authMiddleware = (req, res, next) => {
+  try {
+    // 1. 获取 Token（从请求头 Authorization 中提取）
+    const authHeader = req.headers.authorization;
+    if (!authHeader) {
+      return res.status(401).json({ success: false, message: '未登录' });
+    }
+
+    // 2. 验证 Token 有效性
+    const token = authHeader.split(' ')[1];
+    const decoded = jwt.verify(token, JWT_SECRET);
+
+    // 3. 验证通过，挂载用户信息到 req 对象，进入下一步
+    req.user = decoded;
+    next(); // 必须调用 next()，否则请求会卡住
+  } catch (err) {
+    res.status(401).json({ success: false, message: '登录已过期' });
+  }
+};
+
+// 路由级中间件：仅 /query 接口需要验证
+app.post('/query', authMiddleware, (req, res) => {
+  console.log('当前登录用户：', req.user.username);
+  res.json({ success: true, data: [] });
+});</pre></code>
+        </div>
+
+        <h3>2.4 Express 请求对象（req）与响应对象（res）</h3>
+        <p>Express 封装了 HTTP 请求和响应，提供便捷的操作方法：</p>
+        <h4>核心 req（请求）方法/属性</h4>
+        <ul>
+            <li>req.body：获取 POST 请求体数据（需 body-parser 中间件）</li>
+            <li>req.query：获取 GET 请求查询参数（如 /users?page=1 → req.query.page = 1）</li>
+            <li>req.cookies：获取客户端 Cookie（需 cookie-parser 中间件）</li>
+            <li>req.headers：获取请求头信息（如 Authorization、Content-Type）</li>
+            <li>req.ip：获取客户端 IP 地址</li>
+        </ul>
+
+        <h4>核心 res（响应）方法/属性</h4>
+        <ul>
+            <li>res.json(data)：返回 JSON 格式响应（服务端接口首选）</li>
+            <li>res.status(code)：设置 HTTP 响应状态码（如 200、401、500）</li>
+            <li>res.cookie(name, value, options)：设置客户端 Cookie</li>
+            <li>res.end()：快速结束响应（无返回数据）</li>
+            <li>res.send()：返回字符串、HTML 等响应</li>
+        </ul>
+
+        <!-- 三、Node.js 内置核心模块 -->
+        <h2>三、Node.js 内置核心模块</h2>
+        <h3>3.1 fs 模块（文件系统操作）</h3>
+        <p>fs（File System）模块是 Node.js 操作文件/文件夹的核心，支持同步（Sync 后缀）和异步操作，服务端开发必备：</p>
+        <h4>3.1.1 文件夹操作</h4>
+        <div class="code-box">
+<code><pre>// 1. 判断文件夹是否存在
+const logDir = path.join(__dirname, 'logs');
+if (!fs.existsSync(logDir)) {
+  // 2. 创建文件夹（同步）
+  fs.mkdirSync(logDir);
+  console.log('logs 文件夹创建成功');
+}
+
+// 3. 异步创建文件夹（大文件/高并发场景推荐）
+fs.mkdir(logDir, (err) => {
+  if (!err) console.log('logs 文件夹创建成功');
+});</pre></code>
+        </div>
+
+        <h4>3.1.2 文件操作</h4>
+        <div class="code-box">
+<code><pre>// 1. 流式写入文件（适合大文件/日志写入）
+const errorLogStream = fs.createWriteStream(
+  path.join(logDir, 'error.log'),
+  { flags: 'a' } // 'a'：追加模式（不会覆盖原有内容）
+);
+errorLogStream.write('错误日志内容\n');
+
+// 2. 同步删除文件（临时文件清理）
+const excelPath = path.join(__dirname, 'public', 'result.xlsx');
+if (fs.existsSync(excelPath)) {
+  fs.unlinkSync(excelPath); // 删除文件
+  console.log('临时文件已删除');
+}
+
+// 3. 读取文件（同步）
+const content = fs.readFileSync('config.json', 'utf8');
+const config = JSON.parse(content); // 解析 JSON 文件</pre></code>
+        </div>
+
+        <h3>3.2 path 模块（路径处理）</h3>
+        <p>path 模块用于处理文件路径，解决不同操作系统（Windows/Mac/Linux）路径分隔符差异问题，核心方法：</p>
+        <table>
+            <thead>
+                <tr>
+                    <<th>方法</</th>
+                    <<th>说明</</th>
+                    <<th>示例</</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>path.join()</td>
+                    <td>拼接多个路径片段（跨平台兼容）</td>
+                    <td>path.join(__dirname, 'public', 'file.txt') → 正确路径</td>
+                </tr>
+                <tr>
+                    <td>path.resolve()</td>
+                    <td>解析为绝对路径</td>
+                    <td>path.resolve('public', 'file.txt') → 绝对路径</td>
+                </tr>
+                <tr>
+                    <td>path.basename()</td>
+                    <td>获取路径中的文件名</td>
+                    <td>path.basename('/a/b/file.txt') → 'file.txt'</td>
+                </tr>
+                <tr>
+                    <td>path.dirname()</td>
+                    <td>获取路径中的文件夹名</td>
+                    <td>path.dirname('/a/b/file.txt') → '/a/b'</td>
+                </tr>
+            </tbody>
+        </table>
+        <div class="note">
+            💡 永远使用 path 模块拼接路径，不要手动写字符串（如 'logs/error.log'），避免跨平台兼容性问题！
+        </div>
+
+        <h3>3.3 timers 定时器模块（setTimeout）</h3>
+        <p>timers 模块提供定时器功能，核心用于延迟执行任务（如临时文件清理、定时任务），最常用 <code><pre>setTimeout</pre></code>：</p>
+        <div class="code-box">
+<code><pre>// 延迟 10 分钟（600000 毫秒）删除临时文件
+const deleteTempFile = (filePath) => {
+  setTimeout(() => {
+    if (fs.existsSync(filePath)) {
+      fs.unlinkSync(filePath);
+      console.log(`临时文件已删除：${filePath}`);
+    }
+  }, 600000); // 第二个参数为毫秒数
+};
+
+// 调用：生成 Excel 后调用，延迟删除
+const excelPath = path.join(__dirname, 'public', 'result.xlsx');
+deleteTempFile(excelPath);</pre></code>
+        </div>
+
+        <!-- 四、第三方依赖模块应用 -->
+        <h2>四、第三方依赖模块应用</h2>
+        <p>服务端开发依赖大量第三方模块（通过 npm 安装），以下是 server.js 核心依赖的使用方法：</p>
+
+        <h3>4.1 body-parser - HTTP 请求体解析</h3>
+        <p>作用：解析客户端提交的请求体（JSON/URL 编码格式），让 Express 能通过 <code><pre>req.body</pre></code> 获取数据：</p>
+        <div class="code-box">
+<code><pre>// 1. 安装
+// npm install body-parser
+
+// 2. 引入并启用
+const bodyParser = require('body-parser');
+
+// 解析 JSON 格式请求体（大多数接口用此格式）
+app.use(bodyParser.json({ limit: '50mb' })); 
+// limit：限制请求体最大大小（防止大文件攻击）
+
+// 解析 URL 编码格式请求体（表单提交常用）
+app.use(bodyParser.urlencoded({ extended: true, limit: '50mb' }));</pre></code>
+        </div>
+
+        <h3>4.2 cookie-parser - Cookie 解析</h3>
+        <p>作用：解析客户端请求中的 Cookie，让 Express 能通过 <code><pre>req.cookies</pre></code> 获取 Cookie 数据：</p>
+        <div class="code-box">
+<code><pre>// 1. 安装
+// npm install cookie-parser
+
+// 2. 引入并启用
+const cookieParser = require('cookie-parser');
+app.use(cookieParser());
+
+// 3. 使用：获取 Cookie 中的 user 字段
+app.get('/profile', (req, res) => {
+  const username = req.cookies.user;
+  res.json({ success: true, username: username });
+});
+
+// 4. 设置 Cookie
+app.post('/login', (req, res) => {
+  res.cookie('user', '张三', {
+    maxAge: 3600000 * 24, // 有效期 24 小时（毫秒）
+    secure: true, // 仅 HTTPS 传输（生产环境必备）
+    sameSite: 'Strict' // 防止跨站请求伪造
+  });
+  res.json({ success: true });
+});</pre></code>
+        </div>
+
+        <h3>4.3 morgan - HTTP 请求日志记录</h3>
+        <p>作用：记录所有 HTTP 请求的详细信息（IP、时间、请求方法、状态码等），用于调试和问题排查：</p>
+        <div class="code-box">
+<code><pre>// 1. 安装
+// npm install morgan
+
+// 2. 引入并启用
+const morgan = require('morgan');
+const fs = require('fs');
+const path = require('path');
+
+// 3. 配置日志写入文件
+const logDir = path.join(__dirname, 'logs');
+const accessLogStream = fs.createWriteStream(
+  path.join(logDir, 'access.log'),
+  { flags: 'a' }
+);
+
+// 4. 启用日志中间件（仅记录状态码 ≥400 的错误请求）
+app.use(morgan(':remote-addr [:date[ISO]] ":method :url" :status :response-time ms', {
+  stream: accessLogStream,
+  skip: (req, res) => res.statusCode < 400
+}));
+
+// 5. 控制台输出正常请求日志
+app.use(morgan('dev', { stream: process.stdout }));</pre></code>
+        </div>
+
+        <h3>4.4 jsonwebtoken（JWT）- 令牌生成与验证</h3>
+        <p>作用：实现无状态身份验证，生成令牌（Token）和验证令牌有效性，是登录功能的核心：</p>
+        <div class="code-box">
+<code><pre>// 1. 安装
+// npm install jsonwebtoken
+
+// 2. 引入
+const jwt = require('jsonwebtoken');
+
+// 3. 配置密钥和有效期
+const JWT_SECRET = 'your-secret-key'; // 生产环境需保密
+const JWT_EXPIRES_IN = '24h'; // 令牌有效期
+
+// 4. 生成令牌（登录成功后）
+app.post('/login', (req, res) => {
+  const { username } = req.body;
+  // 生成 Token（载荷包含用户信息，密钥签名）
+  const token = jwt.sign(
+    { username: username, userId: '123' },
+    JWT_SECRET,
+    { expiresIn: JWT_EXPIRES_IN }
+  );
+  res.json({ success: true, token: token });
+});
+
+// 5. 验证令牌（中间件中）
+const decoded = jwt.verify(token, JWT_SECRET);
+// decoded 包含载荷信息：{ username: '张三', userId: '123', exp: 过期时间戳 }</pre></code>
+        </div>
+
+        <h3>4.5 xlsx - JSON 转 Excel 文件</h3>
+        <p>作用：将 JSON 数据转换为 Excel 文件，实现数据导出功能：</p>
+        <div class="code-box">
+<code><pre>// 1. 安装
+// npm install xlsx
+
+// 2. 引入
+const xlsx = require('xlsx');
+
+// 3. JSON 数据转 Excel 并写入文件
+app.post('/export', (req, res) => {
+  const { data } = req.body; // 客户端提交的 JSON 数据
+
+  // JSON 转 Excel 工作表
+  const worksheet = xlsx.utils.json_to_sheet(data);
+  
+  // 创建 Excel 工作簿（相当于一个 Excel 文件）
+  const workbook = xlsx.utils.book_new();
+  
+  // 工作表添加到工作簿
+  xlsx.utils.book_append_sheet(workbook, worksheet, '查询结果');
+  
+  // 生成文件名和路径
+  const filename = `result-${Date.now()}.xlsx`;
+  const filepath = path.join(__dirname, 'public', filename);
+  
+  // 写入文件
+  xlsx.writeFile(workbook, filepath);
+  
+  // 返回下载链接
+  res.json({ success: true, downloadUrl: `https://your-domain/${filename}` });
+});</pre></code>
+        </div>
+
+        <!-- 五、认证与权限控制 -->
+        <h2>五、认证与权限控制</h2>
+        <h3>5.1 JWT 认证机制</h3>
+        <p>JWT（JSON Web Token）是服务端无状态认证的核心方案，流程如下：</p>
+        <ol>
+            <li>用户登录：客户端提交用户名密码，服务端验证通过后生成 JWT 令牌；</li>
+            <li>令牌存储：客户端存储令牌（如 localStorage、Cookie）；</li>
+            <li>接口请求：客户端每次请求需登录的接口时，在请求头携带令牌；</li>
+            <li>令牌验证：服务端验证令牌有效性（是否篡改、是否过期），通过则允许访问。</li>
+        </ol>
+        <div class="note">
+            💡 JWT 令牌由三部分组成：头部（算法）、载荷（用户信息）、签名（密钥加密），签名确保令牌不被篡改。
+        </div>
+
+        <h3>5.2 Cookie 操作与安全配置</h3>
+        <p>服务端通过 Cookie 存储用户状态（如用户名），配合 JWT 实现双重验证，核心安全配置：</p>
+        <div class="code-box">
+<code><pre>res.cookie('user', username, {
+  maxAge: 3600000 * 24, // 有效期 24 小时（毫秒）
+  domain: 'your-domain.com', // 仅指定域名可访问 Cookie
+  secure: true, // 仅 HTTPS 协议传输（防止中间人窃取）
+  httpOnly: false, // 前端是否可访问（false 表示前端可读取）
+  sameSite: 'Strict' // 禁止跨站请求携带 Cookie（防 CSRF 攻击）
+});</pre></code>
+        </div>
+
+        <h3>5.3 双重验证逻辑（Cookie + Token）</h3>
+        <p>server.js 采用「Cookie + Token」双重验证，提升安全性，核心逻辑：</p>
+        <div class="code-box">
+<code><pre>const authMiddleware = (req, res, next) => {
+  try {
+    // 1. 验证 Cookie（获取用户名）
+    const cookieUser = req.cookies.user;
+    if (!cookieUser) {
+      return res.status(401).json({ success: false, message: '未登录' });
+    }
+
+    // 2. 验证 Token（获取 Token 中的用户名）
+    const authHeader = req.headers.authorization;
+    const token = authHeader.split(' ')[1];
+    const decoded = jwt.verify(token, JWT_SECRET);
+    const tokenUser = decoded.username;
+
+    // 3. 双重验证：Cookie 与 Token 中的用户名必须一致
+    if (cookieUser !== tokenUser) {
+      return res.status(401).json({ success: false, message: '身份验证失败' });
+    }
+
+    next(); // 验证通过，进入接口逻辑
+  } catch (err) {
+    res.status(401).json({ success: false, message: '登录已过期' });
+  }
+};</pre></code>
+        </div>
+
+        <!-- 六、数据库操作 -->
+        <h2>六、数据库操作</h2>
+        <h3>6.1 关系型数据库连接池配置</h3>
+        <p>服务端操作数据库首选「连接池」（而非单次连接），提升性能和稳定性，以 MySQL 为例：</p>
+        <div class="code-box">
+<code><pre>// 1. 安装 mysql2 模块（支持 Promise 和 async/await）
+// npm install mysql2
+
+// 2. 配置连接池
+const mysql = require('mysql2/promise');
+const pool = mysql.createPool({
+  host: 'localhost', // 数据库地址（本地为 localhost）
+  user: 'root', // 数据库用户名
+  password: 'your-password', // 数据库密码
+  database: 'your-db-name', // 要连接的数据库名
+  port: 3306, // MySQL 默认端口
+  connectionLimit: 10, // 最大连接数（根据服务器配置调整）
+  waitForConnections: true // 无空闲连接时等待（而非报错）
+});</pre></code>
+        </div>
+
+        <h3>6.2 SQL 语句执行与参数化查询</h3>
+        <p>通过连接池执行 SQL 语句，核心是「参数化查询」（防 SQL 注入）：</p>
+        <div class="code-box">
+<code><pre>// 1. 封装数据库执行方法
+const execute = async (sql, params) => {
+  const [rows] = await pool.execute(sql, params);
+  return [rows];
+};
+
+// 2. 执行查询（参数化查询，防注入）
+app.post('/login', async (req, res) => {
+  const { username, password } = req.body;
+  // SQL 中用 ? 作为占位符，参数单独传递
+  const [rows] = await execute(
+    'SELECT * FROM users WHERE userid = ? AND password = ?',
+    [username, password] // 参数数组（顺序与 ? 对应）
+  );
+  if (rows.length > 0) {
+    res.json({ success: true });
+  } else {
+    res.json({ success: false, message: '用户名或密码错误' });
+  }
+});</pre></code>
+        </div>
+        <div class="warning">
+            ⚠️ 严禁直接拼接 SQL 字符串（如 `SELECT * FROM users WHERE userid = '${username}'`），会导致 SQL 注入攻击！
+        </div>
+
+        <h3>6.3 复杂 SQL 查询（多表关联、条件查询）</h3>
+        <p>服务端常需执行复杂 SQL（多表关联、时间区间、去重、排序），示例：</p>
+        <div class="code-box">
+<code><pre>// 多表关联查询（LEFT JOIN）+ 时间区间 + 去重 + 排序
+const sql = `
+  SELECT DISTINCT tb.store, tb.Member_Name, tb.Member_Phone
+  FROM 私教合同 tb
+  LEFT JOIN (
+    SELECT DISTINCT Member_Phone 
+    FROM 上课日志 
+    WHERE Class_stTime BETWEEN NOW()-INTERVAL 30 DAY AND NOW()
+  ) ta ON tb.Member_Phone = ta.Member_Phone
+  WHERE ta.Member_Phone IS NULL
+  ORDER BY tb.store, tb.Member_Name
+`;
+const [rows] = await execute(sql);
+res.json({ success: true, data: rows });</pre></code>
+        </div>
+
+        <!-- 七、文件系统与文件操作 -->
+        <h2>七、文件系统与文件操作</h2>
+        <h3>7.1 文件夹创建与路径规划</h3>
+        <p>服务端文件操作需规划合理路径，核心原则：</p>
+        <ul>
+            <li>日志文件：存放在 logs 文件夹；</li>
+            <li>临时文件（如导出的 Excel）：存放在 public 文件夹（静态资源目录，便于前端下载）；</li>
+            <li>配置文件：存放在 config 文件夹；</li>
+            <li>永远用 path.join 拼接路径，确保跨平台兼容。</li>
+        </ul>
+        <div class="code-box">
+<code><pre>// 规划文件夹路径
+const logDir = path.join(__dirname, 'logs'); // 日志目录
+const publicDir = path.join(__dirname, 'public'); // 静态资源目录
+const configDir = path.join(__dirname, 'config'); // 配置目录
+
+// 确保文件夹存在
+[logDir, publicDir, configDir].forEach(dir => {
+  if (!fs.existsSync(dir)) {
+    fs.mkdirSync(dir);
+  }
+});</pre></code>
+        </div>
+
+        <h3>7.2 文件写入与流式操作</h3>
+        <p>大文件（如日志、Excel）推荐用「流式操作」，避免占用过多内存：</p>
+        <div class="code-box">
+<code><pre>// 1. 日志流式写入（追加模式）
+const accessLogStream = fs.createWriteStream(
+  path.join(logDir, 'access.log'),
+  { flags: 'a' } // 'a' 表示追加，'w' 表示覆盖
+);
+// 写入日志
+accessLogStream.write(`${new Date().toISOString()} | 访问日志内容\n`);
+
+// 2. Excel 文件写入（xlsx 模块封装了流式逻辑）
+xlsx.writeFile(workbook, filepath); // 大文件自动采用流式写入</pre></code>
+        </div>
+
+        <h3>7.3 临时文件管理与自动清理</h3>
+        <p>导出的 Excel 等临时文件需定时清理，避免磁盘占用：</p>
+        <div class="code-box">
+<code><pre>// 生成临时文件后，10 分钟自动删除
+const deleteTempFile = (filepath) => {
+  setTimeout(() => {
+    if (fs.existsSync(filepath)) {
+      fs.unlinkSync(filepath);
+      console.log(`临时文件清理：${filepath}`);
+    }
+  }, 600000); // 600000 毫秒 = 10 分钟
+};
+
+// 调用：生成 Excel 后触发清理
+const filepath = path.join(publicDir, filename);
+deleteTempFile(filepath);</pre></code>
+        </div>
+    </div>
+</body>
+</html>

@@ -1,0 +1,1200 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JavaScript事件处理与异步编程从0到1</title>
+    <style>
+        /* 沿用之前的清新风格，只添加必要的新样式 */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: "Microsoft YaHei", "PingFang SC", sans-serif;
+        }
+
+        body {
+            background-color: #f0f8fb;
+            color: #333;
+            line-height: 1.8;
+            padding-bottom: 50px;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        header {
+            text-align: center;
+            padding: 40px 0;
+            background: linear-gradient(120deg, #e8f4f8, #f5fafe);
+            border-radius: 12px;
+            margin-bottom: 30px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+
+        h1 {
+            color: #2d3748;
+            font-size: 2.2rem;
+            margin-bottom: 10px;
+        }
+
+        h2 {
+            color: #4299e1;
+            border-left: 4px solid #4299e1;
+            padding-left: 15px;
+            margin: 30px 0 20px;
+            font-size: 1.8rem;
+        }
+
+        h3 {
+            color: #38b2ac;
+            margin: 25px 0 15px;
+            font-size: 1.4rem;
+        }
+
+        .section {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            margin-bottom: 25px;
+            box-shadow: 0 1px 8px rgba(0,0,0,0.08);
+        }
+
+        p {
+            margin-bottom: 15px;
+            font-size: 1.05rem;
+        }
+
+        ul, ol {
+            margin: 15px 0 20px 30px;
+        }
+
+        li {
+            margin-bottom: 10px;
+        }
+
+        pre {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            overflow-x: auto;
+            margin: 20px 0;
+            border-left: 4px solid #4299e1;
+        }
+
+        code {
+            font-family: "Consolas", "Monaco", monospace;
+            font-size: 1rem;
+            color: #2d3748;
+        }
+
+        .demo-area {
+            border: 2px dashed #e2e8f0;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+            background: #fafafa;
+        }
+
+        button {
+            background: #4299e1;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 1rem;
+            margin: 5px;
+            transition: background 0.3s;
+        }
+
+        button:hover {
+            background: #3182ce;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+
+        th, td {
+            border: 1px solid #e2e8f0;
+            padding: 12px 15px;
+            text-align: left;
+        }
+
+        th {
+            background: #e8f4f8;
+            color: #2d3748;
+        }
+
+        .highlight {
+            background: #fff3cd;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-weight: bold;
+        }
+
+        /* 新增的必要样式 */
+        .event-box {
+            width: 150px;
+            height: 150px;
+            background: #4299e1;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 10px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .event-box:hover {
+            background: #3182ce;
+            transform: scale(1.05);
+        }
+
+        .event-box.active {
+            background: #38b2ac;
+        }
+
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #4299e1;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-right: 10px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 20px;
+            background: #e2e8f0;
+            border-radius: 10px;
+            overflow: hidden;
+            margin: 10px 0;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #4299e1, #38b2ac);
+            width: 0%;
+            transition: width 0.3s;
+        }
+
+        .chat-message {
+            padding: 10px 15px;
+            margin: 8px 0;
+            border-radius: 18px;
+            max-width: 70%;
+        }
+
+        .chat-message.user {
+            background: #4299e1;
+            color: white;
+            margin-left: auto;
+        }
+
+        .chat-message.bot {
+            background: #e8f4f8;
+            color: #333;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>JavaScript事件处理与异步编程 从0到1完全教程</h1>
+            <p>交互核心 | 异步思维 | 实战为王</p>
+        </header>
+
+        <!-- 第一部分：事件处理基础 -->
+        <div class="section">
+            <h2>一、事件处理基础 (从零开始)</h2>
+            
+            <h3>1.1 什么是事件？</h3>
+            <p>事件就是用户与网页交互时发生的动作，比如：</p>
+            <ul>
+                <li>点击按钮 (<strong>click</strong>)</li>
+                <li>鼠标移动 (<strong>mousemove</strong>)</li>
+                <li>键盘按键 (<strong>keydown</strong>)</li>
+                <li>表单提交 (<strong>submit</strong>)</li>
+                <li>页面加载完成 (<strong>load</strong>)</li>
+            </ul>
+
+            <h3>1.2 事件绑定的三种方式</h3>
+            
+            <table>
+                <tr>
+                    <th>方式</th>
+                    <th>写法</th>
+                    <th>优点</th>
+                    <th>缺点</th>
+                </tr>
+                <tr>
+                    <td>HTML内联</td>
+                    <td>&lt;button onclick="fn()"&gt;</td>
+                    <td>简单直接</td>
+                    <td>结构与行为耦合</td>
+                </tr>
+                <tr>
+                    <td>DOM属性</td>
+                    <td>btn.onclick = fn</td>
+                    <td>结构行为分离</td>
+                    <td>同一事件只能绑定一个函数</td>
+                </tr>
+                <tr>
+                    <td>事件监听</td>
+                    <td>btn.addEventListener()</td>
+                    <td>可绑定多个函数，可移除</td>
+                    <td>写法稍复杂</td>
+                </tr>
+            </table>
+
+            <pre><code>
+// 方式1：HTML内联 (不推荐)
+// &lt;button onclick="alert('点击了！')"&gt;点击我&lt;/button&gt;
+
+// 方式2：DOM属性绑定
+const btn1 = document.getElementById('btn1');
+btn1.onclick = function() {
+    alert('通过DOM属性绑定的事件！');
+};
+
+// 方式3：事件监听 (推荐！)
+const btn2 = document.getElementById('btn2');
+btn2.addEventListener('click', function() {
+    alert('通过addEventListener绑定的事件！');
+});
+
+// 可以绑定多个函数
+btn2.addEventListener('click', function() {
+    console.log('第二个函数也执行了！');
+});
+
+// 移除事件监听
+function handleClick() {
+    alert('这个事件可以被移除');
+}
+btn2.addEventListener('click', handleClick);
+// btn2.removeEventListener('click', handleClick); // 移除监听
+            </code></pre>
+
+            <!-- 演示区域 -->
+            <div class="demo-area" id="demo1">
+                <button id="btn1">DOM属性绑定</button>
+                <button id="btn2">事件监听绑定</button>
+                <button id="btn3">点击测试移除</button>
+                <p id="demo1-result"></p>
+            </div>
+        </div>
+
+        <!-- 第二部分：事件对象和事件流 -->
+        <div class="section">
+            <h2>二、事件对象和事件流 (进阶)</h2>
+            
+            <h3>2.1 事件对象 (event)</h3>
+            <p>当事件触发时，浏览器会自动创建一个事件对象，包含事件的详细信息：</p>
+
+            <pre><code>
+const box = document.getElementById('eventBox');
+box.addEventListener('click', function(event) {
+    // event 就是事件对象，也常用 e 表示
+    console.log('事件类型:', event.type); // click
+    console.log('触发元素:', event.target); // 点击的元素
+    console.log('绑定元素:', event.currentTarget); // 绑定事件的元素
+    console.log('鼠标X坐标:', event.clientX); // 鼠标相对于视口的X坐标
+    console.log('鼠标Y坐标:', event.clientY); // 鼠标相对于视口的Y坐标
+    
+    // 阻止默认行为
+    event.preventDefault(); // 比如阻止链接跳转、表单提交
+    
+    // 阻止事件冒泡
+    event.stopPropagation();
+});
+            </code></pre>
+
+            <h3>2.2 事件流 (捕获-目标-冒泡)</h3>
+            <p>事件流描述了事件在DOM树中传播的过程：</p>
+            <ul>
+                <li><strong>捕获阶段</strong>：从window向下传播到目标元素</li>
+                <li><strong>目标阶段</strong>：到达目标元素</li>
+                <li><strong>冒泡阶段</strong>：从目标元素向上传播回window</li>
+            </ul>
+
+            <pre><code>
+// 事件冒泡演示
+const outer = document.getElementById('outer');
+const inner = document.getElementById('inner');
+
+outer.addEventListener('click', function() {
+    console.log('外层被点击了！');
+});
+
+inner.addEventListener('click', function(event) {
+    console.log('内层被点击了！');
+    // event.stopPropagation(); // 取消注释这行，阻止冒泡
+});
+
+// 事件捕获演示 (第三个参数设为true)
+outer.addEventListener('click', function() {
+    console.log('捕获阶段：外层');
+}, true);
+
+inner.addEventListener('click', function() {
+    console.log('捕获阶段：内层');
+}, true);
+            </code></pre>
+
+            <h3>2.3 事件委托 (重要！)</h3>
+            <p>利用事件冒泡，给父元素绑定事件来处理子元素的事件，性能更好：</p>
+
+            <pre><code>
+// 不推荐：给每个子元素单独绑定
+// const items = document.querySelectorAll('.item');
+// items.forEach(item => {
+//     item.addEventListener('click', function() {
+//         console.log('点击了:', this.innerText);
+//     });
+// });
+
+// 推荐：事件委托
+const list = document.getElementById('itemList');
+list.addEventListener('click', function(event) {
+    // 检查点击的是否是目标元素
+    if(event.target.classList.contains('item')) {
+        console.log('点击了:', event.target.innerText);
+        // 可以在这里操作被点击的元素
+        event.target.style.color = '#4299e1';
+    }
+});
+            </code></pre>
+
+            <!-- 演示区域 -->
+            <div class="demo-area" id="demo2">
+                <div id="outer" style="width:200px; height:200px; background:#e8f4f8; padding:20px;">
+                    外层
+                    <div id="inner" style="width:100px; height:100px; background:#4299e1; color:white; display:flex; align-items:center; justify-content:center;">
+                        内层
+                    </div>
+                </div>
+                <p>点击内层查看冒泡效果</p>
+                <div id="demo2-result"></div>
+                
+                <hr style="margin:20px 0;">
+                
+                <h4>事件委托演示：</h4>
+                <ul id="itemList">
+                    <li class="item">列表项 1</li>
+                    <li class="item">列表项 2</li>
+                    <li class="item">列表项 3</li>
+                </ul>
+                <button onclick="addNewItem()">添加新列表项</button>
+            </div>
+        </div>
+
+        <!-- 第三部分：异步编程基础 -->
+        <div class="section">
+            <h2>三、异步编程基础 (回调函数)</h2>
+            
+            <h3>3.1 同步 vs 异步</h3>
+            <ul>
+                <li><strong>同步</strong>：代码按顺序执行，前一个执行完才执行下一个</li>
+                <li><strong>异步</strong>：代码不等待结果，继续执行后面的代码</li>
+            </ul>
+
+            <pre><code>
+// 同步代码
+console.log('1');
+console.log('2');
+console.log('3');
+// 输出：1, 2, 3
+
+// 异步代码 (setTimeout)
+console.log('1');
+setTimeout(function() {
+    console.log('2');
+}, 1000);
+console.log('3');
+// 输出：1, 3, 2 (2会在1秒后输出)
+            </code></pre>
+
+            <h3>3.2 回调函数</h3>
+            <p>回调函数就是作为参数传递给另一个函数的函数，在异步操作完成后执行：</p>
+
+            <pre><code>
+// 简单的回调函数
+function fetchData(callback) {
+    // 模拟异步请求
+    setTimeout(function() {
+        const data = { name: '张三', age: 18 };
+        callback(data); // 异步完成后调用回调函数
+    }, 1000);
+}
+
+// 使用回调函数
+fetchData(function(result) {
+    console.log('获取到数据:', result);
+});
+
+// 回调地狱 (多个异步操作嵌套)
+fetchUser(function(user) {
+    fetchOrders(user.id, function(orders) {
+        fetchOrderDetails(orders[0].id, function(details) {
+            // 嵌套越来越深，代码难以维护
+            console.log(details);
+        });
+    });
+});
+            </code></pre>
+
+            <!-- 演示区域 -->
+            <div class="demo-area" id="demo3">
+                <button onclick="testAsync()">测试异步执行</button>
+                <button onclick="testCallback()">测试回调函数</button>
+                <div id="demo3-result"></div>
+            </div>
+        </div>
+
+        <!-- 第四部分：Promise -->
+        <div class="section">
+            <h2>四、Promise (异步编程的进化)</h2>
+            
+            <h3>4.1 Promise基础</h3>
+            <p>Promise是ES6引入的异步编程解决方案，比回调函数更优雅：</p>
+
+            <pre><code>
+// 创建Promise
+const promise = new Promise(function(resolve, reject) {
+    // 异步操作
+    setTimeout(function() {
+        const success = true;
+        if(success) {
+            resolve('操作成功！'); // 成功时调用
+        } else {
+            reject('操作失败！'); // 失败时调用
+        }
+    }, 1000);
+});
+
+// 使用Promise
+promise
+    .then(function(result) {
+        console.log(result); // 成功时执行
+    })
+    .catch(function(error) {
+        console.log(error); // 失败时执行
+    })
+    .finally(function() {
+        console.log('无论成功失败都会执行');
+    });
+            </code></pre>
+
+            <h3>4.2 Promise链式调用</h3>
+            <p>Promise可以链式调用，解决回调地狱问题：</p>
+
+            <pre><code>
+// 模拟异步函数
+function fetchUser() {
+    return new Promise((resolve) => {
+        setTimeout(() => resolve({ id: 1, name: '张三' }), 1000);
+    });
+}
+
+function fetchOrders(userId) {
+    return new Promise((resolve) => {
+        setTimeout(() => resolve([{ id: 101, product: '商品A' }]), 1000);
+    });
+}
+
+function fetchOrderDetails(orderId) {
+    return new Promise((resolve) => {
+        setTimeout(() => resolve({ id: orderId, price: 99 }), 1000);
+    });
+}
+
+// 链式调用 (清晰！)
+fetchUser()
+    .then(user => {
+        console.log('获取用户:', user);
+        return fetchOrders(user.id);
+    })
+    .then(orders => {
+        console.log('获取订单:', orders);
+        return fetchOrderDetails(orders[0].id);
+    })
+    .then(details => {
+        console.log('获取订单详情:', details);
+    })
+    .catch(error => {
+        console.error('出错了:', error);
+    });
+            </code></pre>
+
+            <h3>4.3 Promise静态方法</h3>
+            <pre><code>
+// Promise.all - 等待所有Promise完成
+Promise.all([fetchUser(), fetchOrders(1)])
+    .then(([user, orders]) => {
+        console.log('所有数据都获取到了');
+    });
+
+// Promise.race - 只要有一个完成就返回
+Promise.race([fetchUser(), fetchOrders(1)])
+    .then(result => {
+        console.log('第一个完成的:', result);
+    });
+
+// Promise.allSettled - 等待所有Promise完成(无论成功失败)
+Promise.allSettled([fetchUser(), Promise.reject('失败')])
+    .then(results => {
+        console.log('所有Promise都结束了');
+    });
+            </code></pre>
+
+            <!-- 演示区域 -->
+            <div class="demo-area" id="demo4">
+                <button onclick="testPromise()">测试Promise</button>
+                <button onclick="testPromiseChain()">测试Promise链式调用</button>
+                <div id="demo4-result"></div>
+            </div>
+        </div>
+
+        <!-- 第五部分：async/await -->
+        <div class="section">
+            <h2>五、async/await (异步编程的终极方案)</h2>
+            
+            <h3>5.1 基本用法</h3>
+            <p>async/await是ES2017引入的语法糖，让异步代码看起来像同步代码：</p>
+
+            <pre><code>
+// async函数返回Promise
+async function getData() {
+    return '数据';
+}
+getData().then(data => console.log(data));
+
+// await等待Promise完成
+async function fetchData() {
+    // await只能在async函数中使用
+    const result = await new Promise(resolve => {
+        setTimeout(() => resolve('等待完成'), 1000);
+    });
+    console.log(result);
+}
+            </code></pre>
+
+            <h3>5.2 实际应用</h3>
+            <pre><code>
+// 用async/await重写之前的例子
+async function getOrderDetails() {
+    try {
+        // 顺序执行
+        const user = await fetchUser();
+        console.log('获取用户:', user);
+        
+        const orders = await fetchOrders(user.id);
+        console.log('获取订单:', orders);
+        
+        const details = await fetchOrderDetails(orders[0].id);
+        console.log('获取订单详情:', details);
+        
+        return details;
+    } catch (error) {
+        console.error('出错了:', error);
+    }
+}
+
+// 并行执行 (提高效率)
+async function getAllData() {
+    try {
+        // 同时发起请求
+        const userPromise = fetchUser();
+        const ordersPromise = fetchOrders(1);
+        
+        // 等待所有完成
+        const [user, orders] = await Promise.all([userPromise, ordersPromise]);
+        
+        console.log('用户:', user);
+        console.log('订单:', orders);
+    } catch (error) {
+        console.error('出错了:', error);
+    }
+}
+            </code></pre>
+
+            <!-- 演示区域 -->
+            <div class="demo-area" id="demo5">
+                <button onclick="testAsyncAwait()">测试async/await</button>
+                <button onclick="testParallel()">测试并行执行</button>
+                <div id="demo5-result"></div>
+            </div>
+        </div>
+
+        <!-- 第六部分：实战案例 -->
+        <div class="section">
+            <h2>六、实战案例 (综合应用)</h2>
+            
+            <h3>6.1 案例1：模拟数据加载器</h3>
+            <p>功能：显示加载状态、进度条、错误处理</p>
+
+            <div class="demo-area" id="demo6">
+                <button onclick="startLoading()">开始加载数据</button>
+                <div id="loadingStatus" style="margin-top:15px;"></div>
+                <div class="progress-bar">
+                    <div class="progress-fill" id="progressFill"></div>
+                </div>
+                <div id="dataResult"></div>
+            </div>
+
+            <pre><code>
+// 模拟数据加载
+async function loadData() {
+    const statusEl = document.getElementById('loadingStatus');
+    const progressFill = document.getElementById('progressFill');
+    const resultEl = document.getElementById('dataResult');
+    
+    // 显示加载状态
+    statusEl.innerHTML = '&lt;span class="loading"&gt;&lt;/span&gt;正在加载数据...';
+    resultEl.innerHTML = '';
+    
+    try {
+        // 模拟进度
+        for(let i = 0; i <= 100; i += 10) {
+            await new Promise(resolve => setTimeout(resolve, 200));
+            progressFill.style.width = i + '%';
+        }
+        
+        // 模拟获取数据
+        const data = await new Promise((resolve, reject) => {
+            setTimeout(() => {
+                // 模拟90%成功率
+                if(Math.random() > 0.1) {
+                    resolve({
+                        success: true,
+                        data: [
+                            { id: 1, name: '商品A', price: 99 },
+                            { id: 2, name: '商品B', price: 199 },
+                            { id: 3, name: '商品C', price: 299 }
+                        ]
+                    });
+                } else {
+                    reject(new Error('网络请求失败'));
+                }
+            }, 500);
+        });
+        
+        // 显示结果
+        statusEl.innerHTML = '✅ 加载完成！';
+        resultEl.innerHTML = `
+            &lt;h4&gt;获取到的数据：&lt;/h4&gt;
+            &lt;ul&gt;
+                ${data.data.map(item => `
+                    &lt;li&gt;${item.name} - ¥${item.price}&lt;/li&gt;
+                `).join('')}
+            &lt;/ul&gt;
+        `;
+        
+    } catch (error) {
+        statusEl.innerHTML = '❌ 加载失败：' + error.message;
+        progressFill.style.background = '#e53e3e';
+    }
+}
+            </code></pre>
+
+            <h3>6.2 案例2：简易聊天机器人</h3>
+            <p>功能：事件处理 + 异步回复</p>
+
+            <div class="demo-area" id="demo7">
+                <div id="chatContainer" style="height:300px; overflow-y:auto; border:1px solid #e2e8f0; padding:15px; border-radius:8px; margin-bottom:15px;">
+                    <div class="chat-message bot">你好！我是聊天机器人，有什么可以帮助你的？</div>
+                </div>
+                <div style="display:flex;">
+                    <input type="text" id="chatInput" placeholder="输入消息..." style="flex:1; padding:10px; border:1px solid #e2e8f0; border-radius:6px;">
+                    <button onclick="sendMessage()" style="margin-left:10px;">发送</button>
+                </div>
+            </div>
+
+            <pre><code>
+// 聊天机器人核心代码
+const chatContainer = document.getElementById('chatContainer');
+const chatInput = document.getElementById('chatInput');
+
+// 机器人回复库
+const botResponses = {
+    '你好': '你好呀！很高兴见到你！',
+    '天气': '今天天气晴朗，适合出去走走！',
+    '时间': `现在是 ${new Date().toLocaleString()}`,
+    '再见': '再见！期待下次聊天！',
+    'default': '我不太理解你说的，可以换个话题吗？'
+};
+
+// 发送消息
+function sendMessage() {
+    const message = chatInput.value.trim();
+    if(!message) return;
+    
+    // 添加用户消息
+    addMessage(message, 'user');
+    chatInput.value = '';
+    
+    // 显示输入中...
+    const typingId = showTyping();
+    
+    // 模拟机器人思考和回复
+    setTimeout(async () => {
+        hideTyping(typingId);
+        
+        // 查找回复
+        let response = botResponses['default'];
+        for(const key in botResponses) {
+            if(message.includes(key)) {
+                response = botResponses[key];
+                break;
+            }
+        }
+        
+        // 模拟打字效果
+        await typeMessage(response);
+    }, 1000 + Math.random() * 1000);
+}
+
+// 添加消息
+function addMessage(text, type) {
+    const messageDiv = document.createElement('div');
+    messageDiv.className = `chat-message ${type}`;
+    messageDiv.innerText = text;
+    chatContainer.appendChild(messageDiv);
+    chatContainer.scrollTop = chatContainer.scrollHeight;
+}
+
+// 显示输入中
+function showTyping() {
+    const typingDiv = document.createElement('div');
+    typingDiv.className = 'chat-message bot';
+    typingDiv.id = 'typing-indicator';
+    typingDiv.innerHTML = '正在输入&lt;span&gt;...&lt;/span&gt;';
+    chatContainer.appendChild(typingDiv);
+    chatContainer.scrollTop = chatContainer.scrollHeight;
+    return 'typing-indicator';
+}
+
+// 隐藏输入中
+function hideTyping(id) {
+    const typing = document.getElementById(id);
+    if(typing) typing.remove();
+}
+
+// 打字效果
+async function typeMessage(text) {
+    const messageDiv = document.createElement('div');
+    messageDiv.className = 'chat-message bot';
+    chatContainer.appendChild(messageDiv);
+    
+    for(let i = 0; i < text.length; i++) {
+        messageDiv.innerText += text[i];
+        chatContainer.scrollTop = chatContainer.scrollHeight;
+        await new Promise(resolve => setTimeout(resolve, 50));
+    }
+}
+
+// 回车发送
+chatInput.addEventListener('keydown', function(event) {
+    if(event.key === 'Enter') {
+        sendMessage();
+    }
+});
+            </code></pre>
+        </div>
+
+        <!-- 第七部分：总结与最佳实践 -->
+        <div class="section">
+            <h2>七、总结与最佳实践</h2>
+            
+            <h3>7.1 事件处理最佳实践</h3>
+            <ul>
+                <li>优先使用 <span class="highlight">addEventListener</span> 绑定事件</li>
+                <li>善用 <span class="highlight">事件委托</span> 提高性能</li>
+                <li>及时 <span class="highlight">移除事件监听</span> 避免内存泄漏</li>
+                <li>使用 <span class="highlight">event.target</span> 获取触发元素</li>
+            </ul>
+
+            <h3>7.2 异步编程演进</h3>
+            <ul>
+                <li><strong>回调函数</strong>：基础但容易产生回调地狱</li>
+                <li><strong>Promise</strong>：链式调用，更优雅</li>
+                <li><strong>async/await</strong>：语法糖，代码最清晰</li>
+            </ul>
+
+            <h3>7.3 异步编程最佳实践</h3>
+            <ul>
+                <li>现代开发优先使用 <span class="highlight">async/await</span></li>
+                <li>始终处理错误：<span class="highlight">try-catch</span> 或 <span class="highlight">.catch()</span></li>
+                <li>可以并行的操作使用 <span class="highlight">Promise.all()</span></li>
+                <li>避免在循环中使用 await (会串行执行)</li>
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        // 1. 事件绑定演示
+        const btn1 = document.getElementById('btn1');
+        const btn2 = document.getElementById('btn2');
+        const btn3 = document.getElementById('btn3');
+        const demo1Result = document.getElementById('demo1-result');
+
+        btn1.onclick = function() {
+            demo1Result.innerHTML = '✅ 通过DOM属性绑定的事件触发了！';
+        };
+
+        function handleBtn2() {
+            demo1Result.innerHTML = '✅ 通过addEventListener绑定的事件触发了！';
+        }
+        btn2.addEventListener('click', handleBtn2);
+
+        let btn3Bound = true;
+        function handleBtn3() {
+            demo1Result.innerHTML = '✅ 这个事件可以被移除，点击"测试移除"按钮试试！';
+        }
+        btn3.addEventListener('click', handleBtn3);
+        
+        btn3.addEventListener('click', function() {
+            if(btn3Bound) {
+                btn3.removeEventListener('click', handleBtn3);
+                btn3Bound = false;
+                demo1Result.innerHTML = '❌ 事件已移除，再次点击不会触发handleBtn3了';
+            } else {
+                btn3.addEventListener('click', handleBtn3);
+                btn3Bound = true;
+                demo1Result.innerHTML = '✅ 事件已重新绑定';
+            }
+        });
+
+        // 2. 事件流和事件委托演示
+        const outer = document.getElementById('outer');
+        const inner = document.getElementById('inner');
+        const demo2Result = document.getElementById('demo2-result');
+
+        outer.addEventListener('click', function() {
+            const p = document.createElement('p');
+            p.innerText = '🟦 外层事件触发 (冒泡阶段)';
+            demo2Result.appendChild(p);
+        });
+
+        inner.addEventListener('click', function(event) {
+            const p = document.createElement('p');
+            p.innerText = '🟩 内层事件触发';
+            demo2Result.appendChild(p);
+            // 不阻止冒泡，让外层也能触发
+        });
+
+        // 事件委托
+        const itemList = document.getElementById('itemList');
+        itemList.addEventListener('click', function(event) {
+            if(event.target.classList.contains('item')) {
+                event.target.style.color = '#4299e1';
+                event.target.style.fontWeight = 'bold';
+            }
+        });
+
+        function addNewItem() {
+            const li = document.createElement('li');
+            li.className = 'item';
+            li.innerText = `新列表项 ${itemList.children.length + 1}`;
+            itemList.appendChild(li);
+        }
+
+        // 3. 异步编程演示
+        const demo3Result = document.getElementById('demo3-result');
+
+        function testAsync() {
+            demo3Result.innerHTML = '';
+            const addLog = (text) => {
+                const p = document.createElement('p');
+                p.innerText = text;
+                demo3Result.appendChild(p);
+            };
+
+            addLog('1. 开始执行');
+            setTimeout(() => {
+                addLog('3. 异步回调执行 (1秒后)');
+            }, 1000);
+            addLog('2. 继续执行，不等待异步');
+        }
+
+        function testCallback() {
+            demo3Result.innerHTML = '<span class="loading"></span>正在获取数据...';
+            
+            // 模拟异步请求
+            setTimeout(() => {
+                const data = { name: '张三', age: 18, city: '北京' };
+                demo3Result.innerHTML = `
+                    ✅ 数据获取成功！<br>
+                    姓名：${data.name}<br>
+                    年龄：${data.age}<br>
+                    城市：${data.city}
+                `;
+            }, 1500);
+        }
+
+        // 4. Promise演示
+        const demo4Result = document.getElementById('demo4-result');
+
+        function testPromise() {
+            demo4Result.innerHTML = '<span class="loading"></span>Promise执行中...';
+            
+            new Promise((resolve, reject) => {
+                setTimeout(() => {
+                    if(Math.random() > 0.3) {
+                        resolve('🎉 Promise成功完成！');
+                    } else {
+                        reject('❌ Promise失败了！');
+                    }
+                }, 1500);
+            })
+            .then(result => {
+                demo4Result.innerHTML = result;
+            })
+            .catch(error => {
+                demo4Result.innerHTML = error;
+            });
+        }
+
+        // 模拟异步函数
+        function fetchUser() {
+            return new Promise((resolve) => {
+                setTimeout(() => resolve({ id: 1, name: '张三' }), 800);
+            });
+        }
+
+        function fetchOrders(userId) {
+            return new Promise((resolve) => {
+                setTimeout(() => resolve([{ id: 101, product: '商品A' }]), 800);
+            });
+        }
+
+        function fetchOrderDetails(orderId) {
+            return new Promise((resolve) => {
+                setTimeout(() => resolve({ id: orderId, price: 99 }), 800);
+            });
+        }
+
+        function testPromiseChain() {
+            demo4Result.innerHTML = '<span class="loading"></span>开始链式调用...';
+            
+            fetchUser()
+                .then(user => {
+                    demo4Result.innerHTML = `<span class="loading"></span>获取用户成功: ${user.name}，继续获取订单...`;
+                    return fetchOrders(user.id);
+                })
+                .then(orders => {
+                    demo4Result.innerHTML = `<span class="loading"></span>获取订单成功: ${orders[0].product}，继续获取详情...`;
+                    return fetchOrderDetails(orders[0].id);
+                })
+                .then(details => {
+                    demo4Result.innerHTML = `
+                        ✅ 全部完成！<br>
+                        订单ID: ${details.id}<br>
+                        价格: ¥${details.price}
+                    `;
+                })
+                .catch(error => {
+                    demo4Result.innerHTML = '❌ 出错: ' + error;
+                });
+        }
+
+        // 5. async/await演示
+        const demo5Result = document.getElementById('demo5-result');
+
+        async function testAsyncAwait() {
+            demo5Result.innerHTML = '<span class="loading"></span>async/await执行中...';
+            
+            try {
+                const user = await fetchUser();
+                demo5Result.innerHTML = `<span class="loading"></span>获取用户: ${user.name}`;
+                
+                const orders = await fetchOrders(user.id);
+                demo5Result.innerHTML = `<span class="loading"></span>获取订单: ${orders[0].product}`;
+                
+                const details = await fetchOrderDetails(orders[0].id);
+                demo5Result.innerHTML = `
+                    ✅ async/await全部完成！<br>
+                    订单: ${orders[0].product}<br>
+                    价格: ¥${details.price}
+                `;
+            } catch (error) {
+                demo5Result.innerHTML = '❌ 出错: ' + error;
+            }
+        }
+
+        async function testParallel() {
+            demo5Result.innerHTML = '<span class="loading"></span>并行执行中...';
+            
+            const startTime = Date.now();
+            
+            try {
+                // 并行发起请求
+                const userPromise = fetchUser();
+                const ordersPromise = fetchOrders(1);
+                
+                // 等待所有完成
+                const [user, orders] = await Promise.all([userPromise, ordersPromise]);
+                
+                const endTime = Date.now();
+                
+                demo5Result.innerHTML = `
+                    ✅ 并行执行完成！<br>
+                    用户: ${user.name}<br>
+                    订单: ${orders[0].product}<br>
+                    耗时: ${endTime - startTime}ms (串行需要约2400ms)
+                `;
+            } catch (error) {
+                demo5Result.innerHTML = '❌ 出错: ' + error;
+            }
+        }
+
+        // 6. 实战案例1：数据加载器
+        async function startLoading() {
+            const statusEl = document.getElementById('loadingStatus');
+            const progressFill = document.getElementById('progressFill');
+            const resultEl = document.getElementById('dataResult');
+            
+            // 重置
+            statusEl.innerHTML = '<span class="loading"></span>正在加载数据...';
+            resultEl.innerHTML = '';
+            progressFill.style.width = '0%';
+            progressFill.style.background = 'linear-gradient(90deg, #4299e1, #38b2ac)';
+            
+            try {
+                // 模拟进度
+                for(let i = 0; i <= 100; i += 10) {
+                    await new Promise(resolve => setTimeout(resolve, 150));
+                    progressFill.style.width = i + '%';
+                }
+                
+                // 模拟获取数据
+                const data = await new Promise((resolve, reject) => {
+                    setTimeout(() => {
+                        if(Math.random() > 0.1) {
+                            resolve({
+                                success: true,
+                                data: [
+                                    { id: 1, name: '商品A', price: 99 },
+                                    { id: 2, name: '商品B', price: 199 },
+                                    { id: 3, name: '商品C', price: 299 }
+                                ]
+                            });
+                        } else {
+                            reject(new Error('网络请求失败'));
+                        }
+                    }, 500);
+                });
+                
+                // 显示结果
+                statusEl.innerHTML = '✅ 加载完成！';
+                resultEl.innerHTML = `
+                    <h4>获取到的数据：</h4>
+                    <ul>
+                        ${data.data.map(item => `
+                            <li>${item.name} - ¥${item.price}</li>
+                        `).join('')}
+                    </ul>
+                `;
+                
+            } catch (error) {
+                statusEl.innerHTML = '❌ 加载失败：' + error.message;
+                progressFill.style.background = '#e53e3e';
+            }
+        }
+
+        // 7. 实战案例2：聊天机器人
+        const chatContainer = document.getElementById('chatContainer');
+        const chatInput = document.getElementById('chatInput');
+
+        const botResponses = {
+            '你好': '你好呀！很高兴见到你！',
+            '天气': '今天天气晴朗，适合出去走走！',
+            '时间': `现在是 ${new Date().toLocaleString()}`,
+            '再见': '再见！期待下次聊天！',
+            'default': '我不太理解你说的，可以换个话题吗？'
+        };
+
+        function sendMessage() {
+            const message = chatInput.value.trim();
+            if(!message) return;
+            
+            addMessage(message, 'user');
+            chatInput.value = '';
+            
+            const typingId = showTyping();
+            
+            setTimeout(async () => {
+                hideTyping(typingId);
+                
+                let response = botResponses['default'];
+                for(const key in botResponses) {
+                    if(message.includes(key)) {
+                        response = botResponses[key];
+                        break;
+                    }
+                }
+                
+                await typeMessage(response);
+            }, 1000 + Math.random() * 1000);
+        }
+
+        function addMessage(text, type) {
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `chat-message ${type}`;
+            messageDiv.innerText = text;
+            chatContainer.appendChild(messageDiv);
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+        }
+
+        function showTyping() {
+            const typingDiv = document.createElement('div');
+            typingDiv.className = 'chat-message bot';
+            typingDiv.id = 'typing-indicator';
+            typingDiv.innerHTML = '正在输入...';
+            chatContainer.appendChild(typingDiv);
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+            return 'typing-indicator';
+        }
+
+        function hideTyping(id) {
+            const typing = document.getElementById(id);
+            if(typing) typing.remove();
+        }
+
+        async function typeMessage(text) {
+            const messageDiv = document.createElement('div');
+            messageDiv.className = 'chat-message bot';
+            chatContainer.appendChild(messageDiv);
+            
+            for(let i = 0; i < text.length; i++) {
+                messageDiv.innerText += text[i];
+                chatContainer.scrollTop = chatContainer.scrollHeight;
+                await new Promise(resolve => setTimeout(resolve, 50));
+            }
+        }
+
+        chatInput.addEventListener('keydown', function(event) {
+            if(event.key === 'Enter') {
+                sendMessage();
+            }
+        });
+    </script>
+</body>
+</html>

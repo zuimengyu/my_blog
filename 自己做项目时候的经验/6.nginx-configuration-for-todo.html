@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nginx 配置（Todo 项目反向代理+静态资源）</title>
+    <link rel="stylesheet" href="./style.css">
+</head>
+<body>
+    <!-- 回到顶部按钮 -->
+    <div class="back-to-top" onclick="window.scrollTo({top: 0, behavior: 'smooth'})">↑</div>
+
+    <!-- 头部 -->
+    <div class="header-container">
+        <h1>Nginx 配置（Todo 项目反向代理+静态资源）</h1>
+        <p>Nginx 作用：1. 提供前端静态文件访问（直接通过 IP 打开登录页）；2. 反向代理后端 API（将 /api 请求转发到 Node.js 服务）。</p>
+    </div>
+
+    <!-- 主要内容 -->
+    <div class="content-container">
+        <h2>一、Nginx 核心配置文件路径</h2>
+        <ul>
+            <li>主配置文件：<code>/etc/nginx/nginx.conf</code>（全局配置）</li>
+            <li>站点配置目录：<code>/etc/nginx/conf.d/</code>（推荐在此创建项目配置）</li>
+            <li>默认站点配置：<code>/etc/nginx/sites-available/default</code>（默认80端口配置）</li>
+            <li>静态资源默认目录：<code>/var/www/html</code>（Todo 项目已自定义路径，无需使用）</li>
+        </ul>
+
+        <h2>二、创建 Todo 项目 Nginx 配置</h2>
+        <div class="code-block">
+            <button class="copy-btn" onclick="copyCode(this)">复制</button>
+            <pre><code># 1. 进入 Nginx 站点配置目录
+cd /etc/nginx/conf.d
+
+# 2. 创建项目配置文件（命名为 todo.conf）
+nano todo.conf</code></pre>
+        </div>
+
+        <h3>粘贴配置内容（替换公网 IP）</h3>
+        <div class="code-block">
+            <button class="copy-btn" onclick="copyCode(this)">复制</button>
+            <pre><code>server {
+  listen 80;  # 监听 80 端口（浏览器默认端口，无需输入端口号）
+  server_name 你的服务器公网IP;  # 替换为你的公网 IP（如 123.45.67.89，有域名可替换为域名）
+
+  # 前端静态文件目录（指向服务器上的 frontend 文件夹）
+  root /root/todo-project/frontend;
+  index login.html;  # 默认打开登录页
+
+  # 后端 API 反向代理（将 /api 开头的请求转发到 Node.js 服务端口 3000）
+  location /api {
+    proxy_pass http://localhost:3000;
+    proxy_http_version 1.1;
+    proxy_set_header Upgrade $http_upgrade;
+    proxy_set_header Connection 'upgrade';
+    proxy_set_header Host $host;
+    proxy_cache_bypass $http_upgrade;
+  }
+}</code></pre>
+        </div>
+
+        <div class="note">
+            编辑完成后，按 <code>Ctrl+O</code> 保存，<code>Ctrl+X</code> 退出。
+        </div>
+
+        <h2>三、验证配置并重启 Nginx</h2>
+        <div class="code-block">
+            <button class="copy-btn" onclick="copyCode(this)">复制</button>
+            <pre><code># 1. 检查配置文件语法错误（关键！必须通过验证）
+nginx -t
+
+# 2. 若提示 "test is successful"，重启 Nginx 生效配置
+systemctl restart nginx
+
+# 3. 查看 Nginx 状态（确保启动成功）
+systemctl status nginx</code></pre>
+        </div>
+
+        <div class="warning">
+            若 <code>nginx -t</code> 报错：检查配置文件中的公网 IP、文件路径是否正确，符号是否缺失（如分号、大括号）。
+        </div>
+
+        <h2>四、Nginx 常用命令</h2>
+        <div class="code-block">
+            <button class="copy-btn" onclick="copyCode(this)">复制</button>
+            <pre><code># 启动 Nginx
+systemctl start nginx
+
+# 停止 Nginx
+systemctl stop nginx
+
+# 重启 Nginx（修改配置后执行）
+systemctl restart nginx
+
+# 重新加载配置（不停止服务，推荐）
+systemctl reload nginx
+
+# 设置开机自启
+systemctl enable nginx
+
+# 关闭开机自启
+systemctl disable nginx
+
+# 查看 Nginx 日志（排查错误）
+cat /var/log/nginx/error.log
+
+
+# 方法1（通用）：查看Nginx监听的所有端口
+netstat -tulpn | grep nginx
+
+
+# 3. 统一权限（和8080的/var/www/blog保持一致，Nginx默认以www-data用户运行）
+chown -R www-data:www-data /var/www/note
+chmod -R 755 /var/www/note
+
+
+# 1. 服务器本地防火墙放行（选对应系统）
+# Ubuntu/Debian（ufw）：
+ufw allow 3005/tcp
+ufw reload
+
+
+
+</code></pre>
+        </div>
+
+        <div class="note">
+            验证配置：浏览器输入服务器公网 IP，自动打开 login.html 即前端配置成功；登录/注册操作无报错，即反向代理生效。
+        </div>
+    </div>
+
+    <!-- 复制代码和回到顶部逻辑 -->
+    <script>
+        // 复制代码功能
+        function copyCode(btn) {
+            const codeBlock = btn.nextElementSibling;
+            const code = codeBlock.textContent;
+            navigator.clipboard.writeText(code).then(() => {
+                btn.textContent = "已复制";
+                btn.classList.add("copied");
+                setTimeout(() => {
+                    btn.textContent = "复制";
+                    btn.classList.remove("copied");
+                }, 2000);
+            }).catch(err => {
+                alert("复制失败：" + err);
+            });
+        }
+
+        // 回到顶部按钮显示/隐藏
+        window.addEventListener("scroll", () => {
+            const backToTopBtn = document.querySelector(".back-to-top");
+            if (window.scrollY > 300) {
+                backToTopBtn.classList.add("show");
+            } else {
+                backToTopBtn.classList.remove("show");
+            }
+        });
+    </script>
+</body>
+</html>

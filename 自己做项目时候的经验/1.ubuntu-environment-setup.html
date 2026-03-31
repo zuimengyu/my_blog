@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ubuntu 搭建 Node.js+Express+MySQL 基础环境</title>
+    <link rel="stylesheet" href="./style.css">
+</head>
+<body>
+    <!-- 回到顶部按钮 -->
+    <div class="back-to-top" onclick="window.scrollTo({top: 0, behavior: 'smooth'})">↑</div>
+
+    <!-- 头部 -->
+    <div class="header-container">
+        <h1>Ubuntu 搭建 Node.js+Express+MySQL 基础环境</h1>
+        <p>本文介绍在 Ubuntu 系统中，从零安装 Todo 项目所需的核心依赖：系统更新、Node.js、MySQL、PM2、Nginx。</p>
+    </div>
+
+    <!-- 主要内容 -->
+    <div class="content-container">
+        <h2>一、更新 Ubuntu 系统依赖</h2>
+        <p>先更新系统包索引，确保安装的软件是最新版本：</p>
+        <div class="code-block">
+            <button class="copy-btn" onclick="copyCode(this)">复制</button>
+            <pre><code>apt update -y && apt upgrade -y</code></pre>
+        </div>
+
+        <h2>二、安装 Node.js（两种方式任选）</h2>
+        <h3>方式1：NVM 安装（推荐，灵活切换版本）</h3>
+        <div class="code-block">
+            <button class="copy-btn" onclick="copyCode(this)">复制</button>
+            <pre><code># 安装 NVM（Node.js 版本管理器）
+curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.7/install.sh | bash
+
+# 生效 NVM 命令
+source ~/.bashrc
+
+# 安装 Node.js 18 LTS（稳定版）
+nvm install 18
+
+# 验证安装
+node -v  # 应显示 v18.x.x
+npm -v   # 应显示 9.x.x</code></pre>
+        </div>
+
+        <h3>方式2：APT 仓库安装（系统级安装）</h3>
+        <div class="code-block">
+            <button class="copy-btn" onclick="copyCode(this)">复制</button>
+            <pre><code># 安装依赖工具
+sudo apt update && sudo apt install -y curl apt-transport-https ca-certificates
+
+# 导入 NodeSource 签名密钥
+curl -fsSL https://deb.nodesource.com/gpgkey/nodesource-repo.gpg.key | sudo gpg --dearmor -o /etc/apt/trusted.gpg.d/nodesource.gpg
+
+# 添加 Node 18 仓库
+echo "deb https://deb.nodesource.com/node_18.x nodistro main" | sudo tee /etc/apt/sources.list.d/nodesource.list
+
+# 安装 Node.js
+sudo apt update && sudo apt install -y nodejs
+
+# 验证安装
+node -v  # 输出 v18.x.x（如 v18.20.3）
+npm -v   # 输出对应版本（如 10.7.0）</code></pre>
+        </div>
+
+        <h2>三、安装 MySQL 数据库</h2>
+        <div class="code-block">
+            <button class="copy-btn" onclick="copyCode(this)">复制</button>
+            <pre><code># 安装 MySQL 服务器
+apt install -y mysql-server
+
+# 启动 MySQL 并设置开机自启
+systemctl start mysql
+systemctl enable mysql
+
+# 初始化 MySQL（设置 root 密码，必填！）
+mysql_secure_installation</code></pre>
+        </div>
+        <div class="note">
+            注意：<code>mysql_secure_installation</code> 步骤中需设置 root 密码，建议记录下来（后续登录数据库需使用）。
+        </div>
+
+        <h2>四、安装 PM2（Node.js 后台进程管理）</h2>
+        <p>用于后台运行 Node.js 服务，避免终端关闭后服务停止：</p>
+        <div class="code-block">
+            <button class="copy-btn" onclick="copyCode(this)">复制</button>
+            <pre><code>npm install -g pm2</code></pre>
+        </div>
+
+        <h2>五、安装 Nginx（反向代理+静态资源服务）</h2>
+        <div class="code-block">
+            <button class="copy-btn" onclick="copyCode(this)">复制</button>
+            <pre><code># 安装 Nginx
+apt install -y nginx
+
+# 启动 Nginx 并设置开机自启
+systemctl start nginx
+systemctl enable nginx</code></pre>
+        </div>
+        <div class="note">
+            验证：浏览器输入服务器公网 IP，能看到 Nginx 欢迎页即安装成功。
+        </div>
+    </div>
+
+    <!-- 复制代码和回到顶部逻辑 -->
+    <script>
+        // 复制代码功能
+        function copyCode(btn) {
+            const codeBlock = btn.nextElementSibling;
+            const code = codeBlock.textContent;
+            navigator.clipboard.writeText(code).then(() => {
+                btn.textContent = "已复制";
+                btn.classList.add("copied");
+                setTimeout(() => {
+                    btn.textContent = "复制";
+                    btn.classList.remove("copied");
+                }, 2000);
+            }).catch(err => {
+                alert("复制失败：" + err);
+            });
+        }
+
+        // 回到顶部按钮显示/隐藏
+        window.addEventListener("scroll", () => {
+            const backToTopBtn = document.querySelector(".back-to-top");
+            if (window.scrollY > 300) {
+                backToTopBtn.classList.add("show");
+            } else {
+                backToTopBtn.classList.remove("show");
+            }
+        });
+    </script>
+</body>
+</html>

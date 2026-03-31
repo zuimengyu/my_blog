@@ -1,0 +1,428 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>第7章：JDBC 进阶 & 连接池 | 小白完整版·90%常用全覆盖</title>
+    <style>
+        .content { padding: 20px 0; line-height: 1.9; font-size: 15px; }
+        .section { margin: 45px 0; padding-bottom: 25px; border-bottom: 1px solid #eff6ff; }
+        .section:last-child { border-bottom: none; }
+        .section h2 { color: #1e40af; margin-bottom: 25px; border-left: 4px solid #3b82f6; padding-left: 15px; font-size: 20px; }
+        .section h3 { color: #0f172a; margin: 30px 0 18px; font-size: 17px; }
+        .step { background: #eff6ff; padding: 22px; border-radius: 8px; margin: 18px 0; border: 1px solid #dbeafe; }
+        .step-title { font-weight: 600; color: #1e40af; margin-bottom: 12px; }
+        code { background: #f1f5f9; padding: 4px 10px; border-radius: 4px; font-family: Consolas, monospace; color: #dc2626; font-size: 14px; }
+        pre { background: #f8fafc; padding: 20px; border-radius: 8px; overflow-x: auto; margin: 18px 0; border: 1px solid #e2e8f0; font-family: Consolas, monospace; font-size: 14px; }
+        .tip { background: #fffbeb; padding: 18px; border-radius: 6px; border-left: 4px solid #f59e0b; margin: 18px 0; font-size: 14px; }
+        .warning { background: #fef2f2; padding: 18px; border-radius: 6px; border-left: 4px solid #ef4444; margin: 18px 0; font-size: 14px; }
+        .maven-box { background: #f5f5f5; border-left: 4px solid #8b5cf6; padding: 18px; border-radius: 8px; margin: 18px 0; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>第7章：JDBC 进阶 & 数据库连接池（小白完整版）</h1>
+        <div class="content">
+
+<!-- 7.0 前置：原生JDBC的痛点（为啥要进阶？） -->
+<div class="section">
+    <h2>7.0 前置核心：原生JDBC有啥问题？</h2>
+    <p><strong>大白话：</strong>
+    之前写的原生JDBC，每次请求都要「创建连接→执行SQL→关闭连接」，<strong>创建/关闭连接特别耗性能</strong>，就像每次喝水都要「造杯子→喝水→扔杯子」，太浪费！
+    </p>
+    <div class="warning">
+        ❗ 原生JDBC的3大痛点：
+        <br>1. 频繁创建/关闭连接 → 性能极低
+        <br>2. 硬编码（连接参数写死在代码里）→ 改参数要改代码、重新打包
+        <br>3. 无连接限制 → 并发高时数据库崩掉
+    </div>
+    <div class="tip">
+        💡 解决方案：
+        <br>📌 数据库连接池 = 提前造好一批杯子（连接），放在池子里，用的时候拿，用完放回，不用重复造！
+    </div>
+</div>
+
+<!-- 7.1 数据库连接池核心认知 -->
+<div class="section">
+    <h2>7.1 数据库连接池核心（小白必懂）</h2>
+    <p><strong>术语：数据库连接池（Connection Pool）</strong>
+    <br>👉 大白话：<strong>存放数据库连接的「池子」</strong>，核心规则：
+    </p>
+    <ol>
+        <li>项目启动 → 连接池创建N个连接（预设数量）</li>
+        <li>程序需要连接 → 从池子里拿（不用新建）</li>
+        <li>程序用完连接 → 放回池子（不关闭）</li>
+        <li>项目关闭 → 连接池销毁所有连接</li>
+    </ol>
+    <p><strong>常用连接池（90%项目用这2个）：</strong>
+    <br>1. Druid（阿里开源，性能最好、功能最全，企业首选）
+    <br>2. HikariCP（SpringBoot默认，轻量快速）
+    </p>
+    <div class="tip">
+        💡 小白先学 Druid，企业用得最多！
+    </div>
+</div>
+
+<!-- 7.2 Druid 连接池实战（核心） -->
+<div class="section">
+    <h2>7.2 Druid 连接池实操（企业标配）</h2>
+    <h3>7.2.1 Maven 依赖（Druid+MySQL驱动）</h3>
+    <div class="maven-box">
+        <strong>Druid 连接池依赖（直接复制）</strong>
+        <pre>
+&lt;!-- Druid 连接池（阿里） --&gt;
+&lt;dependency&gt;
+    &lt;groupId&gt;com.alibaba&lt;/groupId&gt;
+    &lt;artifactId&gt;druid&lt;/artifactId&gt;
+    &lt;version&gt;1.2.20&lt;/version&gt;
+&lt;/dependency&gt;
+
+&lt;!-- MySQL8 驱动（已加，确保版本对应） --&gt;
+&lt;dependency&gt;
+    &lt;groupId&gt;com.mysql&lt;/groupId&gt;
+    &lt;artifactId&gt;mysql-connector-j&lt;/artifactId&gt;
+    &lt;version&gt;8.0.33&lt;/version&gt;
+&lt;/dependency&gt;
+        </pre>
+    </div>
+
+    <h3>7.2.2 连接池配置文件（db.properties）</h3>
+    <p>在 <code>src/main/resources</code> 下新建 <code>db.properties</code>（解耦硬编码）：</p>
+    <pre>
+# MySQL 连接参数
+jdbc.driverClass=com.mysql.cj.jdbc.Driver
+jdbc.url=jdbc:mysql://localhost:3306/javaweb_test?serverTimezone=UTC&useSSL=false&characterEncoding=utf8
+jdbc.username=root
+jdbc.password=123456
+
+# Druid 连接池参数（小白不用改，默认即可）
+druid.initialSize=5        # 初始连接数
+druid.maxActive=20         # 最大连接数
+druid.minIdle=5            # 最小空闲连接数
+druid.maxWait=3000         # 获取连接的最大等待时间（毫秒）
+    </pre>
+
+    <h3>7.2.3 Druid 工具类（DruidUtil.java）</h3>
+    <pre>
+package com.util;
+
+import com.alibaba.druid.pool.DruidDataSourceFactory;
+import javax.sql.DataSource;
+import java.sql.Connection;
+import java.sql.ResultSet;
+import java.sql.PreparedStatement;
+import java.util.Properties;
+
+// Druid 连接池工具类（企业标配）
+public class DruidUtil {
+    // 静态数据源（全局唯一）
+    private static DataSource dataSource;
+
+    // 静态代码块：项目启动时加载配置、初始化连接池
+    static {
+        try {
+            // 1. 加载配置文件
+            Properties props = new Properties();
+            props.load(DruidUtil.class.getClassLoader().getResourceAsStream("db.properties"));
+
+            // 2. 创建Druid连接池
+            dataSource = DruidDataSourceFactory.createDataSource(props);
+            System.out.println("Druid连接池初始化成功！");
+        } catch (Exception e) {
+            throw new RuntimeException("连接池初始化失败！", e);
+        }
+    }
+
+    // 1. 获取连接（从池子里拿，不用新建）
+    public static Connection getConn() throws Exception {
+        return dataSource.getConnection();
+    }
+
+    // 2. 获取数据源（供后续框架使用）
+    public static DataSource getDataSource() {
+        return dataSource;
+    }
+
+    // 3. 关闭资源（归还连接到池子，不是真关闭）
+    public static void close(Connection conn, PreparedStatement pstmt, ResultSet rs) {
+        try {
+            if (rs != null) rs.close();
+            if (pstmt != null) pstmt.close();
+            if (conn != null) conn.close(); // 归还连接到池子里
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    // 重载：增删改关闭2个资源
+    public static void close(Connection conn, PreparedStatement pstmt) {
+        close(conn, pstmt, null);
+    }
+}
+    </pre>
+    <div class="explain">
+        关键区别：<code>conn.close()</code> 不再是关闭连接，而是<strong>把连接归还到连接池</strong>！
+    </div>
+
+    <h3>7.2.4 测试 Druid 连接池</h3>
+    <pre>
+package com.test;
+
+import com.util.DruidUtil;
+import java.sql.Connection;
+
+// 测试Druid连接池
+public class DruidTest {
+    public static void main(String[] args) throws Exception {
+        // 多次获取连接，看是否复用
+        for (int i = 0; i < 10; i++) {
+            Connection conn = DruidUtil.getConn();
+            System.out.println("第" + (i+1) + "次获取连接：" + conn);
+            DruidUtil.close(conn, null); // 归还连接
+        }
+    }
+}
+    </pre>
+    <div class="tip">
+        💡 效果：打印的连接对象地址大部分重复 → 说明复用了连接，性能提升！
+    </div>
+</div>
+
+<!-- 7.3 DAO 模式封装（企业标配） -->
+<div class="section">
+    <h2>7.3 DAO 模式封装（解决代码重复）</h2>
+    <p><strong>术语：DAO（Data Access Object）数据访问对象</strong>
+    <br>👉 大白话：<strong>把数据库操作（增删改查）封装成专门的类</strong>，Service层不用写JDBC代码，只调用DAO方法。
+    </p>
+    <h3>7.3.1 先建实体类（User.java）</h3>
+    <pre>
+package com.pojo;
+
+// 用户实体类（对应数据库user表）
+public class User {
+    private Integer id;
+    private String username;
+    private String password;
+    private Integer age;
+    private String address;
+
+    // 无参构造（必须有，后续框架要用）
+    public User() {}
+
+    // 有参构造、get/set方法、toString方法（小白直接生成）
+    public User(Integer id, String username, String password, Integer age, String address) {
+        this.id = id;
+        this.username = username;
+        this.password = password;
+        this.age = age;
+        this.address = address;
+    }
+
+    public Integer getId() { return id; }
+    public void setId(Integer id) { this.id = id; }
+    public String getUsername() { return username; }
+    public void setUsername(String username) { this.username = username; }
+    public String getPassword() { return password; }
+    public void setPassword(String password) { this.password = password; }
+    public Integer getAge() { return age; }
+    public void setAge(Integer age) { this.age = age; }
+    public String getAddress() { return address; }
+    public void setAddress(String address) { this.address = address; }
+
+    @Override
+    public String toString() {
+        return "User{" +
+                "id=" + id +
+                ", username='" + username + '\'' +
+                ", password='" + password + '\'' +
+                ", age=" + age +
+                ", address='" + address + '\'' +
+                '}';
+    }
+}
+    </pre>
+
+    <h3>7.3.2 DAO 接口（UserDao.java）</h3>
+    <pre>
+package com.dao;
+
+import com.pojo.User;
+import java.util.List;
+
+// UserDAO接口（定义操作规范）
+public interface UserDao {
+    // 根据用户名查询用户
+    User findByUsername(String username);
+    // 查询所有用户
+    List&lt;User&gt; findAll();
+    // 添加用户
+    int add(User user);
+    // 修改用户
+    int update(User user);
+    // 删除用户
+    int delete(Integer id);
+}
+    </pre>
+
+    <h3>7.3.3 DAO 实现类（UserDaoImpl.java）</h3>
+    <pre>
+package com.dao.impl;
+
+import com.dao.UserDao;
+import com.pojo.User;
+import com.util.DruidUtil;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.util.ArrayList;
+import java.util.List;
+
+// UserDAO实现类（真正的数据库操作）
+public class UserDaoImpl implements UserDao {
+    // 1. 根据用户名查询用户
+    @Override
+    public User findByUsername(String username) {
+        Connection conn = null;
+        PreparedStatement pstmt = null;
+        ResultSet rs = null;
+        User user = null;
+
+        try {
+            conn = DruidUtil.getConn();
+            String sql = "SELECT * FROM user WHERE username=?";
+            pstmt = conn.prepareStatement(sql);
+            pstmt.setString(1, username);
+            rs = pstmt.executeQuery();
+
+            // 封装结果到User对象
+            if (rs.next()) {
+                user = new User();
+                user.setId(rs.getInt("id"));
+                user.setUsername(rs.getString("username"));
+                user.setPassword(rs.getString("password"));
+                user.setAge(rs.getInt("age"));
+                user.setAddress(rs.getString("address"));
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            DruidUtil.close(conn, pstmt, rs);
+        }
+        return user;
+    }
+
+    // 2. 查询所有用户（其余方法小白可自行实现，逻辑类似）
+    @Override
+    public List&lt;User&gt; findAll() {
+        Connection conn = null;
+        PreparedStatement pstmt = null;
+        ResultSet rs = null;
+        List&lt;User&gt; userList = new ArrayList&lt;&gt;();
+
+        try {
+            conn = DruidUtil.getConn();
+            String sql = "SELECT * FROM user";
+            pstmt = conn.prepareStatement(sql);
+            rs = pstmt.executeQuery();
+
+            while (rs.next()) {
+                User user = new User();
+                user.setId(rs.getInt("id"));
+                user.setUsername(rs.getString("username"));
+                user.setPassword(rs.getString("password"));
+                user.setAge(rs.getInt("age"));
+                user.setAddress(rs.getString("address"));
+                userList.add(user);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            DruidUtil.close(conn, pstmt, rs);
+        }
+        return userList;
+    }
+
+    // 3. 添加用户
+    @Override
+    public int add(User user) {
+        Connection conn = null;
+        PreparedStatement pstmt = null;
+        int row = 0;
+
+        try {
+            conn = DruidUtil.getConn();
+            String sql = "INSERT INTO user(username,password,age,address) VALUES(?,?,?,?)";
+            pstmt = conn.prepareStatement(sql);
+            pstmt.setString(1, user.getUsername());
+            pstmt.setString(2, user.getPassword());
+            pstmt.setInt(3, user.getAge());
+            pstmt.setString(4, user.getAddress());
+            row = pstmt.executeUpdate();
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            DruidUtil.close(conn, pstmt);
+        }
+        return row;
+    }
+
+    // 4. 修改用户（略，逻辑和添加类似）
+    @Override
+    public int update(User user) { return 0; }
+
+    // 5. 删除用户（略，逻辑和添加类似）
+    @Override
+    public int delete(Integer id) { return 0; }
+}
+    </pre>
+
+    <h3>7.3.4 Service 层调用 DAO（UserService.java）</h3>
+    <pre>
+package com.service;
+
+import com.dao.UserDao;
+import com.dao.impl.UserDaoImpl;
+import com.pojo.User;
+import java.util.List;
+
+// 业务层：调用DAO，处理业务逻辑（如登录验证）
+public class UserService {
+    // 注入DAO（后续用Spring自动注入，现在手动new）
+    private UserDao userDao = new UserDaoImpl();
+
+    // 登录验证业务
+    public boolean login(String username, String password) {
+        // 调用DAO查询用户
+        User user = userDao.findByUsername(username);
+        // 验证密码
+        return user != null && user.getPassword().equals(password);
+    }
+
+    // 查询所有用户
+    public List&lt;User&gt; findAll() {
+        return userDao.findAll();
+    }
+}
+    </pre>
+</div>
+
+<!-- 7.4 本章必背总结 -->
+<div class="section">
+    <h2>7.4 本章终极总结（小白记住这些就够）</h2>
+    <ul>
+        <li>🍉 连接池核心：Druid 提前创建连接，复用连接，提升性能，解决原生JDBC痛点</li>
+        <li>🔐 DAO模式：接口+实现类，把数据库操作封装成专门的类，解耦业务和数据访问</li>
+        <li>⚡ 企业套路：Druid连接池 + DAO封装 + 实体类映射数据库表</li>
+        <li>🎯 配置文件：db.properties 解耦硬编码，改参数不用改代码</li>
+    </ul>
+</div>
+
+<!-- 已删除的10%极少用内容 -->
+<div class="tip">
+    ✅ 已删除：HikariCP 连接池（Druid学会了，HikariCP只需要换依赖和配置）、连接池监控（进阶）、批量操作（小白不用）
+</div>
+
+        </div>
+    </div>
+</body>
+</html>

@@ -1,0 +1,838 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SpringBoot 深层复习与进阶 | 适配JDK24+Tomcat11</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: "Microsoft YaHei", sans-serif;
+            line-height: 1.8;
+            color: #333;
+            padding: 20px;
+            background-color: #f9f9f9;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: #fff;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #1e40af;
+            border-bottom: 3px solid #3b82f6;
+            padding-bottom: 10px;
+            margin-bottom: 30px;
+            font-size: 28px;
+        }
+        h2 {
+            color: #1e40af;
+            margin: 30px 0 15px;
+            font-size: 22px;
+            border-left: 4px solid #3b82f6;
+            padding-left: 10px;
+        }
+        h3 {
+            color: #0f172a;
+            margin: 20px 0 10px;
+            font-size: 18px;
+        }
+        h4 {
+            color: #1e40af;
+            margin: 15px 0 8px;
+            font-size: 16px;
+        }
+        .section {
+            margin: 40px 0;
+            padding-bottom: 20px;
+            border-bottom: 1px solid #eee;
+        }
+        .section:last-child {
+            border-bottom: none;
+        }
+        code {
+            background: #f1f5f9;
+            padding: 2px 6px;
+            border-radius: 3px;
+            color: #dc2626;
+            font-weight: 600;
+            font-family: Consolas, monospace;
+        }
+        pre {
+            background: #f8fafc;
+            padding: 16px;
+            border-radius: 6px;
+            overflow-x: auto;
+            border: 1px solid #e2e8f0;
+            font-size: 14px;
+            line-height: 1.6;
+            margin: 10px 0;
+            font-family: Consolas, monospace;
+        }
+        .tip {
+            background: #fffbeb;
+            padding: 14px;
+            border-left: 4px solid #f59e0b;
+            margin: 15px 0;
+            font-size: 14px;
+        }
+        .warning {
+            background: #fef2f2;
+            padding: 14px;
+            border-left: 4px solid #ef4444;
+            margin: 15px 0;
+            font-size: 14px;
+        }
+        .table-box {
+            overflow-x: auto;
+            margin: 15px 0;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            border: 1px solid #e2e8f0;
+        }
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border: 1px solid #e2e8f0;
+        }
+        th {
+            background-color: #eff6ff;
+            color: #1e40af;
+        }
+        .idea-op {
+            color: #0284c7;
+            font-weight: 600;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>SpringBoot 深层复习与进阶（适配JDK24+Tomcat11）</h1>
+        
+        <!-- 核心知识点复盘 -->
+        <div class="section">
+            <h2>一、SpringBoot 核心知识点深层复盘</h2>
+            <p>SpringBoot是SSM的简化升级版，核心是「约定大于配置」，先吃透核心本质，再攻克企业级进阶难点：</p>
+            
+            <div class="table-box">
+                <table>
+                    <tr>
+                        <th>核心特性</th>
+                        <th>底层本质</th>
+                        <th>解决的核心问题</th>
+                        <th>企业级进阶方向</th>
+                    </tr>
+                    <tr>
+                        <td>起步依赖（Starter）</td>
+                        <td>Maven依赖聚合+版本统一管理</td>
+                        <td>手动导依赖、版本冲突、依赖缺失</td>
+                        <td>自定义Starter、依赖瘦身</td>
+                    </tr>
+                    <tr>
+                        <td>自动配置（AutoConfig）</td>
+                        <td>SPI机制+条件装配（@Conditional）</td>
+                        <td>手动编写XML配置（Spring/MVC/MyBatis）</td>
+                        <td>自动配置原理、自定义自动配置</td>
+                    </tr>
+                    <tr>
+                        <td>内嵌服务器</td>
+                        <td>Tomcat/Jetty/Undertow打包进JAR</td>
+                        <td>手动配置外置Tomcat、部署WAR包</td>
+                        <td>服务器优化、多端口配置</td>
+                    </tr>
+                    <tr>
+                        <td>外部化配置</td>
+                        <td>application.yml/properties统一配置</td>
+                        <td>硬编码配置、多环境切换繁琐</td>
+                        <td>多环境、配置加密、配置优先级</td>
+                    </tr>
+                    <tr>
+                        <td>执行器（Actuator）</td>
+                        <td>内置监控接口</td>
+                        <td>项目运行状态不可见、问题排查难</td>
+                        <td>自定义监控指标、监控告警</td>
+                    </tr>
+                </table>
+            </div>
+            
+            <div class="tip">
+                ✅ 核心认知：SpringBoot不是新技术，而是对Spring/SSM的「封装+自动配置」，目的是<strong>提效</strong> - 从「配置驱动」转向「约定驱动」。
+            </div>
+        </div>
+
+        <!-- 自动配置原理 -->
+        <div class="section">
+            <h2>二、自动配置原理（知其然知其所以然）</h2>
+            <p>SpringBoot最核心的进阶点，理解后能解决90%的「配置不生效」「自定义配置」问题。</p>
+            
+            <h3>2.1 自动配置核心流程（SpringBoot启动时）</h3>
+            <pre>
+┌─────────────────────────────────────────────────┐
+│ 1. 启动类加@SpringBootApplication                │
+│ 2. 扫描META-INF/spring/org.springframework.boot.autoconfigure.AutoConfiguration.imports │
+│ 3. 加载所有自动配置类（如TomcatAutoConfiguration）│
+│ 4. 通过@Conditional注解判断是否生效              │
+│ 5. 生效的配置类向IOC容器注入Bean                │
+└─────────────────────────────────────────────────┘
+            </pre>
+            
+            <h3>2.2 核心注解拆解（@SpringBootApplication）</h3>
+            <pre>
+// @SpringBootApplication 是组合注解，核心包含3个注解：
+@Target({ElementType.TYPE})
+@Retention(RetentionPolicy.RUNTIME)
+@Documented
+@Inherited
+@SpringBootConfiguration // = @Configuration，标记为配置类
+@EnableAutoConfiguration // 开启自动配置（核心）
+@ComponentScan(...) // 扫描组件（默认扫描启动类同级/子包）
+public @interface SpringBootApplication {}
+
+// 关键：@EnableAutoConfiguration 拆解
+@Import(AutoConfigurationImportSelector.class) // 导入自动配置选择器
+public @interface EnableAutoConfiguration {}
+            </pre>
+            
+            <h3>2.3 条件装配（@Conditional，自动配置的开关）</h3>
+            <p>自动配置类是否生效，由@Conditional系列注解决定，企业级开发必懂：</p>
+            <div class="table-box">
+                <table>
+                    <tr>
+                        <th>注解</th>
+                        <th>作用</th>
+                        <th>实战场景</th>
+                    </tr>
+                    <tr>
+                        <td>@ConditionalOnClass</td>
+                        <td>类路径存在指定类才生效</td>
+                        <td>有Tomcat依赖才加载Tomcat自动配置</td>
+                    </tr>
+                    <tr>
+                        <td>@ConditionalOnMissingClass</td>
+                        <td>类路径不存在指定类才生效</td>
+                        <td>没有Redis依赖才加载默认缓存配置</td>
+                    </tr>
+                    <tr>
+                        <td>@ConditionalOnBean</td>
+                        <td>IOC容器有指定Bean才生效</td>
+                        <td>有DataSource才加载事务配置</td>
+                    </tr>
+                    <tr>
+                        <td>@ConditionalOnMissingBean</td>
+                        <td>IOC容器无指定Bean才生效</td>
+                        <td>用户没自定义Bean才加载默认Bean</td>
+                    </tr>
+                    <tr>
+                        <td>@ConditionalOnProperty</td>
+                        <td>配置文件有指定属性才生效</td>
+                        <td>配置spring.redis.enabled=true才加载Redis配置</td>
+                    </tr>
+                </table>
+            </div>
+            
+            <h3>2.4 自定义自动配置（企业级进阶）</h3>
+            <p>场景：封装通用功能为自定义Starter，供多个项目复用（如日志Starter、权限Starter）。</p>
+            <pre>
+// 步骤1：编写自动配置类
+package com.boot.starter.user.config;
+
+import com.boot.starter.user.service.UserService;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+
+@Configuration // 配置类
+@ConditionalOnClass(UserService.class) // 有UserService才生效
+@ConditionalOnProperty(prefix = "user.starter", name = "enabled", havingValue = "true", matchIfMissing = true) // 配置开关
+public class UserAutoConfiguration {
+
+    // 没有自定义UserService时，加载默认实现
+    @Bean
+    @ConditionalOnMissingBean
+    public UserService userService() {
+        return new UserService();
+    }
+}
+
+// 步骤2：配置自动配置加载路径
+// 创建文件：META-INF/spring/org.springframework.boot.autoconfigure.AutoConfiguration.imports
+// 内容：com.boot.starter.user.config.UserAutoConfiguration
+
+// 步骤3：打包为Maven依赖，其他项目引入即可自动配置
+            </pre>
+            
+            <div class="warning">
+                ❗ 关键避坑：<br>
+                1. 自定义自动配置类要放在启动类扫描范围外，避免重复加载；<br>
+                2. @ConditionalOnMissingBean要放在@Bean注解上，确保用户自定义Bean优先；<br>
+                3. SpringBoot3.x中自动配置文件路径已从spring.factories改为org.springframework.boot.autoconfigure.AutoConfiguration.imports。
+            </div>
+        </div>
+
+        <!-- 外部化配置进阶 -->
+        <div class="section">
+            <h2>三、外部化配置进阶（企业级配置管理）</h2>
+            <p>解决：开发/测试/生产环境配置隔离、敏感配置加密、配置优先级问题。</p>
+            
+            <h3>3.1 多环境配置（企业标配）</h3>
+            <p>核心：拆分配置文件，通过spring.profiles.active激活对应环境。</p>
+            <pre>
+// 1. 创建多环境配置文件
+├── resources/
+│   ├── application.yml       # 公共配置
+│   ├── application-dev.yml   # 开发环境
+│   ├── application-test.yml  # 测试环境
+│   └── application-prod.yml  # 生产环境
+
+// 2. 公共配置（application.yml）
+spring:
+  profiles:
+    active: dev # 激活开发环境，打包时改为prod/test
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver # 公共配置
+
+// 3. 开发环境配置（application-dev.yml）
+spring:
+  datasource:
+    url: jdbc:mysql://localhost:3306/dev_db?serverTimezone=UTC
+    username: root
+    password: 123456
+server:
+  port: 8080
+
+// 4. 生产环境配置（application-prod.yml）
+spring:
+  datasource:
+    url: jdbc:mysql://192.168.1.100:3306/prod_db?serverTimezone=UTC
+    username: prod_user
+    password: ${DB_PASSWORD} # 生产环境用环境变量注入密码
+server:
+  port: 80
+  tomcat:
+    threads:
+      max: 200 # 生产环境Tomcat线程数优化
+            </pre>
+            
+            <h3>3.2 配置加密（生产环境必备）</h3>
+            <p>解决：数据库密码、密钥等敏感配置明文存储泄露问题，使用jasypt加密。</p>
+            <pre>
+// 步骤1：导入依赖（pom.xml）
+<dependency>
+    <groupId>com.github.ulisesbocchio</groupId>
+    <artifactId>jasypt-spring-boot-starter</artifactId>
+    <version>3.0.5</version> <!-- 适配SpringBoot3.x+JDK24 -->
+</dependency>
+
+// 步骤2：配置加密密钥（application.yml）
+jasypt:
+  encryptor:
+    password: ${JASYPT_PASSWORD} # 生产环境放启动参数/环境变量，不要写在配置文件
+    algorithm: PBEWithMD5AndDES # 加密算法
+
+// 步骤3：加密敏感配置
+// 方式1：代码生成加密串
+package com.boot.demo;
+
+import org.jasypt.encryption.StringEncryptor;
+import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+
+@SpringBootTest
+public class JasyptTest {
+    @Autowired
+    private StringEncryptor stringEncryptor;
+
+    @Test
+    public void encrypt() {
+        // 加密数据库密码
+        String encryptStr = stringEncryptor.encrypt("123456");
+        System.out.println("加密后：" + encryptStr); // 输出如：n8s7a9d8s7a9d8s7a9d8s7a
+    }
+}
+
+// 步骤4：配置文件使用加密串（ENC()包裹）
+spring:
+  datasource:
+    password: ENC(n8s7a9d8s7a9d8s7a9d8s7a)
+
+// 步骤5：启动项目（生产环境传入加密密钥）
+java -jar boot-demo.jar --jasypt.encryptor.password=你的密钥
+            </pre>
+            
+            <h3>3.3 配置优先级（解决配置冲突）</h3>
+            <p>SpringBoot加载配置的优先级（从高到低），企业级排错必懂：</p>
+            <ol>
+                <li>命令行参数（--server.port=8081）</li>
+                <li>环境变量（如SPRING_DATASOURCE_PASSWORD）</li>
+                <li>application-{profile}.yml（激活的环境配置）</li>
+                <li>application.yml（公共配置）</li>
+                <li>application.properties</li>
+                <li>@PropertySource注解加载的配置</li>
+                <li>默认配置（SpringBoot内置）</li>
+            </ol>
+            
+            <div class="tip">
+                ✅ 实战技巧：生产环境优先用「环境变量+命令行参数」注入敏感配置，避免配置文件泄露。
+            </div>
+        </div>
+
+        <!-- 监控Actuator进阶 -->
+        <div class="section">
+            <h2>四、SpringBoot 监控（Actuator）进阶</h2>
+            <p>企业级项目必须有监控，Actuator是SpringBoot内置的监控工具，能实时查看项目状态。</p>
+            
+            <h3>4.1 基础配置（开启监控）</h3>
+            <pre>
+// 步骤1：导入依赖（pom.xml）
+<dependency>
+    <groupId>org.springframework.boot</groupId>
+    <artifactId>spring-boot-starter-actuator</artifactId>
+</dependency>
+
+// 步骤2：配置监控端点（application.yml）
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "*" # 暴露所有端点（生产环境建议只暴露必要的）
+      base-path: /actuator # 监控接口前缀（默认/actuator）
+  endpoint:
+    health:
+      show-details: always # 显示健康详情（生产环境建议when_authorized）
+    shutdown:
+      enabled: true # 允许远程关闭（生产环境禁用！）
+    metrics:
+      enabled: true # 开启指标监控
+  metrics:
+    tags:
+      application: boot-demo # 标记应用名称，多实例时区分
+            </pre>
+            
+            <h3>4.2 常用监控接口（企业级必查）</h3>
+            <div class="table-box">
+                <table>
+                    <tr>
+                        <th>接口地址</th>
+                        <th>功能</th>
+                        <th>生产环境用途</th>
+                    </tr>
+                    <tr>
+                        <td>/actuator/health</td>
+                        <td>健康状态（数据库/Redis/磁盘等）</td>
+                        <td>检查服务是否正常运行</td>
+                    </tr>
+                    <tr>
+                        <td>/actuator/info</td>
+                        <td>应用信息（版本、名称）</td>
+                        <td>确认部署的版本是否正确</td>
+                    </tr>
+                    <tr>
+                        <td>/actuator/beans</td>
+                        <td>IOC容器中所有Bean</td>
+                        <td>排查Bean是否加载、是否重复</td>
+                    </tr>
+                    <tr>
+                        <td>/actuator/metrics</td>
+                        <td>JVM/CPU/内存/请求指标</td>
+                        <td>性能监控、瓶颈排查</td>
+                    </tr>
+                    <tr>
+                        <td>/actuator/threaddump</td>
+                        <td>线程快照</td>
+                        <td>排查死锁、线程阻塞</td>
+                    </tr>
+                    <tr>
+                        <td>/actuator/loggers</td>
+                        <td>日志级别配置</td>
+                        <td>生产环境动态调整日志级别（无需重启）</td>
+                    </tr>
+                </table>
+            </div>
+            
+            <h3>4.3 自定义监控指标（企业级进阶）</h3>
+            <p>场景：监控业务指标（如接口调用次数、订单量），实现自定义告警。</p>
+            <pre>
+// 步骤1：自定义指标收集器
+package com.boot.demo.metrics;
+
+import io.micrometer.core.instrument.Counter;
+import io.micrometer.core.instrument.MeterRegistry;
+import jakarta.annotation.PostConstruct;
+import org.springframework.stereotype.Component;
+
+@Component
+public class CustomMetrics {
+    private Counter userLoginCounter; // 用户登录次数计数器
+
+    // 注入MeterRegistry（Actuator内置）
+    private final MeterRegistry meterRegistry;
+
+    public CustomMetrics(MeterRegistry meterRegistry) {
+        this.meterRegistry = meterRegistry;
+    }
+
+    // 初始化自定义指标
+    @PostConstruct
+    public void init() {
+        userLoginCounter = meterRegistry.counter("user.login.count", "module", "user");
+    }
+
+    // 计数方法（登录接口调用时调用）
+    public void incrementLoginCount() {
+        userLoginCounter.increment();
+    }
+}
+
+// 步骤2：业务接口中使用
+package com.boot.demo.controller;
+
+import com.boot.demo.metrics.CustomMetrics;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+@RestController
+@RequestMapping("/user")
+public class UserController {
+
+    @Autowired
+    private CustomMetrics customMetrics;
+
+    @PostMapping("/login")
+    public String login() {
+        // 业务逻辑...
+        customMetrics.incrementLoginCount(); // 登录次数+1
+        return "success";
+    }
+}
+
+// 步骤3：查看自定义指标
+// 访问：http://localhost:8080/actuator/metrics/user.login.count
+// 返回：包含登录次数、标签等信息
+            </pre>
+        </div>
+
+        <!-- 实战进阶 -->
+        <div class="section">
+            <h2>五、SpringBoot 实战进阶（扩展用户管理系统）</h2>
+            <p>基于之前的用户管理系统，整合企业级常用组件，提升项目实用性。</p>
+            
+            <h3>5.1 整合Redis（缓存+会话共享）</h3>
+            <p>解决：数据库查询压力大、分布式部署会话不一致问题。</p>
+            <pre>
+// 步骤1：导入依赖（pom.xml）
+<dependency>
+    <groupId>org.springframework.boot</groupId>
+    <artifactId>spring-boot-starter-data-redis</artifactId>
+</dependency>
+<!-- 连接池（可选，提升性能） -->
+<dependency>
+    <groupId>org.apache.commons</groupId>
+    <artifactId>commons-pool2</artifactId>
+</dependency>
+
+// 步骤2：配置Redis（application.yml）
+spring:
+  redis:
+    host: localhost
+    port: 6379
+    password: 123456 # 无密码则注释
+    database: 0 # 数据库索引
+    lettuce: # 连接池配置
+      pool:
+        max-active: 8 # 最大连接数
+        max-idle: 8 # 最大空闲连接
+        min-idle: 0 # 最小空闲连接
+
+// 步骤3：Redis配置类（序列化优化）
+package com.boot.demo.config;
+
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.data.redis.connection.RedisConnectionFactory;
+import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.serializer.GenericJackson2JsonRedisSerializer;
+import org.springframework.data.redis.serializer.StringRedisSerializer;
+
+@Configuration
+public class RedisConfig {
+
+    @Bean
+    public RedisTemplate<String, Object> redisTemplate(RedisConnectionFactory factory) {
+        RedisTemplate<String, Object> template = new RedisTemplate<>();
+        template.setConnectionFactory(factory);
+        
+        // key序列化（String）
+        StringRedisSerializer stringSerializer = new StringRedisSerializer();
+        template.setKeySerializer(stringSerializer);
+        template.setHashKeySerializer(stringSerializer);
+        
+        // value序列化（JSON）
+        GenericJackson2JsonRedisSerializer jsonSerializer = new GenericJackson2JsonRedisSerializer();
+        template.setValueSerializer(jsonSerializer);
+        template.setHashValueSerializer(jsonSerializer);
+        
+        template.afterPropertiesSet();
+        return template;
+    }
+}
+
+// 步骤4：业务层使用Redis缓存
+package com.boot.demo.service.impl;
+
+import com.boot.demo.mapper.UserMapper;
+import com.boot.demo.pojo.User;
+import com.boot.demo.service.UserService;
+import com.boot.demo.util.Result;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.stereotype.Service;
+
+import java.util.concurrent.TimeUnit;
+
+@Service
+public class UserServiceImpl implements UserService {
+
+    @Autowired
+    private UserMapper userMapper;
+    
+    @Autowired
+    private RedisTemplate<String, Object> redisTemplate;
+
+    @Override
+    public Result<User> findById(Integer id) {
+        String key = "user:info:" + id;
+        // 1. 先查缓存
+        User user = (User) redisTemplate.opsForValue().get(key);
+        if (user != null) {
+            return Result.success(user);
+        }
+        // 2. 缓存没有查数据库
+        user = userMapper.findById(id);
+        if (user == null) {
+            return Result.fail("用户不存在");
+        }
+        // 3. 存入缓存（设置过期时间，避免缓存雪崩）
+        redisTemplate.opsForValue().set(key, user, 30, TimeUnit.MINUTES);
+        return Result.success(user);
+    }
+}
+            </pre>
+            
+            <h3>5.2 整合Swagger（接口文档，前后端协作）</h3>
+            <p>解决：接口文档手写繁琐、更新不及时、前后端沟通成本高问题。</p>
+            <pre>
+// 步骤1：导入依赖（适配SpringBoot3.x）
+<dependency>
+    <groupId>io.springfox</groupId>
+    <artifactId>springfox-boot-starter</artifactId>
+    <version>3.0.0</version>
+</dependency>
+
+// 步骤2：Swagger配置类
+package com.boot.demo.config;
+
+import io.swagger.v3.oas.models.info.Info;
+import io.swagger.v3.oas.models.OpenAPI;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+
+@Configuration
+public class SwaggerConfig {
+
+    @Bean
+    public OpenAPI customOpenAPI() {
+        return new OpenAPI()
+                .info(new Info()
+                        .title("用户管理系统API文档")
+                        .description("SpringBoot3.x + Swagger3 接口文档")
+                        .version("1.0.0"));
+    }
+}
+
+// 步骤3：Controller中使用Swagger注解
+package com.boot.demo.controller;
+
+import com.boot.demo.pojo.User;
+import com.boot.demo.service.UserService;
+import com.boot.demo.util.Result;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.*;
+
+@RestController
+@RequestMapping("/user")
+@Tag(name = "用户管理接口", description = "用户CRUD、登录、头像上传") // 接口分组
+public class UserController {
+
+    @Autowired
+    private UserService userService;
+
+    @GetMapping("/{id}")
+    @Operation(summary = "根据ID查询用户", description = "传入用户ID，返回用户完整信息") // 接口描述
+    public Result<User> findById(
+            @Parameter(description = "用户ID", required = true) @PathVariable Integer id) { // 参数描述
+        return userService.findById(id);
+    }
+}
+
+// 步骤4：访问接口文档
+// 地址：http://localhost:8080/swagger-ui/index.html
+            </pre>
+            
+            <div class="warning">
+                ❗ 注意：<br>
+                1. SpringBoot3.x需使用Swagger3（OpenAPI），不再支持Swagger2；<br>
+                2. 生产环境建议关闭Swagger，避免接口泄露。
+            </div>
+        </div>
+
+        <!-- 部署进阶 -->
+        <div class="section">
+            <h2>六、SpringBoot 部署进阶（企业级上线）</h2>
+            <p>解决：JAR包优化、多实例部署、启动参数调优问题。</p>
+            
+            <h3>6.1 JAR包瘦身（减少部署包体积）</h3>
+            <p>场景：生产环境部署包过大，传输/启动慢，只打包必要依赖。</p>
+            <pre>
+// pom.xml 配置（分离依赖和代码）
+<build>
+    <plugins>
+        <plugin>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-maven-plugin</artifactId>
+            <configuration>
+                <!-- 只打包自己的代码，依赖单独存放 -->
+                <layout>ZIP</layout>
+                <includes>
+                    <include>
+                        <groupId>nothing</groupId>
+                        <artifactId>nothing</artifactId>
+                    </include>
+                </includes>
+            </configuration>
+            <executions>
+                <execution>
+                    <goals>
+                        <goal>repackage</goal>
+                    </goals>
+                </execution>
+            </executions>
+        </plugin>
+        
+        <!-- 复制依赖到lib目录 -->
+        <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-dependency-plugin</artifactId>
+            <executions>
+                <execution>
+                    <id>copy-dependencies</id>
+                    <phase>package</phase>
+                    <goals>
+                        <goal>copy-dependencies</goal>
+                    </goals>
+                    <configuration>
+                        <outputDirectory>${project.build.directory}/lib</outputDirectory>
+                        <excludeScope>test</excludeScope>
+                    </configuration>
+                </execution>
+            </executions>
+        </plugin>
+    </plugins>
+</build>
+
+// 启动命令（指定外部依赖）
+java -cp boot-demo.jar:lib/* com.boot.demo.BootDemoApplication
+            </pre>
+            
+            <h3>6.2 JVM参数调优（生产环境必备）</h3>
+            <p>解决：内存溢出、GC频繁、性能瓶颈问题。</p>
+            <pre>
+// 启动命令（生产环境推荐）
+java -jar \
+-Xms1g \ # 初始堆内存（建议和-Xmx一致）
+-Xmx1g \ # 最大堆内存（根据服务器配置调整）
+-Xmn512m \ # 新生代内存
+-XX:MetaspaceSize=128m \ # 元空间初始大小
+-XX:MaxMetaspaceSize=128m \ # 元空间最大大小
+-XX:+UseG1GC \ # G1垃圾收集器（JDK11+默认，适合多核）
+-XX:+PrintGCDetails \ # 打印GC详情（排查问题用）
+-XX:+PrintGCTimeStamps \ # 打印GC时间戳
+-XX:GCLogFileSize=100M \ # GC日志文件大小
+-XX:NumberOfGCLogFiles=5 \ # GC日志文件数量
+-Xlog:gc:/logs/gc.log \ # GC日志路径
+-Dspring.profiles.active=prod \ # 激活生产环境
+boot-demo.jar
+            </pre>
+            
+            <h3>6.3 多实例部署（负载均衡）</h3>
+            <p>场景：单实例性能不足，部署多个实例+Nginx负载均衡。</p>
+            <pre>
+// 1. 启动多个实例（不同端口）
+java -jar boot-demo.jar --server.port=8080
+java -jar boot-demo.jar --server.port=8081
+java -jar boot-demo.jar --server.port=8082
+
+// 2. Nginx配置（负载均衡）
+upstream boot-demo {
+    server 127.0.0.1:8080 weight=1; # 权重1
+    server 127.0.0.1:8081 weight=1;
+    server 127.0.0.1:8082 weight=1;
+}
+
+server {
+    listen 80;
+    server_name demo.com;
+
+    location / {
+        proxy_pass http://boot-demo;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+    }
+}
+            </pre>
+        </div>
+
+        <!-- 核心总结 -->
+        <div class="section">
+            <h2>七、SpringBoot 进阶核心总结</h2>
+            <div class="tip">
+                ✅ 原理层进阶核心：<br>
+                1. 自动配置：SPI加载+@Conditional条件装配，自定义Starter复用通用功能；<br>
+                2. 配置管理：多环境隔离+敏感配置加密+配置优先级，生产环境安全可控；<br>
+                3. 监控：Actuator内置接口+自定义指标，实时掌握服务状态。
+            </div>
+            
+            <div class="tip">
+                ✅ 实战层进阶核心：<br>
+                1. 组件整合：Redis缓存（减轻数据库压力）、Swagger接口文档（提效协作）；<br>
+                2. 部署优化：JAR包瘦身+JVM调优+多实例部署，适配生产环境；<br>
+                3. 性能优化：缓存+连接池+Tomcat线程数调整，提升服务吞吐量。
+            </div>
+            
+            <div class="tip">
+                ✅ 企业级开发关键：<br>
+                1. 提效：利用SpringBoot自动配置，减少重复配置；<br>
+                2. 稳定：监控+事务+全局异常，保证服务可用性；<br>
+                3. 安全：配置加密+生产环境关闭Swagger+权限控制；<br>
+                4. 性能：缓存+JVM调优+多实例，支撑高并发。
+            </div>
+        </div>
+    </div>
+</body>
+</html>

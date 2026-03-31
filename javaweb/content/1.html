@@ -1,0 +1,433 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>第1章：JavaWeb 前置认知 | JavaWeb跟练教学</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        /* 章节内专属样式，不影响全局style.css */
+        .content { 
+            padding: 20px 0; 
+            line-height: 1.8; 
+            font-size: 15px;
+        }
+        .section { 
+            margin: 40px 0; 
+            padding-bottom: 20px;
+            border-bottom: 1px solid #eff6ff;
+        }
+        .section:last-child { border-bottom: none; }
+        
+        .section h2 { 
+            color: #1e40af; 
+            margin-bottom: 20px; 
+            border-left: 4px solid #3b82f6; 
+            padding-left: 15px;
+            font-size: 20px;
+        }
+        .section h3 {
+            color: #0f172a;
+            margin: 25px 0 15px;
+            font-size: 17px;
+        }
+        .step { 
+            background: #eff6ff; 
+            padding: 20px; 
+            border-radius: 8px; 
+            margin: 15px 0;
+            border: 1px solid #dbeafe;
+        }
+        .step-title {
+            font-weight: 600;
+            color: #1e40af;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        code { 
+            background: #f1f5f9; 
+            padding: 3px 8px; 
+            border-radius: 4px; 
+            font-family: Consolas, monospace;
+            color: #dc2626;
+        }
+        pre { 
+            background: #f8fafc; 
+            padding: 18px; 
+            border-radius: 8px; 
+            overflow-x: auto; 
+            margin: 15px 0;
+            border: 1px solid #e2e8f0;
+            font-family: Consolas, monospace;
+            font-size: 14px;
+        }
+        .tip { 
+            background: #fffbeb; 
+            padding: 15px; 
+            border-radius: 6px; 
+            border-left: 4px solid #f59e0b; 
+            margin: 15px 0;
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+        }
+        .warning {
+            background: #fef2f2;
+            padding: 15px;
+            border-radius: 6px;
+            border-left: 4px solid #ef4444;
+            margin: 15px 0;
+        }
+        .table-box {
+            overflow-x: auto;
+            margin: 15px 0;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        table th, table td {
+            border: 1px solid #e2e8f0;
+            padding: 12px;
+            text-align: left;
+        }
+        table th {
+            background-color: #eff6ff;
+            color: #1e40af;
+        }
+        .cmd-block {
+            background: #1e293b;
+            color: #f8fafc;
+            padding: 15px;
+            border-radius: 8px;
+            font-family: Consolas, monospace;
+            overflow-x: auto;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>第1章：JavaWeb 前置认知（适配IDEA2025/JDK24/Tomcat11）</h1>
+        <div class="content">
+            <!-- 1.1 什么是JavaWeb -->
+            <div class="section">
+                <h2>1.1 什么是 JavaWeb？</h2>
+                <p>JavaWeb 是基于 Java 语言、遵循 HTTP 协议规范，用于开发<strong>B/S架构（浏览器/服务器）</strong>应用的技术体系总称，核心是通过 Java 代码处理客户端（浏览器/APP/小程序）的 HTTP 请求，并返回响应数据。</p>
+                
+                <h3>1.1.1 JavaWeb 核心技术栈</h3>
+                <ul>
+                    <li><strong>基础层</strong>：JDK（你使用的JDK24）、Servlet API（Tomcat11内置Servlet 6.0规范）、JSP</li>
+                    <li><strong>框架层</strong>：Spring、SpringMVC、MyBatis、SpringBoot</li>
+                    <li><strong>容器层</strong>：Tomcat（你使用的11.0.11）、Jetty、JBoss</li>
+                    <li><strong>数据层</strong>：MySQL（你使用的8.0+）、JDBC、连接池（Druid/HikariCP）</li>
+                </ul>
+
+                <h3>1.1.2 JavaWeb 典型应用场景</h3>
+                <ul>
+                    <li>企业后台管理系统（如ERP、OA、CRM）</li>
+                    <li>电商平台（商品展示、下单、支付接口）</li>
+                    <li>移动端APP/小程序的后端接口（RESTful API）</li>
+                    <li>数据可视化平台、日志分析系统</li>
+                </ul>
+            </div>
+
+            <!-- 1.2 Web核心概念（详细版） -->
+            <div class="section">
+                <h2>1.2 Web 核心概念（必掌握）</h2>
+                
+                <h3>1.2.1 客户端 & 服务器</h3>
+                <div class="step">
+                    <div class="step-title">核心定义</div>
+                    <ul>
+                        <li><strong>客户端（Client）</strong>：发起请求的终端，如Chrome浏览器、手机APP、Postman（接口测试工具），你的环境中主要是Windows11下的浏览器</li>
+                        <li><strong>服务器（Server）</strong>：接收并处理请求、返回响应的服务端程序/硬件，你使用的Tomcat11是「Web应用服务器」，负责运行JavaWeb代码</li>
+                        <li><strong>通信流程</strong>：客户端 → 发送HTTP请求 → 服务器（Tomcat） → 调用Java代码处理 → 服务器返回HTTP响应 → 客户端</li>
+                    </ul>
+                </div>
+
+                <h3>1.2.2 HTTP 协议（超文本传输协议）</h3>
+                <p>HTTP是客户端与服务器之间的<strong>应用层通信协议</strong>，特点：无状态（每次请求独立，服务器不记录客户端状态）、基于TCP/IP、明文传输。</p>
+                
+                <div class="step">
+                    <div class="step-title">① HTTP 请求结构</div>
+                    <pre>
+请求行：GET /index.html HTTP/1.1  （请求方法 + 请求路径 + 协议版本）
+请求头：Host: localhost:8080      （键值对，如User-Agent、Content-Type、Cookie等）
+        User-Agent: Chrome/124.0.0.0
+        Content-Type: application/json
+空行：（分隔请求头和请求体）
+请求体：username=admin&password=123 （POST请求的参数，GET请求无请求体）</pre>
+                </div>
+
+                <div class="step">
+                    <div class="step-title">② HTTP 响应结构</div>
+                    <pre>
+状态行：HTTP/1.1 200 OK  （协议版本 + 状态码 + 状态描述）
+响应头：Content-Type: text/html;charset=UTF-8 （响应内容类型、编码、服务器信息等）
+        Server: Apache-Coyote/1.1 （Tomcat内置的HTTP连接器）
+        Set-Cookie: JSESSIONID=123456
+空行：（分隔响应头和响应体）
+响应体：&lt;html&gt;&lt;body&gt;Hello JavaWeb&lt;/body&gt;&lt;/html&gt; （返回给客户端的内容）</pre>
+                </div>
+
+                <div class="step">
+                    <div class="step-title">③ 常用HTTP请求方法</div>
+                    <div class="table-box">
+                        <table>
+                            <tr>
+                                <th>方法</th>
+                                <th>作用</th>
+                                <th>特点</th>
+                            </tr>
+                            <tr>
+                                <td>GET</td>
+                                <td>获取资源（如查询数据）</td>
+                                <td>参数拼在URL后、长度有限、不安全、可缓存</td>
+                            </tr>
+                            <tr>
+                                <td>POST</td>
+                                <td>提交数据（如新增/修改）</td>
+                                <td>参数在请求体、长度无限制、相对安全、不可缓存</td>
+                            </tr>
+                            <tr>
+                                <td>PUT</td>
+                                <td>更新资源</td>
+                                <td>幂等（多次请求结果一致）</td>
+                            </tr>
+                            <tr>
+                                <td>DELETE</td>
+                                <td>删除资源</td>
+                                <td>幂等</td>
+                            </tr>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="step">
+                    <div class="step-title">④ 常用HTTP状态码</div>
+                    <div class="table-box">
+                        <table>
+                            <tr>
+                                <th>状态码分类</th>
+                                <th>示例</th>
+                                <th>含义</th>
+                            </tr>
+                            <tr>
+                                <td>2xx（成功）</td>
+                                <td>200 OK</td>
+                                <td>请求成功，服务器返回数据</td>
+                            </tr>
+                            <tr>
+                                <td>3xx（重定向）</td>
+                                <td>302 Found</td>
+                                <td>请求的资源已临时移动到新地址</td>
+                            </tr>
+                            <tr>
+                                <td>4xx（客户端错误）</td>
+                                <td>404 Not Found<br>400 Bad Request<br>403 Forbidden</td>
+                                <td>资源不存在<br>请求参数错误<br>无访问权限</td>
+                            </tr>
+                            <tr>
+                                <td>5xx（服务器错误）</td>
+                                <td>500 Internal Server Error<br>503 Service Unavailable</td>
+                                <td>服务器代码报错<br>服务器暂时不可用</td>
+                            </tr>
+                        </table>
+                    </div>
+                </div>
+
+                <h3>1.2.3 URL & URI</h3>
+                <ul>
+                    <li><strong>URL（统一资源定位符）</strong>：完整地址，如 <code>http://localhost:8080/myweb/user?name=admin</code></li>
+                    <li><strong>URI（统一资源标识符）</strong>：资源的唯一标识，如 <code>/myweb/user</code>（URL的核心部分）</li>
+                </ul>
+
+                <h3>1.2.4 会话（Session）与无状态</h3>
+                <p>HTTP是「无状态」的，服务器无法识别连续请求是否来自同一客户端，因此需要：</p>
+                <ul>
+                    <li>Cookie：存储在客户端的小型文本文件，用于记录用户状态（如记住登录名）</li>
+                    <li>Session：存储在服务器的用户会话数据，通过Cookie中的JSESSIONID关联</li>
+                </ul>
+            </div>
+
+            <!-- 1.3 开发环境搭建（适配你的版本） -->
+            <div class="section">
+                <h2>1.3 开发环境搭建（IDEA2025 + JDK24 + Tomcat11.0.11 + Windows11）</h2>
+                
+                <h3>1.3.1 JDK24 安装与环境变量配置</h3>
+                <div class="step">
+                    <div class="step-title">步骤1：下载JDK24</div>
+                    <p>下载地址：<a href="https://jdk.java.net/24/" target="_blank">https://jdk.java.net/24/</a>（选择Windows x64 Installer或压缩包）</p>
+                </div>
+
+                <div class="step">
+                    <div class="step-title">步骤2：安装JDK24</div>
+                    <ul>
+                        <li>双击安装包，选择安装路径（建议：<code>D:\Java\jdk-24</code>，<strong>无中文/空格</strong>）</li>
+                        <li>取消「Set JAVA_HOME」自动配置（手动配置更稳定）</li>
+                    </ul>
+                </div>
+
+                <div class="step">
+                    <div class="step-title">步骤3：配置Windows11环境变量</div>
+                    <ol>
+                        <li>右键「此电脑」→「属性」→「高级系统设置」→「环境变量」</li>
+                        <li>「系统变量」→「新建」：
+                            <ul>
+                                <li>变量名：<code>JAVA_HOME</code></li>
+                                <li>变量值：<code>D:\Java\jdk-24</code>（你的JDK安装路径）</li>
+                            </ul>
+                        </li>
+                        <li>编辑「Path」变量→「新建」：
+                            <ul>
+                                <li><code>%JAVA_HOME%\bin</code></li>
+                                <li><code>%JAVA_HOME%\jre\bin</code>（JDK24无需单独装JRE，自动包含）</li>
+                            </ul>
+                        </li>
+                        <li>（可选）新建「CLASSPATH」：
+                            <ul>
+                                <li>变量值：<code>.;%JAVA_HOME%\lib\dt.jar;%JAVA_HOME%\lib\tools.jar</code></li>
+                            </ul>
+                        </li>
+                    </ol>
+                </div>
+
+                <div class="step">
+                    <div class="step-title">步骤4：验证安装</div>
+                    <div class="cmd-block">
+# 按下 Win + R → 输入 cmd → 回车
+java -version
+# 正确输出示例：
+# java version "24" 2025-03-18
+# Java(TM) SE Runtime Environment (build 24+36-2344)
+# Java HotSpot(TM) 64-Bit Server VM (build 24+36-2344, mixed mode, sharing)
+
+javac -version
+# 正确输出示例：
+# javac 24
+                    </div>
+                    <div class="warning">
+                        ❗ 注意：若提示「不是内部或外部命令」，检查：
+                        1. JAVA_HOME路径是否正确；
+                        2. Path中是否添加%JAVA_HOME%\bin；
+                        3. 重启CMD窗口（环境变量生效需要重启）。
+                    </div>
+                </div>
+
+                <h3>1.3.2 Tomcat11.0.11 安装与配置</h3>
+                <div class="step">
+                    <div class="step-title">步骤1：下载Tomcat11</div>
+                    <p>下载地址：<a href="https://tomcat.apache.org/download-11.cgi" target="_blank">https://tomcat.apache.org/download-11.cgi</a></p>
+                    <p>选择：<code>64-bit Windows zip</code>（压缩包版，无需安装，更灵活）</p>
+                </div>
+
+                <div class="step">
+                    <div class="step-title">步骤2：解压与目录说明</div>
+                    <ul>
+                        <li>解压到无中文/空格路径，如：<code>D:\Apache-Tomcat-11.0.11</code></li>
+                        <li>核心目录：
+                            <ul>
+                                <li><code>bin</code>：启动/停止脚本（startup.bat、shutdown.bat）</li>
+                                <li><code>conf</code>：配置文件（server.xml、web.xml）</li>
+                                <li><code>webapps</code>：部署JavaWeb项目的目录</li>
+                                <li><code>logs</code>：日志文件（排查启动报错）</li>
+                                <li><code>temp</code>：临时文件</li>
+                            </ul>
+                        </li>
+                    </ul>
+                </div>
+
+                <div class="step">
+                    <div class="step-title">步骤3：配置Tomcat环境变量（可选，建议配置）</div>
+                    <ol>
+                        <li>「系统变量」→「新建」：
+                            <ul>
+                                <li>变量名：<code>CATALINA_HOME</code></li>
+                                <li>变量值：<code>D:\Apache-Tomcat-11.0.11</code>（Tomcat解压路径）</li>
+                            </ul>
+                        </li>
+                        <li>编辑「Path」→「新建」：<code>%CATALINA_HOME%\bin</code></li>
+                    </ol>
+                </div>
+
+                <div class="step">
+                    <div class="step-title">步骤4：启动Tomcat11</div>
+                    <div class="cmd-block">
+# 方式1：双击 bin/startup.bat（会弹出黑窗口，关闭则Tomcat停止）
+# 方式2：CMD执行（推荐，可看日志）
+cd D:\Apache-Tomcat-11.0.11\bin
+startup.bat
+                    </div>
+                    <p>启动成功验证：打开浏览器访问 <code>http://localhost:8080</code>，看到Tomcat默认首页（橙色小猫）即成功。</p>
+                    
+                    <div class="warning">
+                        ❗ Tomcat11启动常见问题：
+                        1. 端口被占用：默认8080端口被占用 → 修改conf/server.xml中<code>&lt;Connector port="8080"&gt;</code>为8081；
+                        2. JDK版本不兼容：Tomcat11要求JDK17+，你的JDK24完全兼容；
+                        3. 黑窗口闪退：打开CMD手动启动，查看报错日志（logs/catalina.out）。
+                    </div>
+                </div>
+
+                <div class="step">
+                    <div class="step-title">步骤5：停止Tomcat</div>
+                    <div class="cmd-block">
+# 方式1：双击 bin/shutdown.bat
+# 方式2：CMD执行
+cd D:\Apache-Tomcat-11.0.11\bin
+shutdown.bat
+                    </div>
+                </div>
+
+                <h3>1.3.3 IDEA 2025.1.1 配置Tomcat11</h3>
+                <div class="step">
+                    <div class="step-title">步骤1：打开IDEA，配置JDK24</div>
+                    <ol>
+                        <li>IDEA → File → Project Structure → Platform Settings → SDKs</li>
+                        <li>点击「+」→ 选择「Java」→ 选择JDK24安装路径（D:\Java\jdk-24）</li>
+                        <li>确认「Java SDK version」显示24，点击Apply。</li>
+                    </ol>
+                </div>
+
+                <div class="step">
+                    <div class="step-title">步骤2：添加Tomcat11服务器</div>
+                    <ol>
+                        <li>IDEA右上角 → 点击「Add Configuration...」</li>
+                        <li>点击「+」→ 找到「Tomcat Server」→ 选择「Local」</li>
+                        <li>在「Application server」右侧点击「Configure...」</li>
+                        <li>选择Tomcat11解压路径（D:\Apache-Tomcat-11.0.11）→ 点击OK</li>
+                        <li>确认「Name」为「Tomcat 11.0.11」，「HTTP port」为8080（和Tomcat配置一致），点击Apply。</li>
+                    </ol>
+                    <div class="tip">
+                        💡 若IDEA中找不到Tomcat Server选项：
+                        1. 检查是否安装Tomcat插件：File → Settings → Plugins → 搜索「Tomcat」→ 确保「Tomcat and TomEE Integration」已启用；
+                        2. 你的IDEA已安装「com.poratu.idea.plugins.tomcat」插件，可直接识别Tomcat11。
+                    </div>
+                </div>
+
+                <h3>1.3.4 部署第一个JavaWeb项目（验证配置）</h3>
+                <div class="step">
+                    <div class="step-title">步骤1：创建JavaWeb项目</div>
+                    <ol>
+                        <li>IDEA → File → New → Project</li>
+                        <li>左侧选择「Java」→ 勾选「Web Application」→ 选择JDK24 → 点击Next</li>
+                        <li>填写项目名称（如FirstJavaWeb）→ 选择项目路径 → 点击Finish。</li>
+                    </ol>
+                </div>
+
+                <div class="step">
+                    <div class="step-title">步骤2：部署并运行</div>
+                    <ol>
+                        <li>回到「Run/Debug Configurations」→ 选择Tomcat11 → 点击「Deployment」标签</li>
+                        <li>点击「+」→ 选择「Artifact」→ 选择项目的war包（如FirstJavaWeb:war exploded）</li>
+                        <li>「Application context」填写「/firstweb」（访问路径）→ 点击Apply</li>
+                        <li>点击IDEA右上角「Run」按钮（绿色三角），IDEA会自动启动Tomcat并部署项目。</li>
+                        <li>自动打开浏览器 → 访问 <code>http://localhost:8080/firstweb</code>，看到IDEA默认的index.jsp页面即成功。</li>
+                    </ol>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

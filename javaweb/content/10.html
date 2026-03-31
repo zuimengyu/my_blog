@@ -1,0 +1,666 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>第10章：Spring + SpringMVC 入门 | 手动搭建版（适配IDEA2025+JDK24+Tomcat11）</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        .content {
+            padding: 20px 0;
+            line-height: 1.9;
+            font-size: 15px;
+        }
+        .section {
+            margin: 40px 0;
+            padding-bottom: 25px;
+            border-bottom: 1px solid #eee;
+        }
+        .section:last-child { border-bottom: none; }
+        .section h2 {
+            color: #1e40af;
+            margin-bottom: 20px;
+            border-left: 4px solid #3b82f6;
+            padding-left: 14px;
+            font-size: 20px;
+        }
+        .section h3 {
+            color: #0f172a;
+            margin: 25px 0 15px;
+            font-size: 17px;
+        }
+        .section h4 {
+            color: #1e40af;
+            margin: 18px 0 10px;
+            font-size: 16px;
+        }
+        code {
+            background: #f1f5f9;
+            padding: 2px 6px;
+            border-radius: 3px;
+            color: #dc2626;
+            font-weight: 600;
+        }
+        pre {
+            background: #f8fafc;
+            padding: 16px;
+            border-radius: 6px;
+            overflow-x: auto;
+            border: 1px solid #e2e8f0;
+            font-size: 14px;
+            line-height: 1.6;
+        }
+        .tip {
+            background: #fffbeb;
+            padding: 14px;
+            border-left: 4px solid #f59e0b;
+            margin: 15px 0;
+            font-size: 14px;
+        }
+        .warning {
+            background: #fef2f2;
+            padding: 14px;
+            border-left: 4px solid #ef4444;
+            margin: 15px 0;
+            font-size: 14px;
+        }
+        .step {
+            background: #eff6ff;
+            padding: 18px;
+            border-radius: 6px;
+            margin: 15px 0;
+            border: 1px solid #dbeafe;
+        }
+        .step-title {
+            font-weight: 600;
+            color: #1e40af;
+            margin-bottom: 10px;
+            font-size: 16px;
+        }
+        .idea-op {
+            color: #0284c7;
+            font-weight: 600;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h1>第10章：Spring + SpringMVC 入门（纯手动搭建版）</h1>
+    <div class="content">
+        <div class="tip">
+            ✅ 适配你的环境：<br>
+            IDEA 2025.1.1 CE（社区版） | JDK24 | Tomcat11.0.11<br>
+            全程无会员、纯手动搭建、无Spring Initializr、代码可直接运行
+        </div>
+
+<!-- 10.1 Spring 核心：IOC/DI（大白话+手动搭建） -->
+<div class="section">
+    <h2>10.1 Spring 核心：IOC/DI（控制反转/依赖注入）</h2>
+    <h3>10.1.1 先搞懂：IOC/DI 到底是啥？（大白话）</h3>
+    <p><strong>没有Spring时的问题：</strong><br>
+    你要调用UserService，得自己 <code>new UserService()</code>；UserService里要调用UserDao，得自己 <code>new UserDaoImpl()</code>。<br>
+    → 所有对象都要你手动new，耦合度极高（改Dao实现类要改所有new的地方）。
+    </p>
+    <p><strong>有了Spring后：</strong><br>
+    ✨ <strong>IOC（控制反转）</strong>：对象的创建权交给Spring容器，你不用new，Spring帮你造；<br>
+    ✨ <strong>DI（依赖注入）</strong>：Spring自动把Dao对象“塞”进Service里，不用你手动赋值。
+    </p>
+    <div class="tip">
+        💡 一句话记住：<br>
+        IOC = 把“new对象”的活儿交给Spring；<br>
+        DI = Spring自动给对象的属性赋值。
+    </div>
+
+    <h3>10.1.2 手动搭建Spring环境（适配JDK24）</h3>
+    <div class="step">
+        <div class="step-title">Step 1：创建Maven项目（IDEA 2025 CE操作）</div>
+        <ol>
+            <li>打开IDEA → <span class="idea-op">File → New → Project</span>；</li>
+            <li>左侧选 <span class="idea-op">Maven</span> → 取消勾选 <span class="idea-op">Create from archetype</span>；</li>
+            <li>填写：Name（spring-demo）、Location（自定义路径）、JDK选24；</li>
+            <li>点击 <span class="idea-op">Create</span> → 等待Maven初始化完成。</li>
+        </ol>
+    </div>
+
+    <div class="step">
+        <div class="step-title">Step 2：添加Spring核心依赖（pom.xml）</div>
+        <p>Spring6+ 适配JDK17+、Jakarta EE 10（Tomcat11），直接复制以下依赖：</p>
+<pre>
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <groupId>com.example</groupId>
+    <artifactId>spring-mvc-demo</artifactId>
+    <version>1.0-SNAPSHOT</version>
+    <packaging>war</packaging> <!-- SpringMVC需要打war包 -->
+
+    <properties>
+        <maven.compiler.source>24</maven.compiler.source>
+        <maven.compiler.target>24</maven.compiler.target>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <!-- Spring版本（适配JDK24+Tomcat11） -->
+        <spring.version>6.1.10</spring.version>
+    </properties>
+
+    <dependencies>
+        <!-- 1. Spring核心IOC依赖 -->
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-context</artifactId>
+            <version>${spring.version}</version>
+        </dependency>
+
+        <!-- 2. 日志依赖（避免Spring启动日志报错） -->
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-api</artifactId>
+            <version>2.0.9</version>
+        </dependency>
+        <dependency>
+            <groupId>ch.qos.logback</groupId>
+            <artifactId>logback-classic</artifactId>
+            <version>1.4.11</version>
+        </dependency>
+
+        <!-- 3. Lombok（可选，简化代码） -->
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+            <version>1.18.34</version>
+            <scope>provided</scope>
+        </dependency>
+    </dependencies>
+
+    <!-- 构建配置（适配JDK24） -->
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>3.12.1</version>
+                <configuration>
+                    <source>24</source>
+                    <target>24</target>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+</project>
+</pre>
+        <p><span class="idea-op">操作</span>：粘贴后，点击IDEA右侧 <span class="idea-op">Maven → Reload All Maven Projects</span> 加载依赖。</p>
+    </div>
+
+    <div class="step">
+        <div class="step-title">Step 3：编写实体/DAO/Service（演示IOC）</div>
+        <h4>① 实体类：com.pojo.User（复用之前的）</h4>
+<pre>
+package com.pojo;
+
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+@Data // 自动生成get/set/toString
+@NoArgsConstructor
+@AllArgsConstructor
+public class User {
+    private Integer id;
+    private String username;
+    private String password;
+}
+</pre>
+
+        <h4>② DAO层：com.dao.UserDao + UserDaoImpl</h4>
+<pre>
+// 接口
+package com.dao;
+import com.pojo.User;
+public interface UserDao {
+    User findById(Integer id);
+}
+
+// 实现类
+package com.dao.impl;
+import com.dao.UserDao;
+import com.pojo.User;
+import org.springframework.stereotype.Repository; // 标记为Spring组件
+
+// @Repository：告诉Spring，这个类交给容器管理
+@Repository
+public class UserDaoImpl implements UserDao {
+    @Override
+    public User findById(Integer id) {
+        // 模拟数据库查询
+        return new User(1, "Spring用户", "123456");
+    }
+}
+</pre>
+
+        <h4>③ Service层：com.service.UserService</h4>
+<pre>
+package com.service;
+
+import com.dao.UserDao;
+import com.pojo.User;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+// @Service：标记为Spring服务组件
+@Service
+public class UserService {
+    // @Autowired：DI依赖注入 → Spring自动把UserDaoImpl对象塞进来
+    @Autowired
+    private UserDao userDao;
+
+    public User findUserById(Integer id) {
+        return userDao.findById(id);
+    }
+}
+</pre>
+    </div>
+
+    <div class="step">
+        <div class="step-title">Step 4：Spring配置文件（applicationContext.xml）</div>
+        <p>路径：<code>src/main/resources/applicationContext.xml</code></p>
+        <ol>
+            <li>右键 <span class="idea-op">resources → New → File</span>；</li>
+            <li>文件名：<code>applicationContext.xml</code> → 粘贴以下内容：</li>
+        </ol>
+<pre>
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xsi:schemaLocation="
+           http://www.springframework.org/schema/beans
+           https://www.springframework.org/schema/beans/spring-beans.xsd
+           http://www.springframework.org/schema/context
+           https://www.springframework.org/schema/context/spring-context.xsd">
+
+    <!-- 组件扫描：Spring自动扫描指定包下的@Service/@Repository/@Component -->
+    <context:component-scan base-package="com.dao,com.service"/>
+
+</beans>
+</pre>
+    </div>
+
+    <div class="step">
+        <div class="step-title">Step 5：测试Spring IOC/DI（不用new对象）</div>
+        <p>创建测试类：com.test.SpringTest</p>
+<pre>
+package com.test;
+
+import com.service.UserService;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.support.ClassPathXmlApplicationContext;
+
+public class SpringTest {
+    public static void main(String[] args) {
+        // 1. 加载Spring配置文件，创建容器（IOC核心）
+        ApplicationContext context = new ClassPathXmlApplicationContext("applicationContext.xml");
+
+        // 2. 从容器中获取UserService（不用new！）
+        UserService userService = context.getBean(UserService.class);
+
+        // 3. 调用方法（DI已自动注入UserDao）
+        System.out.println(userService.findUserById(1));
+
+        // 输出：User(id=1, username=Spring用户, password=123456)
+    }
+}
+</pre>
+        <p><span class="idea-op">运行</span>：右键 <span class="idea-op">Run 'SpringTest.main()'</span> → 看到输出即成功！</p>
+        <div class="warning">
+            ❗ 核心变化：<br>
+            你没有写 <code>new UserService()</code>、<code>new UserDaoImpl()</code>，所有对象都由Spring创建并注入！
+        </div>
+    </div>
+</div>
+
+<!-- 10.2 SpringMVC 核心原理（极简版） -->
+<div class="section">
+    <h2>10.2 SpringMVC 核心原理（小白能懂）</h2>
+    <p><strong>SpringMVC = Spring的Web模块</strong>，专门替代Servlet，简化Web开发（不用写Servlet、不用配置web.xml）。</p>
+    <h3>SpringMVC 核心流程（7步，大白话）</h3>
+    <ol>
+        <li>浏览器发请求 → Tomcat接收；</li>
+        <li>Tomcat把请求交给 <strong>DispatcherServlet（前端控制器）</strong>（SpringMVC核心，不用你写）；</li>
+        <li>DispatcherServlet根据请求地址找 <strong>Controller（控制器）</strong>；</li>
+        <li>Controller处理业务逻辑（调用Service）；</li>
+        <li>Controller返回结果（页面/数据）给DispatcherServlet；</li>
+        <li>DispatcherServlet找 <strong>视图解析器</strong> 处理页面跳转；</li>
+        <li>最终响应返回给浏览器。</li>
+    </ol>
+    <div class="tip">
+        💡 核心角色记忆：<br>
+        DispatcherServlet = 前台接待员（所有请求都找它）；<br>
+        Controller = 具体办事员（处理业务）；<br>
+        视图解析器 = 导航员（负责页面跳转）。
+    </div>
+</div>
+
+<!-- 10.3 SpringMVC 环境搭建（适配Tomcat11+IDEA2025） -->
+<div class="section">
+    <h2>10.3 SpringMVC 环境搭建（纯手动、无会员）</h2>
+    <div class="step">
+        <div class="step-title">Step 1：补充SpringMVC依赖（pom.xml追加）</div>
+<pre>
+<!-- 追加到dependencies里 -->
+<!-- 1. SpringMVC核心依赖 -->
+<dependency>
+    <groupId>org.springframework</groupId>
+    <artifactId>spring-webmvc</artifactId>
+    <version>${spring.version}</version>
+</dependency>
+
+<!-- 2. Jakarta Servlet API（适配Tomcat11） -->
+<dependency>
+    <groupId>jakarta.servlet</groupId>
+    <artifactId>jakarta.servlet-api</artifactId>
+    <version>6.0.0</version>
+    <scope>provided</scope>
+</dependency>
+
+<!-- 3. JSP依赖（可选，若用JSP页面） -->
+<dependency>
+    <groupId>jakarta.servlet.jsp</groupId>
+    <artifactId>jakarta.servlet.jsp-api</artifactId>
+    <version>3.1.0</version>
+    <scope>provided</scope>
+</dependency>
+</pre>
+        <p><span class="idea-op">操作</span>：再次Reload Maven依赖。</p>
+    </div>
+
+    <div class="step">
+        <div class="step-title">Step 2：配置web.xml（Tomcat11适配）</div>
+        <p>SpringMVC需要配置DispatcherServlet，步骤：</p>
+        <ol>
+            <li>创建目录：<span class="idea-op">src/main/webapp/WEB-INF</span>；</li>
+            <li>在WEB-INF下新建 <code>web.xml</code>，粘贴以下内容：</li>
+        </ol>
+<pre>
+<?xml version="1.0" encoding="UTF-8"?>
+<web-app xmlns="https://jakarta.ee/xml/ns/jakartaee"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="https://jakarta.ee/xml/ns/jakartaee https://jakarta.ee/xml/ns/jakartaee/web-app_6_0.xsd"
+         version="6.0"> <!-- Tomcat11对应web-app 6.0 -->
+
+    <!-- 1. 配置SpringMVC前端控制器 -->
+    <servlet>
+        <servlet-name>dispatcherServlet</servlet-name>
+        <servlet-class>org.springframework.web.servlet.DispatcherServlet</servlet-class>
+        <!-- 加载SpringMVC配置文件 -->
+        <init-param>
+            <param-name>contextConfigLocation</param-name>
+            <param-value>classpath:spring-mvc.xml</param-value>
+        </init-param>
+        <!-- 启动时加载（优先级1） -->
+        <load-on-startup>1</load-on-startup>
+    </servlet>
+
+    <!-- 2. 映射所有请求到DispatcherServlet -->
+    <servlet-mapping>
+        <servlet-name>dispatcherServlet</servlet-name>
+        <url-pattern>/</url-pattern>
+    </servlet-mapping>
+
+    <!-- 3. 全局编码过滤器（解决中文乱码） -->
+    <filter>
+        <filter-name>characterEncodingFilter</filter-name>
+        <filter-class>org.springframework.web.filter.CharacterEncodingFilter</filter-class>
+        <init-param>
+            <param-name>encoding</param-name>
+            <param-value>UTF-8</param-value>
+        </init-param>
+        <init-param>
+            <param-name>forceEncoding</param-name>
+            <param-value>true</param-value>
+        </init-param>
+    </filter>
+    <filter-mapping>
+        <filter-name>characterEncodingFilter</filter-name>
+        <url-pattern>/*</url-pattern>
+    </filter-mapping>
+</web-app>
+</pre>
+    </div>
+
+    <div class="step">
+        <div class="step-title">Step 3：SpringMVC配置文件（spring-mvc.xml）</div>
+        <p>路径：<code>src/main/resources/spring-mvc.xml</code></p>
+<pre>
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xmlns:mvc="http://www.springframework.org/schema/mvc"
+       xsi:schemaLocation="
+           http://www.springframework.org/schema/beans
+           https://www.springframework.org/schema/beans/spring-beans.xsd
+           http://www.springframework.org/schema/context
+           https://www.springframework.org/schema/context/spring-context.xsd
+           http://www.springframework.org/schema/mvc
+           https://www.springframework.org/schema/mvc/spring-mvc.xsd">
+
+    <!-- 1. 组件扫描：扫描Controller包 -->
+    <context:component-scan base-package="com.controller"/>
+
+    <!-- 2. 开启SpringMVC注解驱动（适配Jakarta EE 10） -->
+    <mvc:annotation-driven/>
+
+    <!-- 3. 静态资源放行（css/js/img） -->
+    <mvc:default-servlet-handler/>
+
+    <!-- 4. 视图解析器（JSP页面跳转） -->
+    <bean class="org.springframework.web.servlet.view.InternalResourceViewResolver">
+        <property name="prefix" value="/WEB-INF/pages/"/> <!-- 页面前缀 -->
+        <property name="suffix" value=".jsp"/> <!-- 页面后缀 -->
+    </bean>
+</beans>
+</pre>
+    </div>
+
+    <div class="step">
+        <div class="step-title">Step 4：配置Tomcat11（IDEA 2025 CE操作）</div>
+        <ol>
+            <li>点击IDEA右上角 <span class="idea-op">Add Configuration</span>；</li>
+            <li>左侧点击 <span class="idea-op">+ → Tomcat Server → Local</span>；</li>
+            <li>在 <span class="idea-op">Application server</span> 右侧点击 <span class="idea-op">Configure</span>；</li>
+            <li>选择你的Tomcat11.0.11安装路径 → <span class="idea-op">OK</span>；</li>
+            <li>切换到 <span class="idea-op">Deployment</span> 标签 → 点击 <span class="idea-op">+ → Artifact</span>；</li>
+            <li>选择 <span class="idea-op">spring-mvc-demo:war exploded</span> → <span class="idea-op">OK</span>；</li>
+            <li>修改 <span class="idea-op">Application context</span> 为 <code>/</code>（访问路径简化）；</li>
+            <li>点击 <span class="idea-op">Apply → OK</span> 完成配置。</li>
+        </ol>
+        <div class="warning">
+            ❗ 关键：确保Tomcat的JDK配置为24 → 在Tomcat配置的 <span class="idea-op">Startup/Connection</span> 标签里确认JDK版本。
+        </div>
+    </div>
+</div>
+
+<!-- 10.4 SpringMVC 核心操作（实战CRUD） -->
+<div class="section">
+    <h2>10.4 SpringMVC 核心操作（纯实战）</h2>
+    <h3>10.4.1 第一个Controller（HelloWorld）</h3>
+    <p>创建：com.controller.HelloController</p>
+<pre>
+package com.controller;
+
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ResponseBody;
+
+// @Controller：标记为SpringMVC控制器
+@Controller
+public class HelloController {
+
+    // 1. 页面跳转（返回字符串=页面名，视图解析器拼接前缀后缀）
+    @GetMapping("/hello") // 访问路径：http://localhost:8080/hello
+    public String hello() {
+        // 跳转到 /WEB-INF/pages/hello.jsp
+        return "hello";
+    }
+
+    // 2. 返回JSON数据（@ResponseBody）
+    @GetMapping("/hello/json")
+    @ResponseBody // 不跳转页面，直接返回数据
+    public String helloJson() {
+        return "{\"msg\":\"Hello SpringMVC！适配JDK24+Tomcat11\"}";
+    }
+}
+</pre>
+
+    <h3>10.4.2 创建JSP页面（测试跳转）</h3>
+    <ol>
+        <li>创建目录：<span class="idea-op">src/main/webapp/WEB-INF/pages</span>；</li>
+        <li>新建 <code>hello.jsp</code>：</li>
+    </ol>
+<pre>
+<%@ page contentType="text/html;charset=UTF-8" language="java" %>
+<html>
+<head>
+    <title>SpringMVC</title>
+</head>
+<body>
+    <h1>Hello SpringMVC！</h1>
+    <p>适配IDEA 2025 + JDK24 + Tomcat11</p>
+</body>
+</html>
+</pre>
+
+    <h3>10.4.3 运行测试</h3>
+    <ol>
+        <li>点击IDEA右上角 <span class="idea-op">Run 'Tomcat 11'</span> 启动Tomcat；</li>
+        <li>访问 <code>http://localhost:8080/hello</code> → 看到JSP页面；</li>
+        <li>访问 <code>http://localhost:8080/hello/json</code> → 看到JSON数据。</li>
+    </ol>
+
+    <h3>10.4.4 核心操作：参数接收（实战常用）</h3>
+    <pre>
+package com.controller;
+
+import com.pojo.User;
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
+
+@Controller
+public class UserController {
+
+    // 1. 单个参数接收
+    @PostMapping("/user/login")
+    @ResponseBody
+    public String login(@RequestParam("username") String username,
+                        @RequestParam("password") String password) {
+        return "用户名：" + username + "，密码：" + password;
+    }
+
+    // 2. 对象接收（自动封装，参数名=实体属性名）
+    @PostMapping("/user/add")
+    @ResponseBody
+    public String addUser(User user) {
+        return "添加用户：" + user;
+    }
+}
+</pre>
+</div>
+
+<!-- 10.5 拦截器（Interceptor）（实战登录拦截） -->
+<div class="section">
+    <h2>10.5 拦截器（Interceptor）（SpringMVC版登录拦截）</h2>
+    <p><strong>SpringMVC拦截器 = 增强版Filter</strong>，专门拦截Controller请求，可在请求前/后执行逻辑。</p>
+
+    <h3>Step 1：编写拦截器类</h3>
+    <p>创建：com.interceptor.LoginInterceptor</p>
+<pre>
+package com.interceptor;
+
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import org.springframework.web.servlet.HandlerInterceptor;
+
+// 登录拦截器
+public class LoginInterceptor implements HandlerInterceptor {
+
+    // 请求处理前执行（核心）
+    @Override
+    public boolean preHandle(HttpServletRequest request,
+                             HttpServletResponse response,
+                             Object handler) throws Exception {
+        // 1. 获取Session中的登录用户
+        Object user = request.getSession().getAttribute("loginUser");
+
+        // 2. 未登录 → 跳转到登录页
+        if (user == null) {
+            response.sendRedirect("/login.jsp");
+            return false; // 拦截请求
+        }
+
+        // 3. 已登录 → 放行
+        return true;
+    }
+}
+</pre>
+
+    <h3>Step 2：配置拦截器（spring-mvc.xml追加）</h3>
+<pre>
+<!-- 配置拦截器 -->
+<mvc:interceptors>
+    <mvc:interceptor>
+        <!-- 拦截所有请求 -->
+        <mvc:mapping path="/**"/>
+        <!-- 放行登录页、登录接口 -->
+        <mvc:exclude-mapping path="/login.jsp"/>
+        <mvc:exclude-mapping path="/user/login"/>
+        <!-- 拦截器类 -->
+        <bean class="com.interceptor.LoginInterceptor"/>
+    </mvc:interceptor>
+</mvc:interceptors>
+</pre>
+
+    <h3>Step 3：测试拦截器</h3>
+    <ol>
+        <li>创建 <code>src/main/webapp/login.jsp</code>（登录页）；</li>
+        <li>未登录时访问 <code>http://localhost:8080/hello</code> → 自动跳转到login.jsp；</li>
+        <li>模拟登录：在Controller中设置Session → 访问hello可正常跳转。</li>
+    </ol>
+</div>
+
+<!-- 10.6 本章实战总结 -->
+<div class="section">
+    <h2>10.6 本章核心总结（背会直接开发）</h2>
+    <div class="step">
+        <div class="step-title">Spring + SpringMVC 手动搭建固定流程</div>
+        <ol>
+            <li>导依赖：spring-context（IOC） + spring-webmvc（MVC） + jakarta.servlet-api（Tomcat11）；</li>
+            <li>写配置：applicationContext.xml（Spring） + spring-mvc.xml（MVC） + web.xml（DispatcherServlet）；</li>
+            <li>写代码：Controller（@Controller） + Service（@Service） + Dao（@Repository）；</li>
+            <li>配Tomcat：选择Tomcat11，部署war包，简化访问路径；</li>
+            <li>测试：启动Tomcat，访问Controller路径。</li>
+        </ol>
+    </div>
+
+    <h3>核心注解必背</h3>
+    <ul>
+        <li>🍪 Spring核心：@Component/@Service/@Repository（IOC）、@Autowired（DI）；</li>
+        <li>🔐 SpringMVC核心：@Controller（控制器）、@GetMapping/@PostMapping（请求映射）、@ResponseBody（返回JSON）；</li>
+        <li>⚡ 拦截器：实现HandlerInterceptor，重写preHandle，配置拦截/放行路径。</li>
+    </ul>
+
+    <div class="tip">
+        ✅ 适配你的环境关键：<br>
+        1. Spring版本选6.1+（兼容JDK24+Tomcat11）；<br>
+        2. web.xml版本为6.0（Jakarta EE 10）；<br>
+        3. 所有依赖为jakarta开头，而非javax。
+    </div>
+</div>
+
+    </div>
+</div>
+</body>
+</html>
